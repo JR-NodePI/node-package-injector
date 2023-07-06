@@ -1,1 +1,1 @@
-# node-module-injector
+# node-package-injector
