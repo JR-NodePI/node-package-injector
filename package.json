@@ -1,0 +1,56 @@
+{
+  "name": "node-package-injector",
+  "productName": "NodePI",
+  "description": "inject node modules into electron app",
+  "private": true,
+  "version": "1.0.0",
+  "main": "./dist/electron.js",
+  "repository": "git@github.com:JorgeRojo/node-module-injector.git",
+  "author": "jorge.rojodiseno@gmail.com",
+  "license": "Creative Commons Zero v1.0 Universal",
+  "dependencies": {
+    "fratch-ui": "^1.0.3",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.37",
+    "@types/react-dom": "^18.0.11",
+    "@typescript-eslint/eslint-plugin": "^5.59.0",
+    "@typescript-eslint/parser": "^5.59.0",
+    "@vitejs/plugin-react-swc": "^3.0.0",
+    "concurrently": "^8.2.0",
+    "cross-env": "^7.0.3",
+    "electron": "25.2.0",
+    "electron-builder": "^24.4.0",
+    "electron-icon-builder": "^2.0.1",
+    "electron-reloader": "^1.2.3",
+    "eslint": "^8.38.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.3.4",
+    "path": "^0.12.7",
+    "typescript": "^5.0.2",
+    "vite": "^4.3.9"
+  },
+  "scripts": {
+    "electron:dev": "tsc ./electron-dev.ts --outDir ./dist && electron ./dist/electron-dev.js",
+    "vite:dev": "vite dev ./app",
+    "vite:build": "tsc -p ./app/tsconfig.json && vite build ./app --outDir ../dist/app --emptyOutDir",
+    "vite:preview": "vite preview --outDir ./app/dist --open /",
+    "dev": "cross-env DEV_PORT=8082 concurrently -k 'yarn vite:dev' 'yarn electron:dev'",
+    "lint": "eslint ./app --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "icons": "electron-icon-builder --input=./icons/icon.png --output=./dist &>/dev/null",
+    "build": "rm -rf ./dist && yarn icons && yarn vite:build && tsc ./electron.ts --outDir ./dist",
+    "dist:mac": "yarn build && electron-builder --mac"
+  },
+  "build": {
+    "files": [
+      "dist/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "icon": "./dist/icons/mac/icon.icns",
+      "category": "developer tool"
+    }
+  }
+}
