@@ -1,0 +1,20 @@
+.dependency {
+  align-items: stretch;
+  background-color: var(--ft-item-bg-color);
+  border-bottom: var(--ft-select-list-item-bg-color-active) solid 1px;
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  padding: 12px 32px 4px 32px;
+  margin: 0 -32px 16px -32px;
+  position: relative;
+}
+.dependency > * {
+  width: 100%;
+}
+
+.buttons {
+  width: auto;
+  align-self: flex-end;
+  padding-bottom: 8px;
+}

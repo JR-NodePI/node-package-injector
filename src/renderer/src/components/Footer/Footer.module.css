@@ -1,0 +1,21 @@
+.footer {
+  position: fixed;
+  width: 100%;
+  left: 0;
+  bottom: 0;
+  padding: 16px 32px 0 32px;
+  box-sizing: border-box;
+  height: var(--ft-footer-height);
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.footer > * {
+  min-width: 96px;
+}
+
+.closeButton {
+  margin-right: auto;
+}

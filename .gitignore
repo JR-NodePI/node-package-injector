@@ -139,3 +139,7 @@ dist
 *.njsproj
 *.sln
 *.sw?
+
+dist
+out
+*.log*
