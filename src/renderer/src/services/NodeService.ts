@@ -1,11 +1,9 @@
 export default class NodeService {
   static async getNodeNpmYarnVersions(): Promise<{ [key: string]: string }> {
-    const cwd = window.electron.process.env.HOME ?? '';
-
     const output = await window.api.executeCommand({
-      command: 'bash',
-      args: [window.api.path.join(window.api.extraResourcesPath, 'check_node.sh')],
-      cwd,
+      command: window.api.path.join('.', '/', 'check_node.sh'),
+      args: [],
+      cwd: window.api.path.join(window.api.extraResourcesPath),
     });
 
     try {
