@@ -5,30 +5,21 @@ import {
   ExecuteCommandOutput,
 } from './TerminalTypes';
 
-/**
- * external script usage example:
- *
- * const path = window.api.path;
- * const script = path.join(window.api.extraResourcesPath, 'script.sh');
- *
- * await TerminalService.executeCommand({
- *  command: 'ls',
- *  args: ['-lh'],
- *  cwd: window.api.extraResourcesPath,
- * });
- */
-
-let isWSL;
-
 export default class TerminalService {
-  static async executeCommand({ command, args = [], cwd }: ExecuteCommandOptions): Promise<string> {
-    if (isWSL == null) {
-      isWSL = false;
-      isWSL = await TerminalService.checkWSL(cwd ?? '');
+  public static isWSL: boolean;
+  public static async executeCommand({
+    command,
+    args = [],
+    cwd,
+    skipWSL = false,
+  }: ExecuteCommandOptions): Promise<string> {
+    if (TerminalService.isWSL == null) {
+      TerminalService.isWSL = false;
+      TerminalService.isWSL = await TerminalService.checkWSL(cwd ?? '');
     }
 
-    const finalCommand = isWSL ? 'wsl' : command;
-    const finalArgs = isWSL ? ['-e', 'bash', command, ...args] : args;
+    const finalCommand = TerminalService.isWSL && !skipWSL ? 'wsl' : command;
+    const finalArgs = TerminalService.isWSL && !skipWSL ? ['-e', command, ...args] : args;
 
     let outputs: ExecuteCommandOutput[] = [];
 
@@ -56,20 +47,17 @@ export default class TerminalService {
     }, '');
   }
 
-  private static async checkWSL(cwd: string): Promise<boolean> {
-    if (process.platform === 'win32') {
-      try {
-        const wslOutput = await TerminalService.executeCommand({
-          command: 'wsl',
-          args: ['-e', 'bash', '--version'],
-          cwd,
-        });
-        return wslOutput != null && wslOutput.includes('GNU bash');
-      } catch (error) {
-        return false;
-      }
-    }
+  public static async checkWSL(cwd: string): Promise<boolean> {
+    try {
+      const wslOutput = await TerminalService.executeCommand({
+        command: 'wsl',
+        args: ['-e', 'bash', '--version'],
+        cwd,
+      });
 
-    return false;
+      return wslOutput != null && wslOutput.includes('GNU bash');
+    } catch (error) {
+      return false;
+    }
   }
 }

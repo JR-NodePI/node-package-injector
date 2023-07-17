@@ -15,4 +15,5 @@ export type ExecuteCommandOptions = {
   command: string;
   cwd?: string;
   args?: string[];
+  skipWSL?: boolean;
 };
