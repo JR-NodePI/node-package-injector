@@ -13,7 +13,7 @@ import usePersistedState from './hooks/usePersistedState';
 import PackageConfig from './models/PackageConfig';
 
 const defaultPackageConfig = new PackageConfig();
-defaultPackageConfig.cwd = window.electron.process.env.HOME ?? '/';
+defaultPackageConfig.cwd = window.electron.process.env.HOME ?? '';
 
 const useCheckNode = (): { loadingCheckNode: boolean; isValidNode: boolean } => {
   const [loadingCheckNode, setIsLoading] = useState<boolean>(true);

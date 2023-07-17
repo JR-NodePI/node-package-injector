@@ -22,11 +22,12 @@ const getUpdatedDependencyLits = (
   });
 
 function Dependencies({ mainPackageConfig }: { mainPackageConfig: PackageConfig }): JSX.Element {
-  const [dependencies, setDependencies] = usePersistedState<DependencyConfig[]>(
+  const [stateDependencies, setDependencies] = usePersistedState<DependencyConfig[] | undefined>(
     'dependencies',
-    [],
+    undefined,
     DependencyConfig
   );
+  const dependencies = stateDependencies ?? [];
 
   const handleRemoveDependency = (dependency: DependencyConfig): void => {
     const newDependencies = dependencies.filter((d: DependencyConfig) => d !== dependency);
@@ -90,7 +91,11 @@ function Dependencies({ mainPackageConfig }: { mainPackageConfig: PackageConfig 
   const handleAddDependency = (): void => {
     if (mainPackageConfig.cwd != null && mainPackageConfig.isValidPackage) {
       const dependency = new DependencyConfig();
-      dependency.cwd = (mainPackageConfig.cwd ?? '/').split('/').slice(0, -1).join('/');
+      dependency.cwd = ((mainPackageConfig.cwd || window.electron.process.env.HOME) ?? '')
+        .split(/\/|\\/)
+        .filter(Boolean)
+        .slice(0, -1)
+        .join('/');
       setDependencies([...dependencies, dependency]);
     }
   };
@@ -100,7 +105,7 @@ function Dependencies({ mainPackageConfig }: { mainPackageConfig: PackageConfig 
     if (
       mainPackageConfig.cwd != null &&
       mainPackageConfig.isValidPackage &&
-      dependencies.length === 0
+      stateDependencies == null
     ) {
       handleAddDependency();
     }
@@ -110,11 +115,11 @@ function Dependencies({ mainPackageConfig }: { mainPackageConfig: PackageConfig 
     <div className={c(styles.dependencies)}>
       <h2>Dependencies</h2>
 
-      {dependencies.map((dependencyConfig, index) => (
+      {dependencies.map(dependencyConfig => (
         <DependencySelector
           key={dependencyConfig.uuid}
           dependencyConfig={dependencyConfig}
-          onClickRemove={index > 0 || dependencies.length > 1 ? handleRemoveDependency : undefined}
+          onClickRemove={handleRemoveDependency}
           onPathChange={handlePathChange}
           onBranchChange={handleBranchChange}
           onGitPullChange={handleGitPullChange}

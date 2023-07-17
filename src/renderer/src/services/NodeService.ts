@@ -3,8 +3,8 @@ export default class NodeService {
     const cwd = window.electron.process.env.HOME ?? '';
 
     const output = await window.api.executeCommand({
-      command: window.api.path.join(window.api.extraResourcesPath, 'check_node.sh'),
-      args: [],
+      command: 'bash',
+      args: [window.api.path.join(window.api.extraResourcesPath, 'check_node.sh')],
       cwd,
     });
 

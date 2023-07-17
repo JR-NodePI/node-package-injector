@@ -26,17 +26,19 @@ function PackageSelector({
   onYarnInstallChange?: (checked: boolean) => void;
 }): JSX.Element {
   const triggerElementRef = useRef<HTMLInputElement>(null);
-  const [pathDirectories, setPathDirectories] = useState<string[]>([]);
+  const [statePathDirectories, setPathDirectories] = useState<string[]>();
+  const pathDirectories = statePathDirectories ?? [];
   const [directories, setDirectories] = useState<SelectOption<string>[]>([]);
 
   useEffect(() => {
-    if (packageConfig.cwd != null && pathDirectories.length === 0) {
+    if (packageConfig.cwd != null && statePathDirectories == null) {
       const newPathDirectories = packageConfig.cwd.split(/\/|\\/).filter(Boolean);
       setPathDirectories(newPathDirectories);
     }
   }, [packageConfig.cwd, pathDirectories]);
 
-  const cwd = window.api.path.join('/', ...pathDirectories);
+  const cwd = window.api.path.join(...pathDirectories, '/');
+
   useEffect(() => {
     (async (): Promise<void> => {
       const isValidPackage = await NodeService.checkPackageJSON(cwd);
@@ -69,7 +71,7 @@ function PackageSelector({
 
   const handleOnClickBack = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>): void => {
     event.preventDefault();
-    if (pathDirectories.length > 0) {
+    if (pathDirectories.length > 1) {
       const newPathDirectories = [...pathDirectories.slice(0, -1)];
       setPathDirectories(newPathDirectories);
     }
@@ -81,12 +83,15 @@ function PackageSelector({
     </a>
   );
 
-  const rootCWD = window.api.path
-    .join('/', ...pathDirectories.slice(0, -1), '/')
-    .replace(
-      window.api.path.join(window.electron.process.env.HOME ?? '', '/'),
-      window.api.path.join('~', '/')
-    );
+  const rootCWD =
+    pathDirectories.length > 1
+      ? window.api.path
+          .join(...pathDirectories.slice(0, -1), '/')
+          .replace(
+            window.api.path.join(window.electron.process.env.HOME ?? '', '/'),
+            window.api.path.join('~', '/')
+          )
+      : '';
 
   const lastDirectory = pathDirectories.slice(-1)[0];
 
