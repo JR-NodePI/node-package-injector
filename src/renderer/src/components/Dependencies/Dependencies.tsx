@@ -91,7 +91,7 @@ function Dependencies({ mainPackageConfig }: { mainPackageConfig: PackageConfig 
   const handleAddDependency = (): void => {
     if (mainPackageConfig.cwd != null && mainPackageConfig.isValidPackage) {
       const dependency = new DependencyConfig();
-      dependency.cwd = ((mainPackageConfig.cwd || window.electron.process.env.HOME) ?? '')
+      dependency.cwd = (mainPackageConfig.cwd || window.api.os.homedir())
         .split(/\/|\\/)
         .filter(Boolean)
         .slice(0, -1)

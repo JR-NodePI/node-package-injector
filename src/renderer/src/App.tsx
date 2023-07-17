@@ -11,12 +11,10 @@ import NodeService from './services/NodeService';
 import Dependencies from './components/Dependencies/Dependencies';
 import usePersistedState from './hooks/usePersistedState';
 import PackageConfig from './models/PackageConfig';
+import WSLService from './services/WSLService';
 
-const defaultPackageConfig = new PackageConfig();
-defaultPackageConfig.cwd = window.electron.process.env.HOME ?? '';
-
-const useCheckNode = (): { loadingCheckNode: boolean; isValidNode: boolean } => {
-  const [loadingCheckNode, setIsLoading] = useState<boolean>(true);
+const useCheckNode = (): { loading: boolean; isValidNode: boolean } => {
+  const [loading, setIsLoading] = useState<boolean>(true);
   const [isValidNode, setIsValid] = useState<boolean>(false);
 
   useEffect(() => {
@@ -26,17 +24,53 @@ const useCheckNode = (): { loadingCheckNode: boolean; isValidNode: boolean } => 
     })();
   }, []);
 
-  return { loadingCheckNode, isValidNode };
+  return { loading, isValidNode };
+};
+
+const useDefaultPackageConfig = (): { loading: boolean; defaultPackageConfig: PackageConfig } => {
+  const [loading, setIsLoading] = useState<boolean>(true);
+  const [defaultPackageConfig, setDefaultPackageConfig] = useState<PackageConfig>(
+    new PackageConfig()
+  );
+
+  useEffect(() => {
+    (async (): Promise<void> => {
+      const wslHomePath = await WSLService.getSWLHomePath(window.api.os.homedir());
+      const newPackageConfig = defaultPackageConfig.clone();
+      if (wslHomePath) {
+        newPackageConfig.cwd = wslHomePath;
+      } else {
+        newPackageConfig.cwd = window.api.os.homedir();
+      }
+      setDefaultPackageConfig(newPackageConfig);
+      setIsLoading(false);
+    })();
+  }, []);
+
+  return { loading, defaultPackageConfig };
 };
 
 function App(): JSX.Element {
-  const { loadingCheckNode, isValidNode } = useCheckNode();
+  const { loading: loadingCheckNode, isValidNode } = useCheckNode();
+
+  const { loading: loadingDefaultPackageConfig, defaultPackageConfig } = useDefaultPackageConfig();
 
   const [mainPackageConfig, setMainPackageConfig] = usePersistedState<PackageConfig>(
     'mainPackageConfig',
-    defaultPackageConfig,
+    new PackageConfig(),
     PackageConfig
   );
+
+  useEffect(() => {
+    if (
+      !loadingDefaultPackageConfig &&
+      mainPackageConfig.cwd == null &&
+      defaultPackageConfig.cwd != null
+    ) {
+      const clone = defaultPackageConfig.clone();
+      setMainPackageConfig(clone);
+    }
+  }, [loadingDefaultPackageConfig, defaultPackageConfig, mainPackageConfig]);
 
   const handlePathChange = (cwd: string, isValidPackage): void => {
     const clone = mainPackageConfig.clone();
@@ -63,6 +97,8 @@ function App(): JSX.Element {
     setMainPackageConfig(clone);
   };
 
+  const isLoading = loadingCheckNode || loadingDefaultPackageConfig;
+
   return (
     <section className={c(styles.container)}>
       <Header
@@ -70,7 +106,7 @@ function App(): JSX.Element {
         title="Node Package Injector"
         iconSrc={logo}
       />
-      {loadingCheckNode ? (
+      {isLoading ? (
         <Spinner />
       ) : isValidNode ? (
         <>

@@ -1,3 +1,5 @@
+import TerminalService from './TerminalService';
+
 const REMOTE_BRANCH_PATTERN = new RegExp(`(.*remotes/origin/)(.*)`);
 
 const isValidBranch = (line: string): boolean =>
@@ -7,7 +9,7 @@ const getLocalBranch = (line: string): string => line.replace(REMOTE_BRANCH_PATT
 
 export default class GitService {
   static async getCurrentBranch(cwd: string): Promise<string> {
-    const branch = await window.api.executeCommand({
+    const branch = await TerminalService.executeCommand({
       command: 'git',
       args: ['branch', '--show-current'],
       cwd,
@@ -17,13 +19,7 @@ export default class GitService {
   }
 
   static async getBranches(cwd: string): Promise<string[]> {
-    await window.api.executeCommand({
-      command: 'git',
-      args: ['pull', '--all'],
-      cwd,
-    });
-
-    const output = await window.api.executeCommand({
+    const output = await TerminalService.executeCommand({
       command: 'git',
       args: ['branch', '-l', '-a'],
       cwd,

@@ -18,7 +18,6 @@ export default class TerminalRepository {
       const cmd = spawn(command, args, {
         cwd,
         env: process.env,
-        shell: true,
       });
 
       const output: ExecuteCommandOutput[] = [];

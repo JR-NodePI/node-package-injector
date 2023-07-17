@@ -1,8 +1,10 @@
+import TerminalService from './TerminalService';
+
 export default class NodeService {
   static async getNodeNpmYarnVersions(): Promise<{ [key: string]: string }> {
-    const output = await window.api.executeCommand({
-      command: window.api.path.join('.', '/', 'check_node.sh'),
-      args: [],
+    const output = await TerminalService.executeCommand({
+      command: 'bash',
+      args: [window.api.path.join('.', '/', 'check_node.sh')],
       cwd: window.api.path.join(window.api.extraResourcesPath),
     });
 

@@ -8,6 +8,7 @@ import NodeService from '@renderer/services/NodeService';
 
 import styles from './PackageSelector.module.css';
 import PackageConfig from '@renderer/models/PackageConfig';
+import PathService from '@renderer/services/PathService';
 
 function PackageSelector({
   additionalComponent,
@@ -32,12 +33,12 @@ function PackageSelector({
 
   useEffect(() => {
     if (packageConfig.cwd != null && statePathDirectories == null) {
-      const newPathDirectories = packageConfig.cwd.split(/\/|\\/).filter(Boolean);
+      const newPathDirectories = packageConfig.cwd.split(/[/\\]/).filter(Boolean);
       setPathDirectories(newPathDirectories);
     }
   }, [packageConfig.cwd, pathDirectories]);
 
-  const cwd = window.api.path.join(...pathDirectories, '/');
+  const cwd = PathService.getPath(pathDirectories);
 
   useEffect(() => {
     (async (): Promise<void> => {
@@ -69,38 +70,33 @@ function PackageSelector({
     }, 10);
   };
 
+  const isDirBackEnabled = PathService.isWSL(pathDirectories?.[0] ?? '')
+    ? pathDirectories.length > 3
+    : pathDirectories.length > 2;
+
   const handleOnClickBack = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>): void => {
     event.preventDefault();
-    if (pathDirectories.length > 1) {
+    if (isDirBackEnabled) {
       const newPathDirectories = [...pathDirectories.slice(0, -1)];
       setPathDirectories(newPathDirectories);
     }
   };
-
-  const backLink = pathDirectories.length > 0 && (
+  const backLink = isDirBackEnabled && (
     <a className={c(styles.back)} href="#" onClick={handleOnClickBack}>
       {'../'}
     </a>
   );
 
-  const rootCWD =
-    pathDirectories.length > 1
-      ? window.api.path
-          .join(...pathDirectories.slice(0, -1), '/')
-          .replace(
-            window.api.path.join(window.electron.process.env.HOME ?? '', '/'),
-            window.api.path.join('~', '/')
-          )
-      : '';
-
-  const lastDirectory = pathDirectories.slice(-1)[0];
+  const rootPath =
+    pathDirectories.length > 1 ? window.api.path.join(...pathDirectories.slice(0, -1), '/') : '';
+  const lastDirectory = pathDirectories.length > 1 ? pathDirectories.slice(-1)[0] : '';
 
   return (
     <div className={c(styles.project)}>
       <LeftLabeledField
         label={
           <>
-            {rootCWD}
+            {rootPath}
             <b>{lastDirectory}</b>
             {backLink}
           </>
