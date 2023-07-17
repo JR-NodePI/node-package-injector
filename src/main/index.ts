@@ -1,20 +1,23 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron';
+import { app, shell, BrowserWindow, ipcMain, Menu } from 'electron';
 import { join } from 'path';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
 import icon from '../../build/icons/png/1024x1024.png?asset';
-import { createAppMenu } from './menu';
+import { createAppMenu, getMenuItemsTemplate } from './menu';
 
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 1024,
-    height: 768,
-    titleBarStyle: process.platform === 'darwin' ? 'hidden' : 'hiddenInset',
-    frame: process.platform !== 'darwin',
+    height: 824,
+    titleBarStyle: 'hidden', // process.platform === 'darwin' ? 'hidden' : 'customButtonsOnHover',
+    titleBarOverlay: {
+      color: '#7979ff',
+      symbolColor: '#e6fffc',
+      height: 35,
+    },
+    frame: false, // process.platform !== 'darwin',
     autoHideMenuBar: process.platform === 'darwin',
     trafficLightPosition: { x: 10, y: 10 },
-    // show: false,
-    // focusable: false,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
@@ -76,4 +79,29 @@ app.on('window-all-closed', () => {
 
 ipcMain.handle('quit', () => {
   app.quit();
+});
+
+ipcMain.on('show-context-menu', event => {
+  const menu = Menu.buildFromTemplate(
+    getMenuItemsTemplate([
+      {
+        label: 'Reset',
+        click: (): void => {
+          event.sender.send('reset');
+        },
+      },
+    ])
+  );
+  const window = BrowserWindow.fromWebContents(event.sender) ?? undefined;
+  menu.popup({ window });
+});
+
+ipcMain.on('reload', event => {
+  const window = BrowserWindow.fromWebContents(event.sender) ?? undefined;
+  window?.reload();
+});
+
+ipcMain.on('devTools', event => {
+  const window = BrowserWindow.fromWebContents(event.sender) ?? undefined;
+  window?.webContents.openDevTools({ mode: 'detach' });
 });

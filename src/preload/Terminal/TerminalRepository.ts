@@ -6,6 +6,30 @@ import {
   type ExecuteCommandOutput,
 } from './TerminalTypes';
 
+const cleanOutput = (output: string): string =>
+  output.replace(/[^a-z0-9-\n\s\r\t{}()"',:_\\/\\*+.@]/gi, '').trim();
+
+const getConsoleInitColorizedFlag = (): string[] => [
+  '%c> terminal ',
+  'color:#5858f0',
+];
+const getConsoleColorizedOutputType = (
+  type: ExecuteCommandOutput['type']
+): string[] => [`%c${type}`, 'color:#d70065'];
+
+const consoleLog = (type: ExecuteCommandOutput['type'], ...params): void =>
+  console.log(
+    ...getConsoleInitColorizedFlag(),
+    ...getConsoleColorizedOutputType(type),
+    ...params
+  );
+const consoleError = (type: ExecuteCommandOutput['type'], ...params): void =>
+  console.error(
+    ...getConsoleInitColorizedFlag(),
+    ...getConsoleColorizedOutputType(type),
+    ...params
+  );
+
 export default class TerminalRepository {
   static executeCommand({
     command,
@@ -13,50 +37,79 @@ export default class TerminalRepository {
     cwd,
   }: ExecuteCommandOptions): Promise<ExecuteCommandOutput[]> {
     return new Promise((resolve, reject) => {
-      console.log('> terminal - command: ', cwd, ': ', command, args.join(' '));
+      if (!cwd) {
+        reject(new Error('cwd is required'));
+      }
+
+      const commandID = `${cwd} ${command} ${args.join(' ')}`;
+      consoleLog('- command: ', commandID);
 
       const cmd = spawn(command, args, {
         cwd,
         env: process.env,
+        shell: true,
       });
 
-      const output: ExecuteCommandOutput[] = [];
+      const outputs: ExecuteCommandOutput[] = [];
 
       cmd.stdout.on('data', data => {
         const message = data instanceof Buffer ? data.toString() : data;
-        console.log(message);
-        output.push({ type: ExecuteCommandOutputType.STDOUT, data: message });
+        const cleanMessage = cleanOutput(message);
+        consoleLog(ExecuteCommandOutputType.STDOUT, cleanMessage);
+        outputs.push({
+          type: ExecuteCommandOutputType.STDOUT,
+          data: cleanMessage,
+        });
       });
 
       cmd.stderr.on('data', data => {
         const message = data instanceof Buffer ? data.toString() : data;
-        const isError = [new RegExp('error', 'gi'), new RegExp('command not found', 'gi')].some(
-          regExp => regExp.test(message)
-        );
+        const cleanMessage = cleanOutput(message);
+        const isError = [
+          new RegExp('error', 'gi'),
+          new RegExp('command not found', 'gi'),
+        ].some(regExp => regExp.test(cleanMessage));
 
         if (isError) {
-          const error = new Error(message);
-          console.error(error);
+          const error = new Error(cleanMessage);
+          consoleError(
+            ExecuteCommandOutputType.STDERR,
+            ': ',
+            commandID,
+            ': ',
+            error
+          );
           reject(error);
         } else {
-          console.log(message);
-          output.push({ type: ExecuteCommandOutputType.STDERR, data: message });
+          consoleLog(ExecuteCommandOutputType.STDERR, cleanMessage);
+          outputs.push({
+            type: ExecuteCommandOutputType.STDERR,
+            data: cleanMessage,
+          });
         }
       });
 
       cmd.on('error', error => {
-        console.error(error);
+        consoleError(
+          ExecuteCommandOutputType.CLOSE,
+          ': ',
+          commandID,
+          ': ',
+          error
+        );
         reject(error);
       });
 
       cmd.on('close', code => {
-        console.log('> terminal ', ExecuteCommandOutputType.CLOSE, ': ', code);
-        resolve(output);
+        consoleLog(ExecuteCommandOutputType.CLOSE, ': ', commandID, ': ', code);
+        resolve(outputs);
       });
 
       cmd.on('exit', code => {
-        console.log('> terminal ', ExecuteCommandOutputType.EXIT, ': ', code);
-        resolve(output);
+        consoleLog(ExecuteCommandOutputType.CLOSE, ': ', commandID, ': ', code);
+        setTimeout(() => {
+          resolve(outputs);
+        }, 3000);
       });
     });
   }

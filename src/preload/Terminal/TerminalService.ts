@@ -5,36 +5,83 @@ import {
   ExecuteCommandOutput,
 } from './TerminalTypes';
 
+export type TerminalResponse = {
+  content?: string;
+  error?: string;
+};
 export default class TerminalService {
-  public static isWSL: boolean;
+  private static isTerminalInitialized: boolean;
+  public static isWSLAvailable: boolean;
+
+  private static async checkWSL(cwd: string): Promise<boolean> {
+    const isSWLCompatible = ['win32', 'cygwin'].includes(process.platform);
+
+    if (!isSWLCompatible) {
+      return false;
+    }
+
+    try {
+      const { content } = await TerminalService.executeCommand({
+        command: 'wsl',
+        args: ['-e', 'bash', '--version'],
+        cwd,
+      });
+
+      return (content ?? '').includes('GNU bash');
+    } catch (error) {
+      return false;
+    }
+  }
+
+  private static cacheExecuteCommand = new Map<
+    string,
+    Promise<ExecuteCommandOutput[]>
+  >();
   public static async executeCommand({
     command,
     args = [],
     cwd,
     skipWSL = false,
-  }: ExecuteCommandOptions): Promise<string> {
-    if (TerminalService.isWSL == null) {
-      TerminalService.isWSL = false;
-      TerminalService.isWSL = await TerminalService.checkWSL(cwd ?? '');
+  }: ExecuteCommandOptions): Promise<TerminalResponse> {
+    if (TerminalService.isTerminalInitialized === false) {
+      throw new Error('Terminal is not enabled');
     }
 
-    const finalCommand = TerminalService.isWSL && !skipWSL ? 'wsl' : command;
-    const finalArgs = TerminalService.isWSL && !skipWSL ? ['-e', command, ...args] : args;
+    if (TerminalService.isWSLAvailable == null) {
+      TerminalService.isWSLAvailable = false;
+      TerminalService.isWSLAvailable = await TerminalService.checkWSL(
+        cwd ?? ''
+      );
+    }
+
+    const finalCommand =
+      TerminalService.isWSLAvailable && !skipWSL ? 'wsl' : command;
+    const finalArgs =
+      TerminalService.isWSLAvailable && !skipWSL
+        ? ['-e', command, ...args]
+        : args;
 
     let outputs: ExecuteCommandOutput[] = [];
 
-    try {
-      outputs = await TerminalRepository.executeCommand({
+    let promise = TerminalService.cacheExecuteCommand.get(
+      `${cwd}-${finalCommand}-${finalArgs.join('-')}`
+    );
+    if (!promise) {
+      promise = TerminalRepository.executeCommand({
         command: finalCommand,
         args: finalArgs,
         cwd,
       });
-    } catch (error) {
-      console.error(error);
-      return '';
     }
 
-    return outputs.reduce((value, output) => {
+    try {
+      outputs = await promise;
+    } catch (error) {
+      console.error(error);
+      return { error: (error as Error).message ?? '' };
+    }
+
+    const content = outputs.reduce((value, output) => {
       switch (output.type) {
         case ExecuteCommandOutputType.STDERR:
         case ExecuteCommandOutputType.STDOUT:
@@ -45,19 +92,30 @@ export default class TerminalService {
           return value;
       }
     }, '');
+
+    return { content };
   }
 
-  public static async checkWSL(cwd: string): Promise<boolean> {
-    try {
-      const wslOutput = await TerminalService.executeCommand({
-        command: 'wsl',
-        args: ['-e', 'bash', '--version'],
-        cwd,
-      });
-
-      return wslOutput != null && wslOutput.includes('GNU bash');
-    } catch (error) {
-      return false;
+  public static async init(cwd: string): Promise<boolean> {
+    if (TerminalService.isTerminalInitialized) {
+      return true;
     }
+
+    const expectedOutput = 'TERMINAL_INIT';
+
+    const outputs = await TerminalRepository.executeCommand({
+      command: 'echo',
+      args: [`${expectedOutput}`],
+      cwd,
+      skipWSL: true,
+    });
+
+    const output = (outputs[0]?.data ?? '').toString().trim();
+
+    console.log('>>>----->> output  ', output, outputs);
+
+    TerminalService.isTerminalInitialized = output === expectedOutput;
+
+    return TerminalService.isTerminalInitialized;
   }
 }

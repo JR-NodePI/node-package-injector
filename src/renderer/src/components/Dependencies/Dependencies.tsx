@@ -1,91 +1,51 @@
 import { Button } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 import { IconPlus } from 'fratch-ui/components/Icon/Icons';
-import { useEffect } from 'react';
+import { useState } from 'react';
 import DependencyConfig from '@renderer/models/DependencyConfig';
 import DependencySelector from '../DependencySelector/DependencySelector';
-import usePersistedState from '@renderer/hooks/usePersistedState';
-
-import styles from './Dependencies.module.css';
+import NPMService from '@renderer/services/NPMService';
 import PackageConfig from '@renderer/models/PackageConfig';
 
+import styles from './Dependencies.module.css';
+
 const getUpdatedDependencyLits = (
-  dependencies: DependencyConfig[],
+  dependencies: DependencyConfig[] = [],
   dependencyConfigToUpdate: DependencyConfig,
   updateCallback: () => DependencyConfig
 ): DependencyConfig[] =>
   dependencies.map((dependencyConfig: DependencyConfig) => {
-    if (dependencyConfig.uuid === dependencyConfigToUpdate.uuid) {
+    if (dependencyConfig.id === dependencyConfigToUpdate.id) {
       return updateCallback();
     }
     return dependencyConfig;
   });
 
-function Dependencies({ mainPackageConfig }: { mainPackageConfig: PackageConfig }): JSX.Element {
-  const [stateDependencies, setDependencies] = usePersistedState<DependencyConfig[] | undefined>(
-    'dependencies',
-    undefined,
-    DependencyConfig
-  );
-  const dependencies = stateDependencies ?? [];
+function Dependencies({
+  excludedDirectories,
+  dependencies,
+  setDependencies,
+  mainPackageConfig,
+}: {
+  excludedDirectories: string[];
+  dependencies: DependencyConfig[] | undefined;
+  setDependencies: React.Dispatch<
+    React.SetStateAction<DependencyConfig[] | undefined>
+  >;
+  mainPackageConfig: PackageConfig;
+}): JSX.Element {
+  const [loading, setLoading] = useState(false);
 
-  const handleRemoveDependency = (dependency: DependencyConfig): void => {
-    const newDependencies = dependencies.filter((d: DependencyConfig) => d !== dependency);
-    setDependencies(newDependencies);
-  };
-
-  const handlePathChange = (
-    dependencyConfig: DependencyConfig,
-    cwd: string,
-    isValidPackage: boolean
-  ): void => {
-    const newDependencies = getUpdatedDependencyLits(dependencies, dependencyConfig, () => {
-      const clone = dependencyConfig.clone();
-      clone.cwd = cwd;
-      clone.isValidPackage = isValidPackage;
-      return clone;
-    });
-
-    setDependencies(newDependencies);
-  };
-
-  const handleBranchChange = (dependencyConfig: DependencyConfig, branch?: string): void => {
-    const newDependencies = getUpdatedDependencyLits(dependencies, dependencyConfig, () => {
-      const clone = dependencyConfig.clone();
-      clone.branch = branch;
-      return clone;
-    });
-    setDependencies(newDependencies);
-  };
-
-  const handleSyncModeChange = (
-    dependencyConfig: DependencyConfig,
-    mode: typeof dependencyConfig.mode
-  ): void => {
-    const newDependencies = getUpdatedDependencyLits(dependencies, dependencyConfig, () => {
-      const clone = dependencyConfig.clone();
-      clone.mode = mode;
-      return clone;
-    });
-    setDependencies(newDependencies);
-  };
-
-  const handleGitPullChange = (dependencyConfig: DependencyConfig, checked: boolean): void => {
-    const newDependencies = getUpdatedDependencyLits(dependencies, dependencyConfig, () => {
-      const clone = dependencyConfig.clone();
-      clone.performGitPull = checked;
-      return clone;
-    });
-    setDependencies(newDependencies);
-  };
-
-  const handleYarnInstallChange = (dependencyConfig: DependencyConfig, checked: boolean): void => {
-    const newDependencies = getUpdatedDependencyLits(dependencies, dependencyConfig, () => {
-      const clone = dependencyConfig.clone();
-      clone.performYarnInstall = checked;
-      return clone;
-    });
-    setDependencies(newDependencies);
+  const setDependenciesWithNPM = async (
+    newDependencies: DependencyConfig[]
+  ): Promise<void> => {
+    setLoading(true);
+    setDependencies(
+      await NPMService.getDependencyConfigsWithRelatedDependencyIds(
+        newDependencies
+      )
+    );
+    setLoading(false);
   };
 
   const handleAddDependency = (): void => {
@@ -96,49 +56,126 @@ function Dependencies({ mainPackageConfig }: { mainPackageConfig: PackageConfig 
         .filter(Boolean)
         .slice(0, -1)
         .join('/');
-      setDependencies([...dependencies, dependency]);
+
+      setDependenciesWithNPM([...(dependencies ?? []), dependency]);
     }
   };
 
-  // Add a dependency if there are no dependencies and there is a main path
-  useEffect(() => {
-    if (
-      mainPackageConfig.cwd != null &&
-      mainPackageConfig.isValidPackage &&
-      stateDependencies == null
-    ) {
-      handleAddDependency();
-    }
-  }, [dependencies, mainPackageConfig.cwd, mainPackageConfig.isValidPackage]);
+  const handlePathChange = (
+    dependencyConfig: DependencyConfig,
+    cwd: string,
+    isValidPackage: boolean
+  ): void => {
+    const newDependencies = getUpdatedDependencyLits(
+      dependencies,
+      dependencyConfig,
+      () => {
+        const newDependency = isValidPackage
+          ? dependencyConfig.clone()
+          : new DependencyConfig();
+
+        newDependency.cwd = cwd;
+        newDependency.isValidPackage = isValidPackage;
+        newDependency.id = dependencyConfig.id;
+        newDependency.relatedDependencyConfigIds = undefined;
+
+        return newDependency;
+      }
+    );
+
+    setDependenciesWithNPM(newDependencies);
+  };
+
+  const handleRemoveDependency = (dependency: DependencyConfig): void => {
+    const newDependencies = (dependencies ?? []).filter(
+      (d: DependencyConfig) => d !== dependency
+    );
+
+    setDependenciesWithNPM(newDependencies);
+  };
+
+  const handleSyncModeChange = (
+    dependencyConfig: DependencyConfig,
+    mode: typeof dependencyConfig.mode
+  ): void => {
+    const newDependencies = getUpdatedDependencyLits(
+      dependencies,
+      dependencyConfig,
+      () => {
+        const clone = dependencyConfig.clone();
+        clone.mode = mode;
+        return clone;
+      }
+    );
+    setDependencies(newDependencies);
+  };
+
+  const handleGitPullChange = (
+    dependencyConfig: DependencyConfig,
+    checked?: boolean
+  ): void => {
+    const newDependencies = getUpdatedDependencyLits(
+      dependencies,
+      dependencyConfig,
+      () => {
+        const clone = dependencyConfig.clone();
+        clone.performGitPull = Boolean(checked);
+        return clone;
+      }
+    );
+    setDependencies(newDependencies);
+  };
+
+  const handleYarnInstallChange = (
+    dependencyConfig: DependencyConfig,
+    checked?: boolean
+  ): void => {
+    const newDependencies = getUpdatedDependencyLits(
+      dependencies,
+      dependencyConfig,
+      () => {
+        const clone = dependencyConfig.clone();
+        clone.performYarnInstall = Boolean(checked);
+        return clone;
+      }
+    );
+    setDependencies(newDependencies);
+  };
+
+  if (!mainPackageConfig.isValidPackage) {
+    return <></>;
+  }
 
   return (
     <div className={c(styles.dependencies)}>
       <h2>Dependencies</h2>
-
-      {dependencies.map(dependencyConfig => (
-        <DependencySelector
-          key={dependencyConfig.uuid}
-          dependencyConfig={dependencyConfig}
-          onClickRemove={handleRemoveDependency}
-          onPathChange={handlePathChange}
-          onBranchChange={handleBranchChange}
-          onGitPullChange={handleGitPullChange}
-          onSyncModeChange={handleSyncModeChange}
-          onYarnInstallChange={handleYarnInstallChange}
-        />
-      ))}
-      {mainPackageConfig.isValidPackage && (
-        <div className={c(styles.buttons)}>
-          <Button
-            size="small"
-            type="tertiary"
-            label="Add"
-            onClick={handleAddDependency}
-            Icon={IconPlus}
-            isRound
-          />
-        </div>
+      {(dependencies ?? []).map(
+        dependencyConfig =>
+          (dependencyConfig.cwd ?? '').length > 2 && (
+            <DependencySelector
+              disabled={loading}
+              dependencyConfig={dependencyConfig}
+              excludedDirectories={excludedDirectories}
+              key={dependencyConfig.id}
+              onClickRemove={handleRemoveDependency}
+              onGitPullChange={handleGitPullChange}
+              onPathChange={handlePathChange}
+              onSyncModeChange={handleSyncModeChange}
+              onYarnInstallChange={handleYarnInstallChange}
+            />
+          )
       )}
+      <div className={c(styles.buttons)}>
+        <Button
+          disabled={loading}
+          size="small"
+          type="tertiary"
+          label="Add"
+          onClick={handleAddDependency}
+          Icon={IconPlus}
+          isRound
+        />
+      </div>
     </div>
   );
 }

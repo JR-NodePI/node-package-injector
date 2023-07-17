@@ -13,7 +13,7 @@
 }
 
 .footer > * {
-  min-width: 96px;
+  min-width: calc(16px * 7);
 }
 
 .closeButton {

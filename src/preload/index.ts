@@ -10,7 +10,7 @@ const isDev = process.env.NODE_ENV === 'development';
 // Custom APIs for renderer
 const api = {
   extraResourcesPath: isDev
-    ? path.join(electronAPI.process.env.PWD ?? '', 'extraResources')
+    ? path.join(__dirname, '../../', 'extraResources')
     : path.join(process.resourcesPath ?? '', 'extraResources'),
   fs,
   os,

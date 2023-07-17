@@ -1,0 +1,6 @@
+.global_error {
+  color: var(--ft-icon-error-color);
+  align-self: center;
+  width: 100%;
+  text-align: center;
+}

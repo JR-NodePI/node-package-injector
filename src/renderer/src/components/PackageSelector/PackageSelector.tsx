@@ -1,30 +1,32 @@
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 import { InputCheck, LeftLabeledField, Select } from 'fratch-ui';
 import { type SelectOption } from 'fratch-ui/components/Form/Select/SelectProps';
-import { useEffect, useRef, useState } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import BranchSelector from '../BranchSelector/BranchSelector';
 import GitService from '@renderer/services/GitService';
-import NodeService from '@renderer/services/NodeService';
-
-import styles from './PackageSelector.module.css';
+import NPMService from '@renderer/services/NPMService';
 import PackageConfig from '@renderer/models/PackageConfig';
 import PathService from '@renderer/services/PathService';
+import LinkButton from '../linkButton/LinkButton';
+
+import styles from './PackageSelector.module.css';
 
 function PackageSelector({
+  disabled,
+  excludedDirectories,
   additionalComponent,
   packageConfig,
-  onBranchChange,
   onGitPullChange,
   onPathChange,
   onYarnInstallChange,
 }: {
+  disabled?: boolean;
+  excludedDirectories?: string[];
   packageConfig: PackageConfig;
   additionalComponent?: JSX.Element;
-  onBranchChange?: (branch?: string) => void;
-  onGitPullChange?: (checked: boolean) => void;
+  onGitPullChange?: (checked?: boolean) => void;
   onPathChange?: (cwd: string, isValidPackage: boolean) => void;
-  onSyncModeChange?: (checked: boolean) => void;
-  onYarnInstallChange?: (checked: boolean) => void;
+  onYarnInstallChange?: (checked?: boolean) => void;
 }): JSX.Element {
   const triggerElementRef = useRef<HTMLInputElement>(null);
   const [statePathDirectories, setPathDirectories] = useState<string[]>();
@@ -32,32 +34,52 @@ function PackageSelector({
   const [directories, setDirectories] = useState<SelectOption<string>[]>([]);
 
   useEffect(() => {
-    if (packageConfig.cwd != null && statePathDirectories == null) {
-      const newPathDirectories = packageConfig.cwd.split(/[/\\]/).filter(Boolean);
+    if ((packageConfig.cwd ?? '').length > 2 && statePathDirectories == null) {
+      const newPathDirectories = PathService.getPathDirectories(
+        packageConfig.cwd
+      );
       setPathDirectories(newPathDirectories);
     }
   }, [packageConfig.cwd, pathDirectories]);
 
   const cwd = PathService.getPath(pathDirectories);
 
+  const [isValidating, setIsValidating] = useState<boolean>(true);
   useEffect(() => {
-    (async (): Promise<void> => {
-      const isValidPackage = await NodeService.checkPackageJSON(cwd);
-      const isValidGit = await GitService.checkGit(cwd);
-      const isValid = isValidPackage && isValidGit;
-      onPathChange?.(cwd, isValid);
-    })();
+    if (cwd.length > 2) {
+      (async (): Promise<void> => {
+        setIsValidating(true);
+        const isValidPackage = await NPMService.checkPackageJSON(cwd);
+        const isValidGit = await GitService.checkGit(cwd);
+        const isValid = isValidPackage && isValidGit;
+
+        if (!isValid) {
+          onGitPullChange?.(undefined);
+          onYarnInstallChange?.(undefined);
+        }
+
+        setIsValidating(false);
+        onPathChange?.(cwd, isValid);
+      })();
+    }
   }, [cwd]);
 
   useEffect(() => {
-    (async (): Promise<void> => {
-      const newDirectories = (await window.api.fs.readdir(cwd, { withFileTypes: true }))
-        .filter(dirent => dirent.isDirectory() && dirent.name[0] !== '.')
-        .map(dirent => ({ label: dirent.name, value: dirent.name }));
-
-      setDirectories(newDirectories);
-    })();
-  }, [cwd]);
+    if (cwd.length > 2) {
+      (async (): Promise<void> => {
+        const newDirectories = (
+          await window.api.fs.readdir(cwd, { withFileTypes: true })
+        )
+          .filter(dirent => dirent.isDirectory() && dirent.name[0] !== '.')
+          .filter(dirent => {
+            const path = window.api.path.join(cwd, dirent.name, '/');
+            return (excludedDirectories ?? []).includes(path) === false;
+          })
+          .map(dirent => ({ label: dirent.name, value: dirent.name }));
+        setDirectories(newDirectories);
+      })();
+    }
+  }, [cwd, excludedDirectories]);
 
   const handlePathChange = (value?: string): void => {
     if (value) {
@@ -70,26 +92,27 @@ function PackageSelector({
     }, 10);
   };
 
-  const isDirBackEnabled = PathService.isWSL(pathDirectories?.[0] ?? '')
-    ? pathDirectories.length > 3
-    : pathDirectories.length > 2;
+  const isDirBackEnabled =
+    !disabled && PathService.isWSL(pathDirectories?.[0] ?? '')
+      ? pathDirectories.length > 3
+      : pathDirectories.length > 2;
 
-  const handleOnClickBack = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>): void => {
-    event.preventDefault();
+  const handleOnClickBack = (): void => {
     if (isDirBackEnabled) {
       const newPathDirectories = [...pathDirectories.slice(0, -1)];
       setPathDirectories(newPathDirectories);
     }
   };
-  const backLink = isDirBackEnabled && (
-    <a className={c(styles.back)} href="#" onClick={handleOnClickBack}>
-      {'../'}
-    </a>
-  );
 
   const rootPath =
-    pathDirectories.length > 1 ? window.api.path.join(...pathDirectories.slice(0, -1), '/') : '';
-  const lastDirectory = pathDirectories.length > 1 ? pathDirectories.slice(-1)[0] : '';
+    pathDirectories.length > 1
+      ? PathService.getPath(pathDirectories.slice(0, -1))
+      : '';
+
+  const lastDirectory =
+    pathDirectories.length > 1 ? pathDirectories.slice(-1)[0] : '';
+
+  const isDisabled = disabled || isValidating;
 
   return (
     <div className={c(styles.project)}>
@@ -98,13 +121,20 @@ function PackageSelector({
           <>
             {rootPath}
             <b>{lastDirectory}</b>
-            {backLink}
+            {isDirBackEnabled && (
+              <LinkButton
+                title="go back to previous"
+                onClick={handleOnClickBack}
+              >
+                ../
+              </LinkButton>
+            )}
           </>
         }
         field={
           <Select
+            disabled={isDisabled}
             key={cwd}
-            noResultsElement={backLink}
             onChange={handlePathChange}
             options={directories}
             placeholder="Select directory..."
@@ -116,13 +146,12 @@ function PackageSelector({
       {packageConfig.isValidPackage && (
         <div className={c(styles.options)}>
           <BranchSelector
+            disabled={isDisabled}
             className={c(styles.branch)}
-            value={packageConfig.branch}
-            key={cwd}
             cwd={cwd}
-            onChange={onBranchChange}
           />
           <InputCheck
+            disabled={isDisabled}
             checked={packageConfig.performGitPull}
             label="git pull"
             onChange={(event): void => {
@@ -130,10 +159,12 @@ function PackageSelector({
             }}
           />
           <InputCheck
+            disabled={isDisabled}
             checked={packageConfig.performYarnInstall}
             label="yarn install"
             onChange={(event): void => {
-              onYarnInstallChange && onYarnInstallChange(event.target.checked ?? false);
+              onYarnInstallChange &&
+                onYarnInstallChange(event.target.checked ?? false);
             }}
           />
           {additionalComponent}
@@ -143,4 +174,4 @@ function PackageSelector({
   );
 }
 
-export default PackageSelector;
+export default memo(PackageSelector);
