@@ -1,0 +1,13 @@
+.wsl_activator {
+  position: absolute;
+  z-index: 100;
+  right: 4px;
+  top: 2px;
+}
+
+.wsl_activator input {
+  order: 2;
+}
+.wsl_activator label {
+  order: 1;
+}

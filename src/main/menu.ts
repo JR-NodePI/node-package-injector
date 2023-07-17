@@ -1,23 +1,29 @@
 import { Menu, MenuItemConstructorOptions } from 'electron';
 
+export const getMenuItemsTemplate = (
+  additionalItems: MenuItemConstructorOptions[] = []
+): MenuItemConstructorOptions[] => [
+  ...additionalItems,
+  {
+    role: 'reload',
+    label: 'Reload',
+  },
+  {
+    role: 'quit',
+    label: 'Quit',
+  },
+  { type: 'separator' },
+  {
+    role: 'toggleDevTools',
+    label: 'DevTools',
+  },
+];
+
 export function createAppMenu(): void {
   const menuTemplate: MenuItemConstructorOptions[] = [
     {
       label: 'NodePI',
-      submenu: [
-        {
-          role: 'reload',
-          label: 'Reload',
-        },
-        {
-          role: 'toggleDevTools',
-          label: 'DevTools',
-        },
-        {
-          role: 'quit',
-          label: 'Quit Node Package Injector',
-        },
-      ],
+      submenu: getMenuItemsTemplate(),
     },
   ];
   const menu = Menu.buildFromTemplate(menuTemplate);

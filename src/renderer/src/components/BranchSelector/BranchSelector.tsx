@@ -1,55 +1,102 @@
 import GitService from '@renderer/services/GitService';
+import ToasterListContext from 'fratch-ui/components/Toaster/ToasterListContext';
 
-import { memo, useEffect, useState } from 'react';
+import { memo, useContext, useEffect, useState } from 'react';
 import type { SelectProps } from 'fratch-ui/components';
 import { Select, LeftLabeledField } from 'fratch-ui/components';
 
-type BranchSelectorProps = {
-  cwd: string;
-  onChange?: (branch?: string) => void;
-  value?: string;
-  className?: string;
-};
+import { c } from 'fratch-ui/helpers/classNameHelpers';
 
-function BranchSelector({ cwd, onChange, value, className }: BranchSelectorProps): JSX.Element {
-  const [branches, setBranches] = useState<SelectProps.SelectOption<string>[]>([]);
+import LinkButton from '../linkButton/LinkButton';
+
+function BranchSelector({
+  disabled,
+  cwd,
+  className,
+}: {
+  disabled?: boolean;
+  className?: string;
+  cwd: string;
+}): JSX.Element {
+  const { addToaster } = useContext(ToasterListContext);
+
+  const [branches, setBranches] = useState<SelectProps.SelectOption<string>[]>(
+    []
+  );
   const [currenBranch, setCurrenBranch] = useState<string>();
   const [loading, setLoading] = useState<boolean>(true);
 
+  const loadBranches = async (): Promise<void> => {
+    const branch = await GitService.getCurrentBranch(cwd);
+    setCurrenBranch(branch);
+    const data = await GitService.getBranches(cwd);
+    setBranches(data.map(branch => ({ label: branch, value: branch })));
+  };
+
   useEffect(() => {
     (async (): Promise<void> => {
-      setLoading(true);
-      const branch = await GitService.getCurrentBranch(cwd);
-      setCurrenBranch(branch);
-      const data = await GitService.getBranches(cwd);
-      setBranches(data.map(branch => ({ label: branch, value: branch })));
-      setLoading(false);
+      if (cwd.length > 2 && !disabled) {
+        setLoading(true);
+        await loadBranches();
+        setLoading(false);
+      }
     })();
-  }, [cwd]);
+  }, [cwd, disabled]);
 
-  if (loading) {
-    return <>Loading...</>;
-  }
+  const handleRefreshBranches = async (): Promise<void> => {
+    if (cwd.length > 2 && !disabled) {
+      setLoading(true);
+      await GitService.fetch(cwd);
+      await loadBranches();
+      setLoading(false);
+    }
+  };
 
-  const currentValue = value || currenBranch;
-  if (branches.length <= 0 || !currentValue) {
-    return <></>;
-  }
+  const handleOnChange = async (value?: string): Promise<void> => {
+    if (value) {
+      setLoading(true);
+      const { error } = await GitService.checkout(cwd, value as string);
+
+      if (error != null && addToaster != null) {
+        addToaster({
+          type: 'error',
+          title: `Branch ${value} checkout failed`,
+          message: error.toString(),
+          nlToBr: true,
+        });
+      }
+
+      await loadBranches();
+      setLoading(false);
+    }
+  };
 
   return (
-    <LeftLabeledField
-      className={className}
-      label={<label>Git branch</label>}
-      field={
-        <Select
-          value={currentValue}
-          placeholder="Select branch ..."
-          searchable
-          options={branches}
-          onChange={onChange}
-        />
-      }
-    />
+    <div className={c(className)}>
+      <LeftLabeledField
+        label={
+          <div>
+            <label>Git branch</label>
+            <LinkButton
+              onClick={handleRefreshBranches}
+              title="update branch list"
+            >
+              ↻
+            </LinkButton>
+          </div>
+        }
+        field={
+          <Select
+            value={currenBranch}
+            placeholder={loading ? 'Loading...' : 'Select branch...'}
+            searchable
+            options={branches}
+            onChange={handleOnChange}
+            disabled={disabled || loading}
+          />
+        }
+      />
+    </div>
   );
 }
 

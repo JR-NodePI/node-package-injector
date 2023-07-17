@@ -22,7 +22,9 @@ export default function usePersistedState<T>(
       const persistedData = await PersistService.getItem<T>(key);
 
       if (Model != null && Array.isArray(persistedData)) {
-        const newData = persistedData.map(item => Object.assign(new Model(), item)) as T;
+        const newData = persistedData.map(item =>
+          Object.assign(new Model(), item)
+        ) as T;
         setData(newData);
         return;
       }

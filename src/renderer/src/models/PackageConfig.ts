@@ -1,9 +1,8 @@
 import { v4 as uuid } from 'uuid';
 
 export default class PackageConfig {
-  public uuid = uuid();
+  public id = uuid();
 
-  public branch?: string;
   public cwd?: string;
   public isValidPackage = false;
   public performGitPull = false;
@@ -12,9 +11,8 @@ export default class PackageConfig {
   public clone(): PackageConfig {
     const clone = new PackageConfig();
 
-    clone.uuid = this.uuid;
+    clone.id = this.id;
 
-    clone.branch = this.branch;
     clone.cwd = this.cwd;
     clone.isValidPackage = this.isValidPackage;
     clone.performGitPull = this.performGitPull;

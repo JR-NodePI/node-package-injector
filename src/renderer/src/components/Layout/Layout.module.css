@@ -1,0 +1,18 @@
+.layout {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  height: calc(100vh - calc(var(--ft-header-height) + var(--ft-footer-height)));
+  width: 100%;
+  box-sizing: border-box;
+  overflow: auto;
+  top: var(--ft-header-height);
+  left: 0;
+  position: fixed;
+}
+.layout::before,
+.layout::after {
+  content: '';
+  display: block;
+  min-width: 32px;
+}

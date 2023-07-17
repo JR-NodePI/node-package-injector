@@ -11,6 +11,10 @@ export default class PersistService {
     return JSON.parse(data || '{}');
   }
 
+  public static async clear(): Promise<void> {
+    PersistService.save({});
+  }
+
   public static async setItem<T>(key: string, value: T): Promise<void> {
     const data = await PersistService.load();
     data[key] = value;

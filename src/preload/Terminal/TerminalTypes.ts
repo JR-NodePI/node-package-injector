@@ -1,10 +1,11 @@
 export const ExecuteCommandOutputType = {
-  STDOUT: 'stdout' as const,
-  STDERR: 'stderr' as const,
-  CLOSE: 'close' as const,
-  EXIT: 'exit' as const,
-  ERROR: 'error' as const,
-};
+  STDOUT: 'stdout',
+  STDERR: 'stderr',
+  CLOSE: 'close',
+  EXIT: 'exit',
+  ERROR: 'error',
+  INIT: 'init',
+} as const;
 
 export type ExecuteCommandOutput = {
   type: (typeof ExecuteCommandOutputType)[keyof typeof ExecuteCommandOutputType];

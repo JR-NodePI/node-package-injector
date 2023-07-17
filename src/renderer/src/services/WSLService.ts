@@ -1,20 +1,36 @@
 import TerminalService from './TerminalService';
 
-const cleanWSLOutput = (output: string): string => output.replace(/[^a-z0-9-\n\s\r]/gi, '');
-
 export const WSL_DOMAIN = 'wsl$';
 
 export default class WSLService {
-  public static async getSWLDistroName(cwd: string): Promise<string> {
+  private static async getSWLDistroName(cwd: string): Promise<string> {
+    const isSWLCompatible = ['win32', 'cygwin'].includes(
+      window.api.os.platform()
+    );
+
+    if (!isSWLCompatible) {
+      return '';
+    }
+
     try {
-      const wslOutput = await TerminalService.executeCommand({
+      const { content } = await TerminalService.executeCommand({
         command: 'wsl',
-        args: ['-l', '-q', '--running'],
+        args: ['-l', '--all'],
         cwd,
         skipWSL: true,
       });
 
-      return cleanWSLOutput(wslOutput).trim();
+      const patternDistroMatch = /\([^)]+\)/;
+      const distro = (content ?? '')
+        .trim()
+        .split(/[\n\r]/g)
+        .find(item => patternDistroMatch.test(item));
+
+      if (distro) {
+        return distro.replace(patternDistroMatch, '').trim();
+      }
+
+      return '';
     } catch {
       return '';
     }
@@ -27,14 +43,14 @@ export default class WSLService {
       let username = '';
 
       try {
-        const wslOutput = await TerminalService.executeCommand({
+        const { content } = await TerminalService.executeCommand({
           command: 'wsl',
           args: ['-e', 'ls', '/home'],
           cwd,
           skipWSL: true,
         });
 
-        username = cleanWSLOutput(wslOutput).split(/[\n\r]/g)[0] || '';
+        username = (content ?? '').split(/[\n\r]/g)[0] || '';
       } catch {
         username = '';
       }
@@ -43,12 +59,5 @@ export default class WSLService {
     }
 
     return '';
-  }
-
-  public static getSWLPath(cwd: string): string {
-    if (cwd.startsWith(WSL_DOMAIN)) {
-      return `\\\\${cwd}`;
-    }
-    return cwd;
   }
 }
