@@ -7,12 +7,11 @@ import { createAppMenu } from './menu';
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    // 1024×768
     width: 1024,
     height: 768,
-    titleBarStyle: 'hidden',
-    frame: false,
-    autoHideMenuBar: true,
+    titleBarStyle: process.platform === 'darwin' ? 'hidden' : 'hiddenInset',
+    frame: process.platform !== 'darwin',
+    autoHideMenuBar: process.platform === 'darwin',
     trafficLightPosition: { x: 10, y: 10 },
     // show: false,
     // focusable: false,
