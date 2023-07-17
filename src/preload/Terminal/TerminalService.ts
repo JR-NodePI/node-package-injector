@@ -17,12 +17,27 @@ import {
  *  cwd: window.api.extraResourcesPath,
  * });
  */
+
+let isWSL;
+
 export default class TerminalService {
   static async executeCommand({ command, args = [], cwd }: ExecuteCommandOptions): Promise<string> {
+    if (isWSL == null) {
+      isWSL = false;
+      isWSL = await TerminalService.checkWSL(cwd ?? '');
+    }
+
+    const finalCommand = isWSL ? 'wsl' : command;
+    const finalArgs = isWSL ? ['-e', 'bash', command, ...args] : args;
+
     let outputs: ExecuteCommandOutput[] = [];
 
     try {
-      outputs = await TerminalRepository.executeCommand({ command, args, cwd });
+      outputs = await TerminalRepository.executeCommand({
+        command: finalCommand,
+        args: finalArgs,
+        cwd,
+      });
     } catch (error) {
       console.error(error);
       return '';
@@ -39,5 +54,22 @@ export default class TerminalService {
           return value;
       }
     }, '');
+  }
+
+  private static async checkWSL(cwd: string): Promise<boolean> {
+    if (process.platform === 'win32') {
+      try {
+        const wslOutput = await TerminalService.executeCommand({
+          command: 'wsl',
+          args: ['-e', 'bash', '--version'],
+          cwd,
+        });
+        return wslOutput != null && wslOutput.includes('GNU bash');
+      } catch (error) {
+        return false;
+      }
+    }
+
+    return false;
   }
 }

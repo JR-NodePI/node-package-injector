@@ -6,8 +6,6 @@ import {
   type ExecuteCommandOutput,
 } from './TerminalTypes';
 
-let isWSL;
-
 export default class TerminalRepository {
   static executeCommand({
     command,
@@ -15,21 +13,9 @@ export default class TerminalRepository {
     cwd,
   }: ExecuteCommandOptions): Promise<ExecuteCommandOutput[]> {
     return new Promise((resolve, reject) => {
-      if (isWSL == null) {
-        isWSL = false;
-        TerminalRepository.checkWSL(cwd ?? '').then(is => {
-          isWSL = is;
-          TerminalRepository.executeCommand({ command, args, cwd });
-        });
-        return;
-      }
+      console.log('> terminal - command: ', cwd, ': ', command, args.join(' '));
 
-      const finalCommand = isWSL ? 'wsl' : command;
-      const finalArgs = isWSL ? ['-e', command, ...args] : args;
-
-      console.log('> terminal - command: ', cwd, ': ', finalCommand, finalArgs.join(' '));
-
-      const cmd = spawn(finalCommand, finalArgs, {
+      const cmd = spawn(command, args, {
         cwd,
         env: process.env,
         shell: true,
@@ -74,23 +60,5 @@ export default class TerminalRepository {
         resolve(output);
       });
     });
-  }
-
-  private static async checkWSL(cwd: string): Promise<boolean> {
-    let isWSL = false;
-    if (process.platform === 'win32') {
-      try {
-        const wslOutput = await TerminalRepository.executeCommand({
-          command: 'wsl',
-          args: ['--version'],
-          cwd,
-        });
-        isWSL = wslOutput != null && wslOutput.length > 0;
-      } catch (error) {
-        isWSL = false;
-      }
-    }
-
-    return isWSL;
   }
 }
