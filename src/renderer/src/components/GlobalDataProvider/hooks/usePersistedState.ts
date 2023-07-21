@@ -1,5 +1,6 @@
-import PersistService from '@renderer/services/PersistService';
 import { useEffect, useState } from 'react';
+
+import PersistService from '@renderer/services/PersistService';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Newable<T = any> = new (...args: any) => T;

@@ -1,8 +1,8 @@
 import TerminalRepository from './TerminalRepository';
 import {
-  ExecuteCommandOutputType,
   type ExecuteCommandOptions,
   ExecuteCommandOutput,
+  ExecuteCommandOutputType,
 } from './TerminalTypes';
 
 export type TerminalResponse = {

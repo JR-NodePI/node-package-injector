@@ -1,9 +1,8 @@
-import { c } from 'fratch-ui/helpers/classNameHelpers';
-import { InputCheck, Modal, ModalProps } from 'fratch-ui';
 import { useRef, useState } from 'react';
-import PathService from '@renderer/services/PathService';
-import TerminalService from '@renderer/services/TerminalService';
 
+import PathService from '@renderer/services/PathService';
+import { InputCheck, Modal, ModalProps } from 'fratch-ui';
+import { c } from 'fratch-ui/helpers/classNameHelpers';
 export default function WSLActivator({
   cwd,
   onChange,
@@ -13,8 +12,6 @@ export default function WSLActivator({
   onChange: (checked: boolean) => void;
   className?: string;
 }): JSX.Element {
-  const isWSLAvailable = TerminalService.isWSLAvailable;
-
   const isWSLPath = PathService.isWSL(cwd);
 
   const ref = useRef<HTMLInputElement>(null);
@@ -38,10 +35,6 @@ export default function WSLActivator({
     }
   };
 
-  if (!isWSLAvailable) {
-    return <></>;
-  }
-
   return (
     <>
       <InputCheck
@@ -49,8 +42,9 @@ export default function WSLActivator({
         key={cwd}
         className={c(className)}
         checked={isWSLPath}
-        label="WSL"
+        label="activate WSL"
         onChange={handleWSLChange}
+        position="right"
       />
       <Modal
         visible={confirmVisible}

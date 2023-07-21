@@ -1,4 +1,5 @@
 import { Component, type ReactNode } from 'react';
+
 import GlobalError from '../GlobalError/GlobalError';
 
 type ErrorBoundaryProps = {

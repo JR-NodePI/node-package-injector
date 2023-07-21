@@ -1,11 +1,13 @@
-import { Button } from 'fratch-ui';
-import { c } from 'fratch-ui/helpers/classNameHelpers';
-import { IconPlus } from 'fratch-ui/components/Icon/Icons';
 import { useState } from 'react';
+
 import DependencyConfig from '@renderer/models/DependencyConfig';
-import DependencySelector from '../DependencySelector/DependencySelector';
-import NPMService from '@renderer/services/NPMService';
 import PackageConfig from '@renderer/models/PackageConfig';
+import NPMService from '@renderer/services/NPMService';
+import { Button } from 'fratch-ui';
+import { IconPlus } from 'fratch-ui/components/Icon/Icons';
+import { c } from 'fratch-ui/helpers/classNameHelpers';
+
+import DependencySelector from '../DependencySelector/DependencySelector';
 
 import styles from './Dependencies.module.css';
 
@@ -28,11 +30,9 @@ function Dependencies({
   mainPackageConfig,
 }: {
   excludedDirectories: string[];
-  dependencies: DependencyConfig[] | undefined;
-  setDependencies: React.Dispatch<
-    React.SetStateAction<DependencyConfig[] | undefined>
-  >;
-  mainPackageConfig: PackageConfig;
+  dependencies?: DependencyConfig[];
+  setDependencies?: React.Dispatch<React.SetStateAction<DependencyConfig[]>>;
+  mainPackageConfig?: PackageConfig;
 }): JSX.Element {
   const [loading, setLoading] = useState(false);
 
@@ -40,7 +40,7 @@ function Dependencies({
     newDependencies: DependencyConfig[]
   ): Promise<void> => {
     setLoading(true);
-    setDependencies(
+    setDependencies?.(
       await NPMService.getDependencyConfigsWithRelatedDependencyIds(
         newDependencies
       )
@@ -49,7 +49,7 @@ function Dependencies({
   };
 
   const handleAddDependency = (): void => {
-    if (mainPackageConfig.cwd != null && mainPackageConfig.isValidPackage) {
+    if (mainPackageConfig?.cwd != null && mainPackageConfig.isValidPackage) {
       const dependency = new DependencyConfig();
       dependency.cwd = (mainPackageConfig.cwd || window.api.os.homedir())
         .split(/\/|\\/)
@@ -107,7 +107,7 @@ function Dependencies({
         return clone;
       }
     );
-    setDependencies(newDependencies);
+    setDependencies?.(newDependencies);
   };
 
   const handleGitPullChange = (
@@ -123,7 +123,7 @@ function Dependencies({
         return clone;
       }
     );
-    setDependencies(newDependencies);
+    setDependencies?.(newDependencies);
   };
 
   const handleYarnInstallChange = (
@@ -139,10 +139,10 @@ function Dependencies({
         return clone;
       }
     );
-    setDependencies(newDependencies);
+    setDependencies?.(newDependencies);
   };
 
-  if (!mainPackageConfig.isValidPackage) {
+  if (!mainPackageConfig?.isValidPackage) {
     return <></>;
   }
 
@@ -170,7 +170,7 @@ function Dependencies({
           disabled={loading}
           size="small"
           type="tertiary"
-          label="Add"
+          label="Add new dependency"
           onClick={handleAddDependency}
           Icon={IconPlus}
           isRound

@@ -1,6 +1,7 @@
 import type DependencyConfig from '@renderer/models/DependencyConfig';
-import TerminalService from './TerminalService';
+
 import PathService from './PathService';
+import TerminalService from './TerminalService';
 
 export default class NPMService {
   private static async getDependenciesNamesFromPackageJSON(

@@ -1,10 +1,9 @@
-import GitService from '@renderer/services/GitService';
-import ToasterListContext from 'fratch-ui/components/Toaster/ToasterListContext';
-
 import { memo, useContext, useEffect, useState } from 'react';
-import type { SelectProps } from 'fratch-ui/components';
-import { Select, LeftLabeledField } from 'fratch-ui/components';
 
+import GitService from '@renderer/services/GitService';
+import type { SelectProps } from 'fratch-ui/components';
+import { LeftLabeledField, Select } from 'fratch-ui/components';
+import ToasterListContext from 'fratch-ui/components/Toaster/ToasterListContext';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
 import LinkButton from '../linkButton/LinkButton';

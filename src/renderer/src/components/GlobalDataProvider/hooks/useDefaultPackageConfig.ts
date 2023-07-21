@@ -1,6 +1,7 @@
+import { useEffect, useState } from 'react';
+
 import PackageConfig from '@renderer/models/PackageConfig';
 import PathService from '@renderer/services/PathService';
-import { useEffect, useState } from 'react';
 
 export default function useDefaultPackageConfig(): {
   loadingDefaultPackage: boolean;

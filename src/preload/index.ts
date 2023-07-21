@@ -1,8 +1,9 @@
-import { contextBridge } from 'electron';
 import { electronAPI } from '@electron-toolkit/preload';
-import path from 'node:path';
+import { contextBridge } from 'electron';
 import fs from 'fs/promises';
+import path from 'node:path';
 import os from 'os';
+
 import TerminalService from './Terminal/TerminalService';
 
 const isDev = process.env.NODE_ENV === 'development';

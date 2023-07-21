@@ -1,19 +1,23 @@
 import { ToasterProvider } from 'fratch-ui';
-import CheckTerminalProvider from './components/CheckTerminalProvider/CheckTerminalProvider';
+import { c } from 'fratch-ui/helpers/classNameHelpers';
+
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
+import GlobalDataProvider from './components/GlobalDataProvider/GlobalDataProvider';
 import Layout from './components/Layout/Layout';
 import Main from './components/Main/Main';
 
+import styles from './App.module.css';
+
 export default function App(): JSX.Element {
   return (
-    <CheckTerminalProvider>
-      <Layout>
-        <ErrorBoundary>
-          <ToasterProvider>
+    <GlobalDataProvider>
+      <ToasterProvider listClassName={c(styles.toaster_list)}>
+        <Layout>
+          <ErrorBoundary>
             <Main />
-          </ToasterProvider>
-        </ErrorBoundary>
-      </Layout>
-    </CheckTerminalProvider>
+          </ErrorBoundary>
+        </Layout>
+      </ToasterProvider>
+    </GlobalDataProvider>
   );
 }

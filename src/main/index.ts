@@ -1,6 +1,7 @@
-import { app, shell, BrowserWindow, ipcMain, Menu } from 'electron';
+import { electronApp, is, optimizer } from '@electron-toolkit/utils';
+import { app, BrowserWindow, ipcMain, Menu, shell } from 'electron';
 import { join } from 'path';
-import { electronApp, optimizer, is } from '@electron-toolkit/utils';
+
 import icon from '../../build/icons/png/1024x1024.png?asset';
 import { createAppMenu, getMenuItemsTemplate } from './menu';
 
@@ -9,13 +10,13 @@ function createWindow(): void {
   const mainWindow = new BrowserWindow({
     width: 1024,
     height: 824,
-    titleBarStyle: 'hidden', // process.platform === 'darwin' ? 'hidden' : 'customButtonsOnHover',
+    titleBarStyle: 'hidden',
     titleBarOverlay: {
       color: '#7979ff',
       symbolColor: '#e6fffc',
       height: 35,
     },
-    frame: false, // process.platform !== 'darwin',
+    frame: false,
     autoHideMenuBar: process.platform === 'darwin',
     trafficLightPosition: { x: 10, y: 10 },
     ...(process.platform === 'linux' ? { icon } : {}),
@@ -101,7 +102,12 @@ ipcMain.on('reload', event => {
   window?.reload();
 });
 
-ipcMain.on('devTools', event => {
+ipcMain.on('openDevTools', event => {
   const window = BrowserWindow.fromWebContents(event.sender) ?? undefined;
-  window?.webContents.openDevTools({ mode: 'detach' });
+  window?.webContents.openDevTools();
+});
+
+ipcMain.on('closeDevTools', event => {
+  const window = BrowserWindow.fromWebContents(event.sender) ?? undefined;
+  window?.webContents.closeDevTools();
 });

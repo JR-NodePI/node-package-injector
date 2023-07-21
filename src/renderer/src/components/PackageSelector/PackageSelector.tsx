@@ -1,12 +1,14 @@
-import { c } from 'fratch-ui/helpers/classNameHelpers';
-import { InputCheck, LeftLabeledField, Select } from 'fratch-ui';
-import { type SelectOption } from 'fratch-ui/components/Form/Select/SelectProps';
 import { memo, useEffect, useRef, useState } from 'react';
-import BranchSelector from '../BranchSelector/BranchSelector';
+
+import PackageConfig from '@renderer/models/PackageConfig';
 import GitService from '@renderer/services/GitService';
 import NPMService from '@renderer/services/NPMService';
-import PackageConfig from '@renderer/models/PackageConfig';
 import PathService from '@renderer/services/PathService';
+import { InputCheck, LeftLabeledField, Select } from 'fratch-ui';
+import { type SelectOption } from 'fratch-ui/components/Form/Select/SelectProps';
+import { c } from 'fratch-ui/helpers/classNameHelpers';
+
+import BranchSelector from '../BranchSelector/BranchSelector';
 import LinkButton from '../linkButton/LinkButton';
 
 import styles from './PackageSelector.module.css';
@@ -22,7 +24,7 @@ function PackageSelector({
 }: {
   disabled?: boolean;
   excludedDirectories?: string[];
-  packageConfig: PackageConfig;
+  packageConfig?: PackageConfig;
   additionalComponent?: JSX.Element;
   onGitPullChange?: (checked?: boolean) => void;
   onPathChange?: (cwd: string, isValidPackage: boolean) => void;
@@ -34,13 +36,13 @@ function PackageSelector({
   const [directories, setDirectories] = useState<SelectOption<string>[]>([]);
 
   useEffect(() => {
-    if ((packageConfig.cwd ?? '').length > 2 && statePathDirectories == null) {
+    if ((packageConfig?.cwd ?? '').length > 2 && statePathDirectories == null) {
       const newPathDirectories = PathService.getPathDirectories(
-        packageConfig.cwd
+        packageConfig?.cwd
       );
       setPathDirectories(newPathDirectories);
     }
-  }, [packageConfig.cwd, pathDirectories]);
+  }, [packageConfig?.cwd, pathDirectories]);
 
   const cwd = PathService.getPath(pathDirectories);
 
@@ -143,7 +145,7 @@ function PackageSelector({
           />
         }
       />
-      {packageConfig.isValidPackage && (
+      {packageConfig?.isValidPackage && (
         <div className={c(styles.options)}>
           <BranchSelector
             disabled={isDisabled}
