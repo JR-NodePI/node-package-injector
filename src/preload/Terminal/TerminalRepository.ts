@@ -1,4 +1,5 @@
 import { spawn } from 'child_process';
+import os from 'os';
 
 import {
   ExecuteCommandOutputType,
@@ -46,10 +47,14 @@ export default class TerminalRepository {
       const commandID = `${cwd} ${command} ${args.join(' ')}`;
       consoleLog(ExecuteCommandOutputType.INIT, commandID);
 
+      const soShell = ['win32', 'cygwin'].includes(os.platform())
+        ? 'powershell'
+        : 'bash';
+
       const cmd = spawn(command, args, {
         cwd,
         env: process.env,
-        shell: 'bash',
+        shell: soShell,
       });
 
       const outputs: ExecuteCommandOutput[] = [];
