@@ -103,17 +103,21 @@ export default class TerminalService {
 
     const expectedOutput = 'TERMINAL_INIT';
 
-    const outputs = await TerminalRepository.executeCommand({
-      command: 'echo',
-      args: [`${expectedOutput}`],
-      cwd,
-      skipWSL: true,
-    });
+    try {
+      const outputs = await TerminalRepository.executeCommand({
+        command: 'echo',
+        args: [`${expectedOutput}`],
+        cwd,
+        skipWSL: true,
+      });
 
-    const output = (outputs[0]?.data ?? '').toString().trim();
+      const output = (outputs[0]?.data ?? '').toString().trim();
 
-    TerminalService.isTerminalInitialized = output === expectedOutput;
+      TerminalService.isTerminalInitialized = output === expectedOutput;
 
-    return TerminalService.isTerminalInitialized;
+      return TerminalService.isTerminalInitialized;
+    } catch {
+      return false;
+    }
   }
 }
