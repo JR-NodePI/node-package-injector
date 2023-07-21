@@ -77,6 +77,7 @@ export default class TerminalService {
     try {
       outputs = await promise;
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error(error);
       return { error: (error as Error).message ?? '' };
     }

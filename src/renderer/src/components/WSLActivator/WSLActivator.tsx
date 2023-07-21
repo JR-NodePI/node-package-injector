@@ -2,7 +2,6 @@ import { c } from 'fratch-ui/helpers/classNameHelpers';
 import { InputCheck, Modal, ModalProps } from 'fratch-ui';
 import { useRef, useState } from 'react';
 import PathService from '@renderer/services/PathService';
-import styles from './WSLActivator.module.css';
 import TerminalService from '@renderer/services/TerminalService';
 
 export default function WSLActivator({
@@ -48,7 +47,7 @@ export default function WSLActivator({
       <InputCheck
         ref={ref}
         key={cwd}
-        className={c(styles.wsl_activator, className)}
+        className={c(className)}
         checked={isWSLPath}
         label="WSL"
         onChange={handleWSLChange}
