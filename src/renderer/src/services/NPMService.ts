@@ -40,7 +40,6 @@ export default class NPMService {
   private static async getNodeNpmYarnVersions(): Promise<{
     [key: string]: string;
   }> {
-    console.log(window.api.path.join(window.api.extraResourcesPath));
     const output = await TerminalService.executeCommand({
       command: 'bash',
       args: [window.api.path.join('.', '/', 'check_node.sh')],
