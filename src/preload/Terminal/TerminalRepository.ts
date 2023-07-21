@@ -57,7 +57,7 @@ export default class TerminalRepository {
       cmd.stdout.on('data', data => {
         const message = data instanceof Buffer ? data.toString() : data;
         const cleanMessage = cleanOutput(message);
-        consoleLog(ExecuteCommandOutputType.STDOUT, cleanMessage);
+        consoleLog(ExecuteCommandOutputType.STDOUT, '\n', cleanMessage);
         outputs.push({
           type: ExecuteCommandOutputType.STDOUT,
           data: cleanMessage,
@@ -83,7 +83,7 @@ export default class TerminalRepository {
           );
           reject(error);
         } else {
-          consoleLog(ExecuteCommandOutputType.STDERR, cleanMessage);
+          consoleLog(ExecuteCommandOutputType.STDERR, '\n', cleanMessage);
           outputs.push({
             type: ExecuteCommandOutputType.STDERR,
             data: cleanMessage,
