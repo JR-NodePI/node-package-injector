@@ -49,7 +49,7 @@ export default class TerminalRepository {
       const cmd = spawn(command, args, {
         cwd,
         env: process.env,
-        shell: true,
+        shell: 'bash',
       });
 
       const outputs: ExecuteCommandOutput[] = [];
@@ -93,10 +93,10 @@ export default class TerminalRepository {
 
       cmd.on('error', error => {
         consoleError(
-          ExecuteCommandOutputType.CLOSE,
+          ExecuteCommandOutputType.ERROR,
           ': ',
           commandID,
-          ': ',
+          ': \n',
           error
         );
         reject(error);
