@@ -1,8 +1,10 @@
-import { c } from 'fratch-ui/helpers/classNameHelpers';
 import { type ReactNode } from 'react';
 
-import styles from './GlobalError.module.css';
+import { c } from 'fratch-ui/helpers/classNameHelpers';
+
 import DevToolsOpener from './DevToolsOpener';
+
+import styles from './GlobalError.module.css';
 
 export default function GlobalError({
   children,

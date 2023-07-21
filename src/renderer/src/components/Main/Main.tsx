@@ -1,84 +1,74 @@
-import { c } from 'fratch-ui/helpers/classNameHelpers';
+import { useCallback } from 'react';
+import { createPortal } from 'react-dom';
+
 import { Spinner } from 'fratch-ui';
-import { useCallback, useEffect } from 'react';
+import { c } from 'fratch-ui/helpers/classNameHelpers';
+
 import Dependencies from '../../components/Dependencies/Dependencies';
-import DependencyConfig from '../../models/DependencyConfig';
-import PackageConfig from '../../models/PackageConfig';
 import PackageSelector from '../../components/PackageSelector/PackageSelector';
 import PathService from '../../services/PathService';
 import PersistService from '../../services/PersistService';
-import useDefaultPackageConfig from './useDefaultPackageConfig';
-import usePersistedState from '../../hooks/usePersistedState';
-import useCheckTerminal from '../CheckTerminalProvider/useCheckTerminal';
+import useGlobalData from '../GlobalDataProvider/useGlobalData';
 import GlobalError from '../GlobalError/GlobalError';
-import Settings from '../Settings/Settings';
+import MainSettings from './MainSettings';
 
 import styles from './Main.module.css';
 
 function Main(): JSX.Element {
-  const { loadingTerminal, isValidTerminal } = useCheckTerminal();
-  const { defaultPackageConfig, loadingDefaultPackage } =
-    useDefaultPackageConfig();
-
-  const [mainPackageConfig, setMainPackageConfig] =
-    usePersistedState<PackageConfig>(
-      'mainPackageConfig',
-      new PackageConfig(),
-      PackageConfig
-    );
-
-  const [dependencies, setDependencies] = usePersistedState<
-    DependencyConfig[] | undefined
-  >('dependencies', undefined, DependencyConfig);
+  const {
+    loading,
+    isValidTerminal,
+    dependencies,
+    setDependencies,
+    mainPackageConfig,
+    setMainPackageConfig,
+  } = useGlobalData();
 
   const excludedDirectories = [
-    mainPackageConfig.cwd ?? '',
+    mainPackageConfig?.cwd ?? '',
     ...(dependencies?.map(d => d.cwd ?? '').filter(Boolean) ?? []),
   ];
 
-  useEffect(() => {
-    if (
-      !loadingDefaultPackage &&
-      mainPackageConfig.cwd == null &&
-      defaultPackageConfig.cwd != null
-    ) {
-      const clone = defaultPackageConfig.clone();
-      setMainPackageConfig(clone);
-    }
-  }, [loadingDefaultPackage, defaultPackageConfig, mainPackageConfig]);
-
   const handlePathChange = (cwd: string, isValidPackage): void => {
-    const clone = mainPackageConfig.clone();
-    clone.cwd = cwd;
-    clone.isValidPackage = isValidPackage;
-    setMainPackageConfig(clone);
+    const clone = mainPackageConfig?.clone();
+    if (clone) {
+      clone.cwd = cwd;
+      clone.isValidPackage = isValidPackage;
+      setMainPackageConfig?.(clone);
+    }
   };
 
   const handleGitPullChange = (checked?: boolean): void => {
-    const clone = mainPackageConfig.clone();
-    clone.performGitPull = checked ?? false;
-    setMainPackageConfig(clone);
+    const clone = mainPackageConfig?.clone();
+    if (clone) {
+      clone.performGitPull = checked ?? false;
+      setMainPackageConfig?.(clone);
+    }
   };
 
   const handleYarnInstallChange = (checked?: boolean): void => {
-    const clone = mainPackageConfig.clone();
-    clone.performYarnInstall = checked ?? false;
-    setMainPackageConfig(clone);
+    const clone = mainPackageConfig?.clone();
+    if (clone) {
+      clone.performYarnInstall = checked ?? false;
+      setMainPackageConfig?.(clone);
+    }
   };
 
   const handleWSLActiveChange = useCallback((setWSL: boolean): void => {
     (async (): Promise<void> => {
-      const newPackageConfig = mainPackageConfig.clone();
-      newPackageConfig.cwd = await PathService.getHomePath(setWSL);
+      const newPackageConfig = mainPackageConfig?.clone();
+      if (newPackageConfig) {
+        newPackageConfig.cwd = await PathService.getHomePath(setWSL);
 
-      await PersistService.clear();
-      setDependencies(undefined);
-      setMainPackageConfig(newPackageConfig);
+        await PersistService.clear();
+        setDependencies?.([]);
+        setMainPackageConfig?.(newPackageConfig);
+      }
     })();
   }, []);
 
-  if (loadingDefaultPackage || loadingTerminal) {
-    return <Spinner />;
+  if (loading) {
+    return createPortal(<Spinner cover />, document.body);
   }
 
   if (!isValidTerminal) {
@@ -91,14 +81,14 @@ function Main(): JSX.Element {
 
   return (
     <>
-      <Settings
-        cwd={mainPackageConfig.cwd}
+      <MainSettings
+        cwd={mainPackageConfig?.cwd}
         onWSLActiveChange={handleWSLActiveChange}
       />
       <div className={c(styles.content)}>
         <h1>Target</h1>
         <PackageSelector
-          key={mainPackageConfig.cwd}
+          key={mainPackageConfig?.cwd}
           packageConfig={mainPackageConfig}
           onPathChange={handlePathChange}
           onGitPullChange={handleGitPullChange}

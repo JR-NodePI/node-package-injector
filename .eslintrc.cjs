@@ -14,7 +14,12 @@ module.exports = {
     sourceType: 'module',
     ecmaVersion: 2021,
   },
-  plugins: ['@typescript-eslint'],
+  plugins: ['@typescript-eslint', 'simple-import-sort'],
+  settings: {
+    react: {
+      version: 'detect',
+    },
+  },
   extends: [
     'eslint:recommended',
     'plugin:react/recommended',
@@ -24,6 +29,20 @@ module.exports = {
     'plugin:prettier/recommended',
   ],
   rules: {
+    'simple-import-sort/imports': [
+      'error',
+      {
+        groups: [
+          ['^\\u0000'],
+          ['^react(.*)'],
+          ['^@?\\w'],
+          ['^'],
+          ['^\\.'],
+          ['\\.css$'],
+        ],
+      },
+    ],
+    'simple-import-sort/exports': 'error',
     'no-console': 'error',
     '@typescript-eslint/ban-ts-comment': [
       'error',
@@ -38,6 +57,7 @@ module.exports = {
     '@typescript-eslint/no-explicit-any': 'error',
     '@typescript-eslint/no-non-null-assertion': 'off',
     '@typescript-eslint/no-var-requires': 'off',
+    'react/jsx-uses-react': 'off',
   },
   overrides: [
     {

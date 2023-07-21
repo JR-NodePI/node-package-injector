@@ -6,4 +6,4 @@
   - Build the dependencies in order.
 
 - Add tabs to have multiple targets open at the same time.
-- Add a checkbox to the settings to enable/disable the devtools and persist the setting.
+- Add import/export config from JSON file

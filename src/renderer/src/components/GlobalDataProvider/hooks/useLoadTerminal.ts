@@ -1,13 +1,12 @@
+import { useEffect, useState } from 'react';
+
 import NPMService from '@renderer/services/NPMService';
 import TerminalService from '@renderer/services/TerminalService';
-import { useEffect, useState } from 'react';
-import CheckTerminalContext from './CheckTerminalContext';
 
-export default function CheckTerminalProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}): JSX.Element {
+const useLoadTerminal = (): {
+  loadingTerminal: boolean;
+  isValidTerminal: boolean;
+} => {
   const [loadingTerminal, setIsLoading] = useState<boolean>(true);
   const [isValidTerminal, setIsValid] = useState<boolean>(true);
 
@@ -21,9 +20,7 @@ export default function CheckTerminalProvider({
     })();
   }, []);
 
-  return (
-    <CheckTerminalContext.Provider value={{ loadingTerminal, isValidTerminal }}>
-      {children}
-    </CheckTerminalContext.Provider>
-  );
-}
+  return { loadingTerminal, isValidTerminal };
+};
+
+export default useLoadTerminal;

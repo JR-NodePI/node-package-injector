@@ -1,10 +1,9 @@
 import { spawn } from 'child_process';
-import os from 'os';
 
 import {
-  ExecuteCommandOutputType,
   type ExecuteCommandOptions,
   type ExecuteCommandOutput,
+  ExecuteCommandOutputType,
 } from './TerminalTypes';
 
 const cleanOutput = (output: string): string =>
@@ -49,7 +48,7 @@ export default class TerminalRepository {
       const commandID = `${cwd} ${command} ${args.join(' ')}`;
       consoleLog(ExecuteCommandOutputType.INIT, commandID);
 
-      const soShell = ['win32', 'cygwin'].includes(os.platform())
+      const soShell = ['win32'].includes(process.platform)
         ? 'powershell'
         : 'bash';
 

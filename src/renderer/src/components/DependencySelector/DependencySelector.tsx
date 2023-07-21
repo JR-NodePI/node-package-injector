@@ -1,10 +1,11 @@
-import PackageSelector from '../PackageSelector/PackageSelector';
-import { c } from 'fratch-ui/helpers/classNameHelpers';
-import { Button, InputCheck } from 'fratch-ui';
 import DependencyConfig, {
   DependencyMode,
 } from '@renderer/models/DependencyConfig';
+import { Button, InputCheck } from 'fratch-ui';
 import IconClose from 'fratch-ui/components/Icon/IconClose';
+import { c } from 'fratch-ui/helpers/classNameHelpers';
+
+import PackageSelector from '../PackageSelector/PackageSelector';
 
 import styles from './DependencySelector.module.css';
 
@@ -78,7 +79,7 @@ function DependencySelector({
           <Button
             disabled={disabled}
             size="small"
-            label="Remove dependencyConfig"
+            label="Remove dependency"
             onClick={(): void => onClickRemove(dependencyConfig)}
             Icon={IconClose}
             isRound
