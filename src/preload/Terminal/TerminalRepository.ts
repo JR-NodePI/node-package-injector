@@ -9,27 +9,29 @@ import {
 const cleanOutput = (output: string): string =>
   output.replace(/[^a-z0-9-\n\s\r\t{}()"',:_\\/\\*+.@]/gi, '').trim();
 
-const getConsoleInitColorizedFlag = (): string[] => [
-  '%c> terminal ',
-  'color:#5858f0',
-];
-const getConsoleColorizedOutputType = (
+const getConsoleInitColorizedFlag = (
   type: ExecuteCommandOutput['type']
-): string[] => [`%c${type}`, 'color:#d70065'];
+): string[] => {
+  const typeColor =
+    type === ExecuteCommandOutputType.INIT
+      ? '#3ba93b'
+      : type === ExecuteCommandOutputType.ERROR ||
+        type === ExecuteCommandOutputType.STDERR
+      ? '#d70065'
+      : type === ExecuteCommandOutputType.CLOSE ||
+        type === ExecuteCommandOutputType.EXIT
+      ? '#ffa600'
+      : '#007390';
+  return [`%c> terminal %c${type}`, `color:#5858f0`, `color:${typeColor}`];
+};
 
 const consoleLog = (type: ExecuteCommandOutput['type'], ...params): void =>
-  console.log(
-    ...getConsoleInitColorizedFlag(),
-    ...getConsoleColorizedOutputType(type),
-    ...params
-  );
+  console.log(...getConsoleInitColorizedFlag(type), ...params);
 const consoleError = (type: ExecuteCommandOutput['type'], ...params): void =>
-  console.error(
-    ...getConsoleInitColorizedFlag(),
-    ...getConsoleColorizedOutputType(type),
-    ...params
-  );
+  console.error(...getConsoleInitColorizedFlag(type), ...params);
 
+const TimeoutToExit = 500;
+let exitTimeoutId: NodeJS.Timeout;
 export default class TerminalRepository {
   static executeCommand({
     command,
@@ -42,7 +44,7 @@ export default class TerminalRepository {
       }
 
       const commandID = `${cwd} ${command} ${args.join(' ')}`;
-      consoleLog('- command: ', commandID);
+      consoleLog(ExecuteCommandOutputType.INIT, commandID);
 
       const cmd = spawn(command, args, {
         cwd,
@@ -101,15 +103,27 @@ export default class TerminalRepository {
       });
 
       cmd.on('close', code => {
+        if (exitTimeoutId) {
+          clearTimeout(exitTimeoutId);
+        }
         consoleLog(ExecuteCommandOutputType.CLOSE, ': ', commandID, ': ', code);
         resolve(outputs);
       });
 
       cmd.on('exit', code => {
-        consoleLog(ExecuteCommandOutputType.CLOSE, ': ', commandID, ': ', code);
-        setTimeout(() => {
+        if (exitTimeoutId) {
+          clearTimeout(exitTimeoutId);
+        }
+        exitTimeoutId = setTimeout(() => {
+          consoleLog(
+            ExecuteCommandOutputType.EXIT,
+            ': ',
+            commandID,
+            ': ',
+            code
+          );
           resolve(outputs);
-        }, 3000);
+        }, TimeoutToExit);
       });
     });
   }

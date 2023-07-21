@@ -112,8 +112,6 @@ export default class TerminalService {
 
     const output = (outputs[0]?.data ?? '').toString().trim();
 
-    console.log('>>>----->> output  ', output, outputs);
-
     TerminalService.isTerminalInitialized = output === expectedOutput;
 
     return TerminalService.isTerminalInitialized;
