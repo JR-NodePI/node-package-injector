@@ -9,11 +9,11 @@ import PathService from '../../services/PathService';
 import PersistService from '../../services/PersistService';
 import useDefaultPackageConfig from './useDefaultPackageConfig';
 import usePersistedState from '../../hooks/usePersistedState';
-import WSLActivator from '../../components/WSLActivator/WSLActivator';
-
-import styles from './Main.module.css';
 import useCheckTerminal from '../CheckTerminalProvider/useCheckTerminal';
 import GlobalError from '../GlobalError/GlobalError';
+import Settings from '../Settings/Settings';
+
+import styles from './Main.module.css';
 
 function Main(): JSX.Element {
   const { loadingTerminal, isValidTerminal } = useCheckTerminal();
@@ -66,7 +66,7 @@ function Main(): JSX.Element {
     setMainPackageConfig(clone);
   };
 
-  const handleWSLChange = useCallback((setWSL: boolean): void => {
+  const handleWSLActiveChange = useCallback((setWSL: boolean): void => {
     (async (): Promise<void> => {
       const newPackageConfig = mainPackageConfig.clone();
       newPackageConfig.cwd = await PathService.getHomePath(setWSL);
@@ -91,7 +91,10 @@ function Main(): JSX.Element {
 
   return (
     <>
-      <WSLActivator cwd={mainPackageConfig.cwd} onChange={handleWSLChange} />
+      <Settings
+        cwd={mainPackageConfig.cwd}
+        onWSLActiveChange={handleWSLActiveChange}
+      />
       <div className={c(styles.content)}>
         <h1>Target</h1>
         <PackageSelector

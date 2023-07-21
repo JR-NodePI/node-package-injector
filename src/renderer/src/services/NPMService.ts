@@ -50,6 +50,7 @@ export default class NPMService {
       const data = JSON.parse(output?.content ?? '');
       return data;
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error(error);
     }
 

@@ -27,8 +27,10 @@ const getConsoleInitColorizedFlag = (
 };
 
 const consoleLog = (type: ExecuteCommandOutput['type'], ...params): void =>
+  // eslint-disable-next-line no-console
   console.log(...getConsoleInitColorizedFlag(type), ...params);
 const consoleError = (type: ExecuteCommandOutput['type'], ...params): void =>
+  // eslint-disable-next-line no-console
   console.error(...getConsoleInitColorizedFlag(type), ...params);
 
 const TimeoutToExit = 500;

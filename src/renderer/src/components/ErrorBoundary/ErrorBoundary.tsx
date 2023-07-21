@@ -23,6 +23,7 @@ export default class ErrorBoundary extends Component<
   }
 
   componentDidCatch(error, errorInfo): void {
+    // eslint-disable-next-line no-console
     console.error(error, errorInfo);
   }
 

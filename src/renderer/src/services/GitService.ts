@@ -65,6 +65,7 @@ export default class GitService {
       const branch = await GitService.getCurrentBranch(cwd);
       return Boolean(branch);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error(error);
       return false;
     }
