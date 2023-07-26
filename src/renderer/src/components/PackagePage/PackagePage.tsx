@@ -11,7 +11,7 @@ export default function PackagePage({
   dependencies,
   onPackageConfigChange,
   onDependenciesChange,
-}: PackageConfigBunch & {
+}: Omit<PackageConfigBunch, 'clone' | 'active'> & {
   onPackageConfigChange(bunchId: string, packageConfig: PackageConfig): void;
   onDependenciesChange(bunchId: string, dependencies: DependencyConfig[]): void;
 }): JSX.Element {
@@ -53,13 +53,14 @@ export default function PackagePage({
     <>
       <h1>Target</h1>
       <PackageSelector
-        key={id}
+        key={packageConfig?.cwd}
         packageConfig={packageConfig}
         onPathChange={handlePathChange}
         onGitPullChange={handleGitPullChange}
         onYarnInstallChange={handleYarnInstallChange}
       />
       <Dependencies
+        key={id}
         excludedDirectories={excludedDirectories}
         dependencies={dependencies}
         onDependenciesChange={handleDependenciesChange}

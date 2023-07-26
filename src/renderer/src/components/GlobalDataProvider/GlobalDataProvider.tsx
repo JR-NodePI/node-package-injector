@@ -1,7 +1,8 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import DependencyConfig from '@renderer/models/DependencyConfig';
 import PackageConfig from '@renderer/models/PackageConfig';
+import PackageConfigBunch from '@renderer/models/PackageConfigBunch';
 
 import GlobalDataContext, { GlobalDataProps } from './GlobalDataContext';
 import useDefaultPackageConfig from './hooks/useDefaultPackageConfig';
@@ -42,6 +43,19 @@ export default function GlobalDataProvider({
     DependencyConfig
   );
 
+  const [packageConfigBunches, setPackageConfigBunches] = useState<
+    PackageConfigBunch[]
+  >([]);
+  useEffect(() => {
+    if (mainPackageConfig.cwd != null) {
+      const newBunch = new PackageConfigBunch();
+      newBunch.packageConfig = mainPackageConfig;
+      newBunch.active = true;
+      newBunch.name = mainPackageConfig.id;
+      setPackageConfigBunches([newBunch]);
+    }
+  }, [mainPackageConfig]);
+
   const providerValue = useMemo<GlobalDataProps>(
     () => ({
       loading: loadingTerminal || loadingDefaultPackage,
@@ -50,6 +64,8 @@ export default function GlobalDataProvider({
       setDependencies,
       mainPackageConfig,
       setMainPackageConfig,
+      packageConfigBunches,
+      setPackageConfigBunches,
     }),
     [
       loadingDefaultPackage,
@@ -59,6 +75,8 @@ export default function GlobalDataProvider({
       setDependencies,
       mainPackageConfig,
       setMainPackageConfig,
+      packageConfigBunches,
+      setPackageConfigBunches,
     ]
   );
   return (
