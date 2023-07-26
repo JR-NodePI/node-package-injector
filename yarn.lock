@@ -2452,10 +2452,10 @@ form-data@~2.3.2:
     combined-stream "^1.0.6"
     mime-types "^2.1.12"
 
-fratch-ui@^1.1.36:
-  version "1.1.36"
-  resolved "https://registry.yarnpkg.com/fratch-ui/-/fratch-ui-1.1.36.tgz#49962d3f405a7c3e0722089d795f9ceb303b7fe0"
-  integrity sha512-8UafW2ENILozJ32OspPN6QWjvIyuMsf+732xkoBliZx14Uk58JCRoQa2qzI6RBrMf/Qmzgk61WHXZozQlBVKGg==
+fratch-ui@^1.1.39:
+  version "1.1.39"
+  resolved "https://registry.yarnpkg.com/fratch-ui/-/fratch-ui-1.1.39.tgz#bd96758754a0c83cd0cc399fef82928902335712"
+  integrity sha512-OT2mBW6wbXYNKC8ReTtgkyBI7LNWoOq5XpRMlN5xwUKLtmYsRosbAyd3Db96GVo9+tUXIYHPBRU7TZV0QeUT+Q==
   dependencies:
     lodash "^4.17.21"
     react "18.2.0"

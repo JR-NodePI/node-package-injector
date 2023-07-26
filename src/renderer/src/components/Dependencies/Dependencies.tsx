@@ -26,12 +26,12 @@ const getUpdatedDependencyLits = (
 function Dependencies({
   excludedDirectories,
   dependencies,
-  setDependencies,
+  onDependenciesChange,
   mainPackageConfig,
 }: {
   excludedDirectories: string[];
   dependencies?: DependencyConfig[];
-  setDependencies?: React.Dispatch<React.SetStateAction<DependencyConfig[]>>;
+  onDependenciesChange?: (dependencies: DependencyConfig[]) => void;
   mainPackageConfig?: PackageConfig;
 }): JSX.Element {
   const [loading, setLoading] = useState(false);
@@ -40,7 +40,7 @@ function Dependencies({
     newDependencies: DependencyConfig[]
   ): Promise<void> => {
     setLoading(true);
-    setDependencies?.(
+    onDependenciesChange?.(
       await NPMService.getDependencyConfigsWithRelatedDependencyIds(
         newDependencies
       )
@@ -107,7 +107,7 @@ function Dependencies({
         return clone;
       }
     );
-    setDependencies?.(newDependencies);
+    onDependenciesChange?.(newDependencies);
   };
 
   const handleGitPullChange = (
@@ -123,7 +123,7 @@ function Dependencies({
         return clone;
       }
     );
-    setDependencies?.(newDependencies);
+    onDependenciesChange?.(newDependencies);
   };
 
   const handleYarnInstallChange = (
@@ -139,7 +139,7 @@ function Dependencies({
         return clone;
       }
     );
-    setDependencies?.(newDependencies);
+    onDependenciesChange?.(newDependencies);
   };
 
   if (!mainPackageConfig?.isValidPackage) {

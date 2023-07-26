@@ -1,13 +1,5 @@
-.content {
-  width: auto;
-  flex-grow: 1;
-}
-.content::before,
-.content::after {
-  content: '';
-  clear: both;
-  display: block;
-  width: 100%;
-  height: 24px;
-  float: left;
+.tabs_menu {
+  min-width: calc(100% + 64px);
+  margin-left: -32px;
+  margin-right: -32px;
 }
