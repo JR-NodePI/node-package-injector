@@ -1,15 +1,17 @@
 import { useCallback } from 'react';
 import { createPortal } from 'react-dom';
 
+import DependencyConfig from '@renderer/models/DependencyConfig';
+import PackageConfig from '@renderer/models/PackageConfig';
 import { Spinner } from 'fratch-ui';
+import TabsMenu from 'fratch-ui/components/TabsMenu/TabsMenu';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
-import Dependencies from '../../components/Dependencies/Dependencies';
-import PackageSelector from '../../components/PackageSelector/PackageSelector';
 import PathService from '../../services/PathService';
 import PersistService from '../../services/PersistService';
 import useGlobalData from '../GlobalDataProvider/useGlobalData';
 import GlobalError from '../GlobalError/GlobalError';
+import PackagePage from '../PackagePage/PackagePage';
 import MainSettings from './MainSettings';
 
 import styles from './Main.module.css';
@@ -23,36 +25,6 @@ function Main(): JSX.Element {
     mainPackageConfig,
     setMainPackageConfig,
   } = useGlobalData();
-
-  const excludedDirectories = [
-    mainPackageConfig?.cwd ?? '',
-    ...(dependencies?.map(d => d.cwd ?? '').filter(Boolean) ?? []),
-  ];
-
-  const handlePathChange = (cwd: string, isValidPackage): void => {
-    const clone = mainPackageConfig?.clone();
-    if (clone) {
-      clone.cwd = cwd;
-      clone.isValidPackage = isValidPackage;
-      setMainPackageConfig?.(clone);
-    }
-  };
-
-  const handleGitPullChange = (checked?: boolean): void => {
-    const clone = mainPackageConfig?.clone();
-    if (clone) {
-      clone.performGitPull = checked ?? false;
-      setMainPackageConfig?.(clone);
-    }
-  };
-
-  const handleYarnInstallChange = (checked?: boolean): void => {
-    const clone = mainPackageConfig?.clone();
-    if (clone) {
-      clone.performYarnInstall = checked ?? false;
-      setMainPackageConfig?.(clone);
-    }
-  };
 
   const handleWSLActiveChange = useCallback((setWSL: boolean): void => {
     (async (): Promise<void> => {
@@ -85,22 +57,24 @@ function Main(): JSX.Element {
         cwd={mainPackageConfig?.cwd}
         onWSLActiveChange={handleWSLActiveChange}
       />
-      <div className={c(styles.content)}>
-        <h1>Target</h1>
-        <PackageSelector
-          key={mainPackageConfig?.cwd}
-          packageConfig={mainPackageConfig}
-          onPathChange={handlePathChange}
-          onGitPullChange={handleGitPullChange}
-          onYarnInstallChange={handleYarnInstallChange}
-        />
-        <Dependencies
-          excludedDirectories={excludedDirectories}
-          dependencies={dependencies}
-          setDependencies={setDependencies}
-          mainPackageConfig={mainPackageConfig}
-        />
-      </div>
+      <TabsMenu className={c(styles.tabs_menu)} editable tabs={[]} />
+      <PackagePage
+        id={'xxxx'}
+        packageConfig={mainPackageConfig ?? new PackageConfig()}
+        dependencies={dependencies ?? []}
+        onPackageConfigChange={(
+          _bunchId: string,
+          packageConfig: PackageConfig
+        ): void => {
+          setMainPackageConfig?.(packageConfig);
+        }}
+        onDependenciesChange={(
+          _bunchId: string,
+          dependencies: DependencyConfig[]
+        ): void => {
+          setDependencies?.(dependencies);
+        }}
+      />
     </>
   );
 }

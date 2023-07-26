@@ -24,7 +24,7 @@ export default function Layout({
         title="Node Package Injector"
         iconSrc={logo}
       />
-      {children}
+      <section className={c(styles.content)}>{children}</section>
       <Footer>
         <Process />
       </Footer>
