@@ -10,6 +10,7 @@
   left: 0;
   position: fixed;
 }
+
 .layout::before,
 .layout::after {
   content: '';
@@ -32,7 +33,7 @@
   float: left;
 }
 .content::before {
-  height: 8px;
+  height: 62px;
 }
 .content::after {
   height: 24px;

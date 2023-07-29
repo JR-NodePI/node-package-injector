@@ -57,6 +57,7 @@ function Main(): JSX.Element {
   return (
     <>
       <MainSettings
+        className={c(styles.main_settings)}
         cwd={mainPackageConfig?.cwd}
         onWSLActiveChange={handleWSLActiveChange}
       />
