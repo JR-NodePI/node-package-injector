@@ -3,8 +3,7 @@ import { useState } from 'react';
 import DependencyConfig from '@renderer/models/DependencyConfig';
 import PackageConfig from '@renderer/models/PackageConfig';
 import NPMService from '@renderer/services/NPMService';
-import { Button } from 'fratch-ui';
-import { IconPlus } from 'fratch-ui/components/Icon/Icons';
+import { Button, Icons } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
 import DependencySelector from '../DependencySelector/DependencySelector';
@@ -172,7 +171,7 @@ function Dependencies({
           type="tertiary"
           label="Add new dependency"
           onClick={handleAddDependency}
-          Icon={IconPlus}
+          Icon={Icons.IconPlus}
           isRound
         />
       </div>

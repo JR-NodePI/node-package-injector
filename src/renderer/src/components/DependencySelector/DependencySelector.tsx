@@ -1,8 +1,8 @@
 import DependencyConfig, {
   DependencyMode,
 } from '@renderer/models/DependencyConfig';
-import { Button, InputCheck } from 'fratch-ui';
-import IconClose from 'fratch-ui/components/Icon/IconClose';
+import { Button, Form } from 'fratch-ui';
+import { Icons } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
 import PackageSelector from '../PackageSelector/PackageSelector';
@@ -51,7 +51,7 @@ function DependencySelector({
         disabled={disabled}
         excludedDirectories={excludedDirectories}
         additionalComponent={
-          <InputCheck
+          <Form.InputCheck
             disabled={disabled}
             checked={dependencyConfig.mode === DependencyMode.SYNC}
             label="sync mode"
@@ -81,7 +81,7 @@ function DependencySelector({
             size="small"
             label="Remove dependency"
             onClick={(): void => onClickRemove(dependencyConfig)}
-            Icon={IconClose}
+            Icon={Icons.IconClose}
             isRound
           />
         </div>

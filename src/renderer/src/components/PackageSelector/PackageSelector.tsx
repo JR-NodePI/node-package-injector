@@ -4,8 +4,7 @@ import PackageConfig from '@renderer/models/PackageConfig';
 import GitService from '@renderer/services/GitService';
 import NPMService from '@renderer/services/NPMService';
 import PathService from '@renderer/services/PathService';
-import { InputCheck, LeftLabeledField, Select } from 'fratch-ui';
-import { type SelectOption } from 'fratch-ui/components/Form/Select/SelectProps';
+import { Form } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
 import BranchSelector from '../BranchSelector/BranchSelector';
@@ -33,7 +32,9 @@ function PackageSelector({
   const triggerElementRef = useRef<HTMLInputElement>(null);
   const [statePathDirectories, setPathDirectories] = useState<string[]>();
   const pathDirectories = statePathDirectories ?? [];
-  const [directories, setDirectories] = useState<SelectOption<string>[]>([]);
+  const [directories, setDirectories] = useState<
+    Form.SelectProps.SelectOption<string>[]
+  >([]);
 
   useEffect(() => {
     if ((packageConfig?.cwd ?? '').length > 2 && statePathDirectories == null) {
@@ -118,7 +119,7 @@ function PackageSelector({
 
   return (
     <div className={c(styles.project)}>
-      <LeftLabeledField
+      <Form.LeftLabeledField
         label={
           <>
             {rootPath}
@@ -134,7 +135,7 @@ function PackageSelector({
           </>
         }
         field={
-          <Select
+          <Form.Select
             disabled={isDisabled}
             key={cwd}
             onChange={handlePathChange}
@@ -152,7 +153,7 @@ function PackageSelector({
             className={c(styles.branch)}
             cwd={cwd}
           />
-          <InputCheck
+          <Form.InputCheck
             disabled={isDisabled}
             checked={packageConfig.performGitPull}
             label="git pull"
@@ -160,7 +161,7 @@ function PackageSelector({
               onGitPullChange && onGitPullChange(event.target.checked ?? false);
             }}
           />
-          <InputCheck
+          <Form.InputCheck
             disabled={isDisabled}
             checked={packageConfig.performYarnInstall}
             label="yarn install"
