@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from 'react';
 
-import { Button, Modal, Spinner, ToasterListContext } from 'fratch-ui';
+import { Button, Icons, Modal, Spinner, ToasterListContext } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
 import useGlobalData from '../GlobalDataProvider/useGlobalData';
@@ -71,6 +71,7 @@ export default function Process(): JSX.Element {
       )}
       {showRunButton && (
         <Button
+          Icon={Icons.IconPlay}
           className={c(styles.run_button)}
           label="Run"
           type="primary"
@@ -79,9 +80,11 @@ export default function Process(): JSX.Element {
       )}
       {showStopButton && (
         <Button
+          disabled={!isSyncing}
+          Icon={Icons.IconPause}
           className={c(styles.stop_button)}
-          label="Stop"
-          type={processType}
+          label="Pause"
+          type="secondary"
           onClick={handleCloseClick}
         />
       )}

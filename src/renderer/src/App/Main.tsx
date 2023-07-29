@@ -12,8 +12,8 @@ import GlobalError from '../components/GlobalError/GlobalError';
 import PathService from '../services/PathService';
 import PersistService from '../services/PersistService';
 import useGlobalData from './GlobalDataProvider/useGlobalData';
-import MainSettings from './MainSettings';
-import PackagePage from './PackagePage';
+import MainSettings from './MainSettings/MainSettings';
+import PackagePage from './PackagePage/PackagePage';
 
 import styles from './Main.module.css';
 

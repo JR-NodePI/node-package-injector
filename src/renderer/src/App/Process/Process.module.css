@@ -2,4 +2,5 @@
 .stop_button {
   position: relative;
   z-index: 9999;
+  width: 150px;
 }
