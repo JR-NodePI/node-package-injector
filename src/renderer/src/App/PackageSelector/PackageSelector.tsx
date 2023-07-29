@@ -7,8 +7,8 @@ import PathService from '@renderer/services/PathService';
 import { Form } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
+import LinkButton from '../../components/linkButton/LinkButton';
 import BranchSelector from '../BranchSelector/BranchSelector';
-import LinkButton from '../linkButton/LinkButton';
 
 import styles from './PackageSelector.module.css';
 

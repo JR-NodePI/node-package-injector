@@ -3,9 +3,9 @@ import { type ReactNode } from 'react';
 import { Header } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
+import Process from '../../App/Process/Process';
 import logo from '../../assets/logo.png';
 import Footer from '../Footer/Footer';
-import Process from '../Process/Process';
 
 import styles from './Layout.module.css';
 

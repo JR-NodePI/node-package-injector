@@ -1,8 +1,9 @@
 import { useEffect } from 'react';
 
-import usePersistedState from '@renderer/components/GlobalDataProvider/hooks/usePersistedState';
 import { Form } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
+
+import usePersistedState from './GlobalDataProvider/hooks/usePersistedState';
 
 export default function OpenDevTools({
   className,

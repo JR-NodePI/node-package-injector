@@ -5,7 +5,7 @@ import { Form } from 'fratch-ui';
 import ToasterListContext from 'fratch-ui/components/Toaster/ToasterListContext';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
-import LinkButton from '../linkButton/LinkButton';
+import LinkButton from '../../components/linkButton/LinkButton';
 
 function BranchSelector({
   disabled,
