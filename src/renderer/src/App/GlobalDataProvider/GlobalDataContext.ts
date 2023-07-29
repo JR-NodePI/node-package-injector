@@ -8,9 +8,9 @@ export type GlobalDataProps = {
   loading?: boolean;
   isValidTerminal?: boolean;
   dependencies: DependencyConfig[];
-  setDependencies?: React.Dispatch<React.SetStateAction<DependencyConfig[]>>;
+  setDependencies?: (dependencies: DependencyConfig[]) => void;
   mainPackageConfig: PackageConfig;
-  setMainPackageConfig?: React.Dispatch<React.SetStateAction<PackageConfig>>;
+  setMainPackageConfig?: (packageConfig: PackageConfig) => void;
   packageConfigBunches: PackageConfigBunch[];
   setPackageConfigBunches?: React.Dispatch<
     React.SetStateAction<PackageConfigBunch[]>
