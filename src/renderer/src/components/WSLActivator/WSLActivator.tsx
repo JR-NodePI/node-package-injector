@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 
 import PathService from '@renderer/services/PathService';
-import { InputCheck, Modal, ModalProps } from 'fratch-ui';
+import { Form, Modal, ModalProps } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 export default function WSLActivator({
   cwd,
@@ -37,7 +37,7 @@ export default function WSLActivator({
 
   return (
     <>
-      <InputCheck
+      <Form.InputCheck
         ref={ref}
         key={cwd}
         className={c(className)}

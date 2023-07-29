@@ -1,8 +1,7 @@
 import { memo, useContext, useEffect, useState } from 'react';
 
 import GitService from '@renderer/services/GitService';
-import type { SelectProps } from 'fratch-ui/components';
-import { LeftLabeledField, Select } from 'fratch-ui/components';
+import { Form } from 'fratch-ui';
 import ToasterListContext from 'fratch-ui/components/Toaster/ToasterListContext';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
@@ -19,9 +18,9 @@ function BranchSelector({
 }): JSX.Element {
   const { addToaster } = useContext(ToasterListContext);
 
-  const [branches, setBranches] = useState<SelectProps.SelectOption<string>[]>(
-    []
-  );
+  const [branches, setBranches] = useState<
+    Form.SelectProps.SelectOption<string>[]
+  >([]);
   const [currenBranch, setCurrenBranch] = useState<string>();
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -72,7 +71,7 @@ function BranchSelector({
 
   return (
     <div className={c(className)}>
-      <LeftLabeledField
+      <Form.LeftLabeledField
         label={
           <div>
             <label>Git branch</label>
@@ -85,7 +84,7 @@ function BranchSelector({
           </div>
         }
         field={
-          <Select
+          <Form.Select
             value={currenBranch}
             placeholder={loading ? 'Loading...' : 'Select branch...'}
             searchable
