@@ -7,15 +7,19 @@ import PackageConfigBunch from '@renderer/models/PackageConfigBunch';
 export type GlobalDataProps = {
   loading?: boolean;
   isValidTerminal?: boolean;
-  dependencies?: DependencyConfig[];
+  dependencies: DependencyConfig[];
   setDependencies?: React.Dispatch<React.SetStateAction<DependencyConfig[]>>;
-  mainPackageConfig?: PackageConfig;
+  mainPackageConfig: PackageConfig;
   setMainPackageConfig?: React.Dispatch<React.SetStateAction<PackageConfig>>;
-  packageConfigBunches?: PackageConfigBunch[];
+  packageConfigBunches: PackageConfigBunch[];
   setPackageConfigBunches?: React.Dispatch<
     React.SetStateAction<PackageConfigBunch[]>
   >;
 };
-const GlobalDataContext = React.createContext<GlobalDataProps>({});
+const GlobalDataContext = React.createContext<GlobalDataProps>({
+  mainPackageConfig: new PackageConfig(),
+  dependencies: [],
+  packageConfigBunches: [],
+});
 
 export default GlobalDataContext;
