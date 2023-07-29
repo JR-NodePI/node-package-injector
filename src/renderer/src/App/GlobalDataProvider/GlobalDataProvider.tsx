@@ -1,8 +1,9 @@
-import { useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 
 import DependencyConfig from '@renderer/models/DependencyConfig';
 import PackageConfig from '@renderer/models/PackageConfig';
 import PackageConfigBunch from '@renderer/models/PackageConfigBunch';
+import { debounce } from 'lodash';
 
 import GlobalDataContext, { GlobalDataProps } from './GlobalDataContext';
 import useDefaultPackageConfig from './hooks/useDefaultPackageConfig';
@@ -23,63 +24,75 @@ export default function GlobalDataProvider({
     PackageConfigBunch[]
   >('packageConfigBunches', [], PackageConfigBunch);
 
-  const [mainPackageConfig, setMainPackageConfig] =
-    usePersistedState<PackageConfig>(
-      'mainPackageConfig',
-      new PackageConfig(),
-      PackageConfig
-    );
-
-  const [dependencies, setDependencies] = usePersistedState<DependencyConfig[]>(
-    'dependencies',
-    [],
-    DependencyConfig
-  );
+  const setPackageConfigBunchActive = (key: string, data: unknown): void => {
+    const bunchIndex = packageConfigBunches.findIndex(bunch => bunch.active);
+    if (bunchIndex >= 0) {
+      setPackageConfigBunches(
+        packageConfigBunches.map((bunch, index) => {
+          if (index === bunchIndex) {
+            bunch[key] = data;
+          }
+          return bunch;
+        })
+      );
+    }
+  };
 
   useEffect(() => {
     if (
       !loadingDefaultPackage &&
-      mainPackageConfig.cwd == null &&
-      defaultPackageConfig.cwd != null
+      !packageConfigBunches?.length &&
+      defaultPackageConfig?.cwd != null
     ) {
-      const clone = defaultPackageConfig.clone();
-      setMainPackageConfig(clone);
+      const bunch = new PackageConfigBunch();
+      bunch.packageConfig = defaultPackageConfig;
+      bunch.dependencies = [];
+      bunch.active = true;
+      bunch.name = 'Package 1';
+      setPackageConfigBunches([bunch]);
     }
-  }, [loadingDefaultPackage, defaultPackageConfig, mainPackageConfig]);
+  }, [loadingDefaultPackage, defaultPackageConfig, packageConfigBunches]);
 
-  useEffect(() => {
-    if (mainPackageConfig.cwd != null) {
-      const newBunch = new PackageConfigBunch();
-      newBunch.packageConfig = mainPackageConfig;
-      newBunch.active = true;
-      newBunch.name = mainPackageConfig.id;
-      setPackageConfigBunches([newBunch]);
-    }
-  }, [mainPackageConfig]);
-
-  const providerValue = useMemo<GlobalDataProps>(
-    () => ({
-      loading: loadingTerminal || loadingDefaultPackage,
-      isValidTerminal,
-      dependencies,
-      setDependencies,
-      mainPackageConfig,
-      setMainPackageConfig,
-      packageConfigBunches,
-      setPackageConfigBunches,
-    }),
-    [
-      loadingDefaultPackage,
-      loadingTerminal,
-      isValidTerminal,
-      dependencies,
-      setDependencies,
-      mainPackageConfig,
-      setMainPackageConfig,
-      packageConfigBunches,
-      setPackageConfigBunches,
-    ]
+  const setMainPackageConfig = useCallback(
+    debounce((packageConfig: PackageConfig) => {
+      setPackageConfigBunchActive('packageConfig', packageConfig);
+    }, 10),
+    [packageConfigBunches]
   );
+
+  const setDependencies = useCallback(
+    debounce((dependencies: DependencyConfig[]) => {
+      setPackageConfigBunchActive('dependencies', dependencies);
+    }, 10),
+    [packageConfigBunches]
+  );
+
+  const providerValue = useMemo<GlobalDataProps>(() => {
+    const loading = loadingTerminal || loadingDefaultPackage;
+    const activeBunch =
+      packageConfigBunches?.find(bunch => bunch.active) ??
+      new PackageConfigBunch();
+    const mainPackageConfig = activeBunch?.packageConfig ?? new PackageConfig();
+    const dependencies = activeBunch?.dependencies ?? [];
+    return {
+      dependencies,
+      isValidTerminal,
+      loading,
+      mainPackageConfig,
+      packageConfigBunches,
+      setDependencies,
+      setMainPackageConfig,
+      setPackageConfigBunches,
+    };
+  }, [
+    isValidTerminal,
+    loadingDefaultPackage,
+    loadingTerminal,
+    packageConfigBunches,
+    setDependencies,
+    setMainPackageConfig,
+    setPackageConfigBunches,
+  ]);
 
   return (
     <GlobalDataContext.Provider value={providerValue}>
