@@ -53,14 +53,12 @@ export default function PackagePage({
     <>
       <h1>Target</h1>
       <PackageSelector
-        key={packageConfig?.cwd}
         packageConfig={packageConfig}
         onPathChange={handlePathChange}
         onGitPullChange={handleGitPullChange}
         onYarnInstallChange={handleYarnInstallChange}
       />
       <Dependencies
-        key={id}
         excludedDirectories={excludedDirectories}
         dependencies={dependencies}
         onDependenciesChange={handleDependenciesChange}
