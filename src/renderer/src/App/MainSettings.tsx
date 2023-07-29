@@ -2,8 +2,8 @@ import TerminalService from '@renderer/services/TerminalService';
 import { SettingsMenu } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
-import OpenDevTools from '../OpenDevTools/OpenDevTools';
-import WSLActivator from '../WSLActivator/WSLActivator';
+import OpenDevTools from './OpenDevTools';
+import WSLActivator from './WSLActivator';
 
 export default function MainSettings({
   cwd,

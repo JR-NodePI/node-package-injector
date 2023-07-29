@@ -2,8 +2,8 @@ import DependencyConfig from '@renderer/models/DependencyConfig';
 import PackageConfig from '@renderer/models/PackageConfig';
 import type PackageConfigBunch from '@renderer/models/PackageConfigBunch';
 
-import Dependencies from '../Dependencies/Dependencies';
-import PackageSelector from '../PackageSelector/PackageSelector';
+import Dependencies from './Dependencies/Dependencies';
+import PackageSelector from './PackageSelector/PackageSelector';
 
 export default function PackagePage({
   id,

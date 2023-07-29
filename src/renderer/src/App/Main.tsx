@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import { createPortal } from 'react-dom';
 
 import DependencyConfig from '@renderer/models/DependencyConfig';
@@ -8,12 +8,12 @@ import { Spinner } from 'fratch-ui';
 import TabsMenu from 'fratch-ui/components/TabsMenu/TabsMenu';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
-import PathService from '../../services/PathService';
-import PersistService from '../../services/PersistService';
-import useGlobalData from '../GlobalDataProvider/useGlobalData';
-import GlobalError from '../GlobalError/GlobalError';
-import PackagePage from '../PackagePage/PackagePage';
+import GlobalError from '../components/GlobalError/GlobalError';
+import PathService from '../services/PathService';
+import PersistService from '../services/PersistService';
+import useGlobalData from './GlobalDataProvider/useGlobalData';
 import MainSettings from './MainSettings';
+import PackagePage from './PackagePage';
 
 import styles from './Main.module.css';
 
