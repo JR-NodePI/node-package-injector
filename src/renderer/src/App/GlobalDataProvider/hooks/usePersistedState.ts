@@ -6,37 +6,41 @@ import PersistService from '@renderer/services/PersistService';
 type Newable<T = any> = new (...args: any) => T;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const getParsedModel = <T>(instanceValue: any, value: any): T => {
+const getParsedModel = <T>(templateValue: any, value: any): T => {
   const Model =
-    instanceValue != null && typeof instanceValue === 'object'
-      ? instanceValue?.constructor
-      : Array.isArray(instanceValue) && instanceValue.length > 0
-      ? instanceValue[0]?.constructor
+    templateValue != null && typeof templateValue === 'object'
+      ? templateValue?.constructor
       : undefined;
 
   if (Model != null) {
-    return parseModel<typeof Model>(Model, value);
+    return parseModel<typeof Model>(value, templateValue);
   }
 
   return value;
 };
 
-const parseModel = <T>(Model: Newable, data: T): T => {
-  if (Model != null && Array.isArray(data)) {
-    return data.map(item => parseModel<typeof Model>(Model, item)) as T;
+const parseModel = <T>(data: T, templateValue?: T): T => {
+  if (Array.isArray(data) && Array.isArray(templateValue)) {
+    return data.map(dataItem => parseModel(dataItem, templateValue[0])) as T;
   }
 
-  if (Model != null && data != null) {
+  if (
+    data != null &&
+    templateValue != null &&
+    templateValue.constructor != null
+  ) {
+    const Model = templateValue.constructor as Newable;
     const parsedData = Object.entries(data).reduce(
-      (instance: typeof Model, [key, value]) => {
-        if (Object.hasOwn(instance, key)) {
-          const instanceValue = instance[key];
-          instance[key] = getParsedModel<typeof instanceValue>(
-            instanceValue,
+      (newInstance, [key, value]) => {
+        if (Object.hasOwn(templateValue, key)) {
+          const templateValueItem = templateValue[key];
+
+          newInstance[key] = getParsedModel<typeof templateValueItem>(
+            templateValueItem,
             value
           );
         }
-        return instance;
+        return newInstance;
       },
       new Model()
     ) as T;
@@ -50,7 +54,7 @@ const parseModel = <T>(Model: Newable, data: T): T => {
 export default function usePersistedState<T>(
   key: string,
   defaultValue: T,
-  Model: Newable
+  templateValue?: T
 ): [T, React.Dispatch<React.SetStateAction<T>>] {
   const [data, setData] = useState<T>(defaultValue);
 
@@ -63,7 +67,7 @@ export default function usePersistedState<T>(
   useEffect(() => {
     (async (): Promise<void> => {
       const persistedData = await PersistService.getItem<T>(key);
-      const parsedData = parseModel<T>(Model, persistedData);
+      const parsedData = parseModel<T>(persistedData, templateValue);
       setData(parsedData);
     })();
   }, [key]);

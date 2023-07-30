@@ -1,5 +1,6 @@
 import PackageConfig from '@renderer/models/PackageConfig';
 import PackageConfigBunch from '@renderer/models/PackageConfigBunch';
+import PathService from '@renderer/services/PathService';
 import { TabsMenu } from 'fratch-ui';
 import { type Tab } from 'fratch-ui/components/TabsMenu/TabsMenuProps';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
@@ -13,7 +14,8 @@ type TabEvent = Pick<Tab, 'label'> & {
 };
 
 export default function PackagesTabsMenu(): JSX.Element {
-  const { packageConfigBunches, setPackageConfigBunches } = useGlobalData();
+  const { packageConfigBunches, setPackageConfigBunches, activePackageConfig } =
+    useGlobalData();
 
   const tabs = packageConfigBunches.map(bunch => {
     return { label: bunch.name, active: bunch.active };
@@ -49,8 +51,11 @@ export default function PackagesTabsMenu(): JSX.Element {
 
   const handleTabAdd = ({ label }: TabEvent): void => {
     const newBunch = new PackageConfigBunch();
+    newBunch.name = label;
     newBunch.packageConfig = new PackageConfig();
-    newBunch.name = label || newBunch.packageConfig.id;
+    newBunch.packageConfig.cwd = PathService.getPreviousPath(
+      activePackageConfig?.cwd
+    );
     newBunch.active = true;
     setPackageConfigBunches?.([
       ...(packageConfigBunches ?? []).map(bunch => {

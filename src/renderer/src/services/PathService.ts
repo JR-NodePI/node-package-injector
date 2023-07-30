@@ -26,6 +26,14 @@ export default class PathService {
     return path;
   }
 
+  public static getPreviousPath(path?: string): string {
+    if (path) {
+      return path.split(/\/|\\/).filter(Boolean).slice(0, -1).join('/');
+    }
+
+    return window.api.os.homedir();
+  }
+
   public static getPathDirectories(path?: string): string[] {
     return (path ?? '')
       .split(/[/\\]/)

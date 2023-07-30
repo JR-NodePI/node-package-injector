@@ -9,7 +9,7 @@ import styles from './Process.module.css';
 
 export default function Process(): JSX.Element {
   const { addToaster } = useContext(ToasterListContext);
-  const { mainPackageConfig, dependencies } = useGlobalData();
+  const { activePackageConfig, dependencies } = useGlobalData();
   const [isRunning, setIsRunning] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false); //TODO: get from process
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
@@ -48,7 +48,7 @@ export default function Process(): JSX.Element {
   };
 
   const showRunButton =
-    mainPackageConfig?.isValidPackage &&
+    activePackageConfig?.isValidPackage &&
     dependencies &&
     dependencies?.length > 0 &&
     dependencies?.every(d => d.isValidPackage) &&
