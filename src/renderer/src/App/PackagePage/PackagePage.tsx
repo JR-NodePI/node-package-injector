@@ -1,68 +1,67 @@
 import DependencyConfig from '@renderer/models/DependencyConfig';
-import PackageConfig from '@renderer/models/PackageConfig';
-import type PackageConfigBunch from '@renderer/models/PackageConfigBunch';
 
 import Dependencies from '../Dependencies/Dependencies';
+import useGlobalData from '../GlobalDataProvider/useGlobalData';
 import PackageSelector from '../PackageSelector/PackageSelector';
 
-export default function PackagePage({
-  id,
-  packageConfig,
-  dependencies,
-  onPackageConfigChange,
-  onDependenciesChange,
-}: Omit<PackageConfigBunch, 'clone' | 'active'> & {
-  onPackageConfigChange(bunchId: string, packageConfig: PackageConfig): void;
-  onDependenciesChange(bunchId: string, dependencies: DependencyConfig[]): void;
-}): JSX.Element {
+export default function PackagePage(): JSX.Element {
+  const {
+    packageConfigBunches,
+    setActivePackageConfig,
+    setActiveDependencies,
+  } = useGlobalData();
+  const activeBunch = packageConfigBunches.find(bunch => bunch.active);
+  const activePackageConfig = activeBunch?.packageConfig;
+  const activeDependencies = activeBunch?.dependencies;
+
   const handlePathChange = (cwd: string, isValidPackage): void => {
-    const clone = packageConfig?.clone();
-    if (clone) {
-      clone.cwd = cwd;
-      clone.isValidPackage = isValidPackage;
-      onPackageConfigChange(id, clone);
+    const packageConfig = activePackageConfig?.clone();
+    if (packageConfig) {
+      packageConfig.cwd = cwd;
+      packageConfig.isValidPackage = isValidPackage;
+      setActivePackageConfig?.(packageConfig);
     }
   };
 
   const handleGitPullChange = (checked?: boolean): void => {
-    const clone = packageConfig.clone();
-    if (clone) {
-      clone.performGitPull = checked ?? false;
-      onPackageConfigChange(id, clone);
+    const packageConfig = activePackageConfig?.clone();
+    if (packageConfig) {
+      packageConfig.performGitPull = checked ?? false;
+      setActivePackageConfig?.(packageConfig);
     }
   };
 
   const handleYarnInstallChange = (checked?: boolean): void => {
-    const clone = packageConfig.clone();
-    if (clone) {
-      clone.performYarnInstall = checked ?? false;
-      onPackageConfigChange(id, clone);
+    const packageConfig = activePackageConfig?.clone();
+    if (packageConfig) {
+      packageConfig.performYarnInstall = checked ?? false;
+      setActivePackageConfig?.(packageConfig);
     }
   };
 
   const handleDependenciesChange = (dependencies: DependencyConfig[]): void => {
-    onDependenciesChange(id, dependencies);
+    setActiveDependencies?.(dependencies);
   };
 
   const excludedDirectories = [
-    packageConfig?.cwd ?? '',
-    ...(dependencies?.map(d => d.cwd ?? '').filter(Boolean) ?? []),
+    activePackageConfig?.cwd ?? '',
+    ...(activeDependencies?.map(d => d.cwd ?? '').filter(Boolean) ?? []),
   ];
 
   return (
     <>
       <h1>Target</h1>
       <PackageSelector
-        packageConfig={packageConfig}
+        packageConfig={activePackageConfig}
         onPathChange={handlePathChange}
         onGitPullChange={handleGitPullChange}
         onYarnInstallChange={handleYarnInstallChange}
       />
       <Dependencies
         excludedDirectories={excludedDirectories}
-        dependencies={dependencies}
+        dependencies={activeDependencies}
         onDependenciesChange={handleDependenciesChange}
-        mainPackageConfig={packageConfig}
+        activePackageConfig={activePackageConfig}
       />
     </>
   );

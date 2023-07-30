@@ -9,6 +9,7 @@ import { c } from 'fratch-ui/helpers/classNameHelpers';
 import DependencySelector from '../DependencySelector/DependencySelector';
 
 import styles from './Dependencies.module.css';
+import PathService from '@renderer/services/PathService';
 
 const getUpdatedDependencyLits = (
   dependencies: DependencyConfig[] = [],
@@ -26,12 +27,12 @@ function Dependencies({
   excludedDirectories,
   dependencies,
   onDependenciesChange,
-  mainPackageConfig,
+  activePackageConfig,
 }: {
   excludedDirectories: string[];
   dependencies?: DependencyConfig[];
   onDependenciesChange?: (dependencies: DependencyConfig[]) => void;
-  mainPackageConfig?: PackageConfig;
+  activePackageConfig?: PackageConfig;
 }): JSX.Element {
   const [loading, setLoading] = useState(false);
 
@@ -48,14 +49,12 @@ function Dependencies({
   };
 
   const handleAddDependency = (): void => {
-    if (mainPackageConfig?.cwd != null && mainPackageConfig.isValidPackage) {
+    if (
+      activePackageConfig?.cwd != null &&
+      activePackageConfig.isValidPackage
+    ) {
       const dependency = new DependencyConfig();
-      dependency.cwd = (mainPackageConfig.cwd || window.api.os.homedir())
-        .split(/\/|\\/)
-        .filter(Boolean)
-        .slice(0, -1)
-        .join('/');
-
+      dependency.cwd = PathService.getPreviousPath(activePackageConfig.cwd);
       setDependenciesWithNPM([...(dependencies ?? []), dependency]);
     }
   };
@@ -141,7 +140,7 @@ function Dependencies({
     onDependenciesChange?.(newDependencies);
   };
 
-  if (!mainPackageConfig?.isValidPackage) {
+  if (!activePackageConfig?.isValidPackage) {
     return <></>;
   }
 

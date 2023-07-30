@@ -10,6 +10,13 @@ import useDefaultPackageConfig from './hooks/useDefaultPackageConfig';
 import useLoadTerminal from './hooks/useLoadTerminal';
 import usePersistedState from './hooks/usePersistedState';
 
+const getTemplateValuePackageConfigBunches = (): PackageConfigBunch[] => {
+  const template = new PackageConfigBunch();
+  template.packageConfig = new PackageConfig();
+  template.dependencies = [new DependencyConfig()];
+  return [template];
+};
+
 export default function GlobalDataProvider({
   children,
 }: {
@@ -22,7 +29,7 @@ export default function GlobalDataProvider({
 
   const [packageConfigBunches, setPackageConfigBunches] = usePersistedState<
     PackageConfigBunch[]
-  >('packageConfigBunches', [], PackageConfigBunch);
+  >('packageConfigBunches', [], getTemplateValuePackageConfigBunches());
 
   const setPackageConfigBunchActive = (key: string, data: unknown): void => {
     const bunchIndex = packageConfigBunches.findIndex(bunch => bunch.active);
@@ -48,40 +55,39 @@ export default function GlobalDataProvider({
       bunch.packageConfig = defaultPackageConfig;
       bunch.dependencies = [];
       bunch.active = true;
-      bunch.name = 'Package 1';
       setPackageConfigBunches([bunch]);
     }
   }, [loadingDefaultPackage, defaultPackageConfig, packageConfigBunches]);
 
-  const setMainPackageConfig = useCallback(
+  const setActivePackageConfig = useCallback(
     debounce((packageConfig: PackageConfig) => {
       setPackageConfigBunchActive('packageConfig', packageConfig);
     }, 10),
     [packageConfigBunches]
   );
 
-  const setDependencies = useCallback(
+  const setActiveDependencies = useCallback(
     debounce((dependencies: DependencyConfig[]) => {
       setPackageConfigBunchActive('dependencies', dependencies);
     }, 10),
     [packageConfigBunches]
   );
 
-  const providerValue = useMemo<GlobalDataProps>(() => {
-    const loading = loadingTerminal || loadingDefaultPackage;
-    const activeBunch =
-      packageConfigBunches?.find(bunch => bunch.active) ??
+  const providerValue = useMemo<GlobalDataProps>((): GlobalDataProps => {
+    const activePackageConfigBunch =
+      packageConfigBunches.find(bunch => bunch.active) ??
       new PackageConfigBunch();
-    const mainPackageConfig = activeBunch?.packageConfig ?? new PackageConfig();
-    const dependencies = activeBunch?.dependencies ?? [];
+
     return {
-      dependencies,
+      activeDependencies: activePackageConfigBunch?.dependencies ?? [],
+      activePackageConfig:
+        activePackageConfigBunch?.packageConfig ?? new PackageConfig(),
+      activePackageConfigBunch,
       isValidTerminal,
-      loading,
-      mainPackageConfig,
+      loading: loadingTerminal || loadingDefaultPackage,
       packageConfigBunches,
-      setDependencies,
-      setMainPackageConfig,
+      setActiveDependencies,
+      setActivePackageConfig,
       setPackageConfigBunches,
     };
   }, [
@@ -89,8 +95,8 @@ export default function GlobalDataProvider({
     loadingDefaultPackage,
     loadingTerminal,
     packageConfigBunches,
-    setDependencies,
-    setMainPackageConfig,
+    setActiveDependencies,
+    setActivePackageConfig,
     setPackageConfigBunches,
   ]);
 
