@@ -10,25 +10,21 @@ import { c } from 'fratch-ui/helpers/classNameHelpers';
 import getRandomColor from 'fratch-ui/helpers/getRandomColor';
 
 import useGlobalData from '../GlobalDataProvider/hooks/useGlobalData';
-import usePersistedState from '../GlobalDataProvider/hooks/usePersistedState';
 
 export default function WSLActivator({
   className,
 }: {
   className?: string;
 }): JSX.Element {
-  const { setPackageConfigBunches } = useGlobalData();
-  const [activeWSL, setActiveWSL, loading] = usePersistedState(
-    'activeWSL',
-    false
-  );
+  const { setPackageConfigBunches, isWSLActive, setIsWSLActive } =
+    useGlobalData();
 
   const ref = useRef<HTMLInputElement>(null);
   const [confirmVisible, setConfirmVisible] = useState(false);
 
   const handleWSLActiveChange = (setWSL: boolean): void => {
     (async (): Promise<void> => {
-      setActiveWSL(setWSL);
+      setIsWSLActive?.(setWSL);
 
       await PersistService.clear();
 
@@ -61,16 +57,12 @@ export default function WSLActivator({
     }
   };
 
-  if (loading) {
-    return <></>;
-  }
-
   return (
     <>
       <Form.InputCheck
         ref={ref}
         className={c(className)}
-        checked={activeWSL}
+        checked={isWSLActive}
         label="activate WSL"
         onChange={handleWSLChange}
         position="right"
@@ -79,7 +71,7 @@ export default function WSLActivator({
         visible={confirmVisible}
         type="confirm"
         onClose={handleConfirmClose}
-        title={`Are you sure to change to ${activeWSL ? 'windows' : 'WSL'}?`}
+        title={`Are you sure to change to ${isWSLActive ? 'windows' : 'WSL'}?`}
       >
         It will clear all dependencies and configurations.
       </Modal>

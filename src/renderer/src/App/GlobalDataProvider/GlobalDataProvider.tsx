@@ -26,6 +26,9 @@ export default function GlobalDataProvider({
 }): JSX.Element {
   const { loadingTerminal, isValidTerminal } = useLoadTerminal();
 
+  const [isWSLActive, setIsWSLActive, isWSLActiveLoading] =
+    usePersistedState<boolean>('isWSLActive', false);
+
   const { defaultPackageConfig, loadingDefaultPackage } =
     useDefaultPackageConfig();
 
@@ -96,7 +99,8 @@ export default function GlobalDataProvider({
     const loading =
       loadingTerminal ||
       loadingDefaultPackage ||
-      loadingPersistedPackageConfigBunches;
+      loadingPersistedPackageConfigBunches ||
+      isWSLActiveLoading;
 
     return {
       activeDependencies,
@@ -104,21 +108,26 @@ export default function GlobalDataProvider({
       activePackageConfigBunch,
       defaultPackageConfig,
       isValidTerminal,
+      isWSLActive,
       loading,
       packageConfigBunches,
       setActiveDependencies,
       setActivePackageConfig,
+      setIsWSLActive,
       setPackageConfigBunches,
     };
   }, [
     defaultPackageConfig,
     isValidTerminal,
+    isWSLActive,
+    isWSLActiveLoading,
     loadingDefaultPackage,
     loadingPersistedPackageConfigBunches,
     loadingTerminal,
     packageConfigBunches,
     setActiveDependencies,
     setActivePackageConfig,
+    setIsWSLActive,
     setPackageConfigBunches,
   ]);
 
