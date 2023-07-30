@@ -1,0 +1,24 @@
+.title {
+  position: relative;
+}
+
+.badge {
+  font-size: 12px;
+  display: inline-flex;
+  position: relative;
+  margin-left: 10px;
+  align-items: center;
+  gap: 4px;
+  font-weight: normal;
+  background-color: var(--ft-button-default-bg-color);
+  padding: 4px 8px 4px 6px;
+  border-radius: var(--ft-form-item-border-radius);
+}
+.badge .dot_color {
+  display: block;
+  left: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 100%;
+  border: solid 2px var(--ft-color-white);
+}

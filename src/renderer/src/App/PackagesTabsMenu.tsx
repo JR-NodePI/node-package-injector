@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+
 import {
   TABS_MAXIMUM_ADDABLE,
   TABS_MINIMUM_REMOVABLE,
@@ -7,6 +9,7 @@ import { getTabTitle } from '@renderer/utils';
 import { TabsMenu } from 'fratch-ui';
 import { type Tab } from 'fratch-ui/components/TabsMenu/TabsMenuProps';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
+import getRandomColor from 'fratch-ui/helpers/getRandomColor';
 
 import useGlobalData from './GlobalDataProvider/hooks/useGlobalData';
 
@@ -23,8 +26,16 @@ export default function PackagesTabsMenu(): JSX.Element {
     defaultPackageConfig,
   } = useGlobalData();
 
+  const newTabTemplate = useMemo(() => {
+    const excludedColors = packageConfigBunches.map(bunch => bunch.color);
+    return {
+      label: getTabTitle(packageConfigBunches.length + 1),
+      color: getRandomColor(excludedColors),
+    };
+  }, [packageConfigBunches]);
+
   const tabs = packageConfigBunches.map(bunch => {
-    return { label: bunch.name, active: bunch.active };
+    return { label: bunch.name, active: bunch.active, color: bunch.color };
   });
 
   const handleTabRemove = ({ index }: TabEvent): void => {
@@ -39,10 +50,13 @@ export default function PackagesTabsMenu(): JSX.Element {
     newBunch.packageConfig = defaultPackageConfig.clone();
 
     newBunch.active = true;
+    newBunch.color = newTabTemplate.color;
+
     setPackageConfigBunches?.([
       ...(packageConfigBunches ?? []).map(bunch => {
         const clone = bunch.clone();
         clone.active = false;
+
         return clone;
       }),
       newBunch,
@@ -66,9 +80,7 @@ export default function PackagesTabsMenu(): JSX.Element {
 
   return (
     <TabsMenu
-      newTabTemplate={{
-        label: getTabTitle(packageConfigBunches.length + 1),
-      }}
+      newTabTemplate={newTabTemplate}
       className={c(styles.tabs_menu)}
       editable
       addable={packageConfigBunches.length < TABS_MAXIMUM_ADDABLE}
