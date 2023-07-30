@@ -1,7 +1,7 @@
 import DependencyConfig from '@renderer/models/DependencyConfig';
 
 import Dependencies from '../Dependencies/Dependencies';
-import useGlobalData from '../GlobalDataProvider/useGlobalData';
+import useGlobalData from '../GlobalDataProvider/hooks/useGlobalData';
 import PackageSelector from '../PackageSelector/PackageSelector';
 
 export default function PackagePage(): JSX.Element {

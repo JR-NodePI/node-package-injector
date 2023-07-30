@@ -3,13 +3,13 @@ import { useState } from 'react';
 import DependencyConfig from '@renderer/models/DependencyConfig';
 import PackageConfig from '@renderer/models/PackageConfig';
 import NPMService from '@renderer/services/NPMService';
+import PathService from '@renderer/services/PathService';
 import { Button, Icons } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
 import DependencySelector from '../DependencySelector/DependencySelector';
 
 import styles from './Dependencies.module.css';
-import PathService from '@renderer/services/PathService';
 
 const getUpdatedDependencyLits = (
   dependencies: DependencyConfig[] = [],

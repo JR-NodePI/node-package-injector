@@ -3,7 +3,7 @@ import { useContext, useEffect, useState } from 'react';
 import { Button, Icons, Modal, Spinner, ToasterListContext } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
-import useGlobalData from '../GlobalDataProvider/useGlobalData';
+import useGlobalData from '../GlobalDataProvider/hooks/useGlobalData';
 
 import styles from './Process.module.css';
 
