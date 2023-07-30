@@ -5,7 +5,7 @@ import {
   TABS_MINIMUM_REMOVABLE,
 } from '@renderer/constants';
 import PackageConfigBunch from '@renderer/models/PackageConfigBunch';
-import { getTabTitle } from '@renderer/utils';
+import { getTabTitle } from '@renderer/helpers/utilsHelpers';
 import { Tab } from 'fratch-ui/components/TabsMenu/TabsMenuProps';
 import getRandomColor from 'fratch-ui/helpers/getRandomColor';
 

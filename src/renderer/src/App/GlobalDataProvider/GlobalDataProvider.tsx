@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo } from 'react';
 import DependencyConfig from '@renderer/models/DependencyConfig';
 import PackageConfig from '@renderer/models/PackageConfig';
 import PackageConfigBunch from '@renderer/models/PackageConfigBunch';
-import { getTabTitle } from '@renderer/utils';
+import { getTabTitle } from '@renderer/helpers/utilsHelpers';
 import getRandomColor from 'fratch-ui/helpers/getRandomColor';
 import { debounce } from 'lodash';
 
