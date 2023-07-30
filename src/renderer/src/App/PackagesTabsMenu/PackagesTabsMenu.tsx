@@ -11,9 +11,9 @@ import { type Tab } from 'fratch-ui/components/TabsMenu/TabsMenuProps';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 import getRandomColor from 'fratch-ui/helpers/getRandomColor';
 
-import useGlobalData from './GlobalDataProvider/hooks/useGlobalData';
+import useGlobalData from '../GlobalDataProvider/hooks/useGlobalData';
 
-import styles from './Main.module.css';
+import styles from './PackagesTabsMenu.module.css';
 
 type TabEvent = Pick<Tab, 'label'> & {
   index: number;

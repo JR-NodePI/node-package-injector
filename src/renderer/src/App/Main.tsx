@@ -7,7 +7,7 @@ import GlobalError from '../components/GlobalError/GlobalError';
 import useGlobalData from './GlobalDataProvider/hooks/useGlobalData';
 import MainSettings from './MainSettings/MainSettings';
 import PackagePage from './PackagePage/PackagePage';
-import PackagesTabsMenu from './PackagesTabsMenu';
+import PackagesTabsMenu from './PackagesTabsMenu/PackagesTabsMenu';
 
 import styles from './Main.module.css';
 
