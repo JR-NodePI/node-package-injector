@@ -2,12 +2,14 @@
 
 :root {
   --ft-footer-height: 96px;
+  --ft-tabs-height: 46px;
+  --ft-container-padding-left: 24px;
+  --ft-container-padding-right: 48px;
 }
 
 body {
   padding: 0;
   margin: 0;
-
   display: flex;
   flex-direction: column;
   user-select: none;

@@ -7,7 +7,7 @@ import PathService from '@renderer/services/PathService';
 import { Button, Icons } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
-import DependencySelector from '../DependencySelector/DependencySelector';
+import DependencySelector from './DependencySelector';
 
 import styles from './Dependencies.module.css';
 
