@@ -4,6 +4,7 @@ import DependencyConfig from '@renderer/models/DependencyConfig';
 import PackageConfig from '@renderer/models/PackageConfig';
 import PackageConfigBunch from '@renderer/models/PackageConfigBunch';
 import { getTabTitle } from '@renderer/utils';
+import getRandomColor from 'fratch-ui/helpers/getRandomColor';
 import { debounce } from 'lodash';
 
 import GlobalDataContext, { GlobalDataProps } from './GlobalDataContext';
@@ -54,6 +55,7 @@ export default function GlobalDataProvider({
     ) {
       const bunch = new PackageConfigBunch();
       bunch.name = getTabTitle(1);
+      bunch.color = getRandomColor();
       bunch.packageConfig = defaultPackageConfig;
       bunch.dependencies = [];
       bunch.active = true;
