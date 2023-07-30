@@ -69,7 +69,9 @@ export default function usePersistedState<T>(
     (async (): Promise<void> => {
       const persistedData = await PersistService.getItem<T>(key);
       const parsedData = parseModel<T>(persistedData, templateValue);
-      setData(parsedData);
+      if (parsedData !== undefined) {
+        setData(parsedData);
+      }
       setLoading(false);
     })();
   }, [key]);

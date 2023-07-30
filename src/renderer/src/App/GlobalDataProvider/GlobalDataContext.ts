@@ -5,6 +5,7 @@ import PackageConfig from '@renderer/models/PackageConfig';
 import PackageConfigBunch from '@renderer/models/PackageConfigBunch';
 
 export type GlobalDataProps = {
+  isWSLActive?: boolean;
   activeDependencies: DependencyConfig[];
   activePackageConfig: PackageConfig;
   defaultPackageConfig: PackageConfig;
@@ -12,6 +13,7 @@ export type GlobalDataProps = {
   isValidTerminal: boolean;
   loading?: boolean;
   packageConfigBunches: PackageConfigBunch[];
+  setIsWSLActive?: React.Dispatch<React.SetStateAction<boolean>>;
   setActiveDependencies?: (dependencies: DependencyConfig[]) => void;
   setActivePackageConfig?: (packageConfig: PackageConfig) => void;
   setPackageConfigBunches?: React.Dispatch<
