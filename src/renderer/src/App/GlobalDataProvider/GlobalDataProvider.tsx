@@ -29,9 +29,15 @@ export default function GlobalDataProvider({
   const { defaultPackageConfig, loadingDefaultPackage } =
     useDefaultPackageConfig();
 
-  const [packageConfigBunches, setPackageConfigBunches] = usePersistedState<
-    PackageConfigBunch[]
-  >('packageConfigBunches', [], getTemplateValuePackageConfigBunches());
+  const [
+    packageConfigBunches,
+    setPackageConfigBunches,
+    loadingPersistedPackageConfigBunches,
+  ] = usePersistedState<PackageConfigBunch[]>(
+    'packageConfigBunches',
+    [],
+    getTemplateValuePackageConfigBunches()
+  );
 
   const setPackageConfigBunchActive = (key: string, data: unknown): void => {
     const bunchIndex = packageConfigBunches.findIndex(bunch => bunch.active);
@@ -82,28 +88,38 @@ export default function GlobalDataProvider({
       packageConfigBunches?.find(bunch => bunch.active) ??
       new PackageConfigBunch();
 
+    const activeDependencies = activePackageConfigBunch?.dependencies ?? [];
+
+    const activePackageConfig =
+      activePackageConfigBunch?.packageConfig ?? new PackageConfig();
+
+    const loading =
+      loadingTerminal ||
+      loadingDefaultPackage ||
+      loadingPersistedPackageConfigBunches;
+
     return {
-      activeDependencies: activePackageConfigBunch?.dependencies ?? [],
-      activePackageConfig:
-        activePackageConfigBunch?.packageConfig ?? new PackageConfig(),
+      activeDependencies,
+      activePackageConfig,
       activePackageConfigBunch,
+      defaultPackageConfig,
       isValidTerminal,
-      loading: loadingTerminal || loadingDefaultPackage,
+      loading,
       packageConfigBunches,
       setActiveDependencies,
       setActivePackageConfig,
       setPackageConfigBunches,
-      defaultPackageConfig,
     };
   }, [
+    defaultPackageConfig,
     isValidTerminal,
     loadingDefaultPackage,
+    loadingPersistedPackageConfigBunches,
     loadingTerminal,
     packageConfigBunches,
     setActiveDependencies,
     setActivePackageConfig,
     setPackageConfigBunches,
-    defaultPackageConfig,
   ]);
 
   return (

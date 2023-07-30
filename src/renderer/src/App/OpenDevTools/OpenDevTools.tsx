@@ -7,12 +7,10 @@ import usePersistedState from '../GlobalDataProvider/hooks/usePersistedState';
 
 export default function OpenDevTools({
   className,
-  onChange,
 }: {
   className?: string;
-  onChange?: (checked: boolean) => void;
 }): JSX.Element {
-  const [openDevTools, setOpenDevTools] = usePersistedState(
+  const [openDevTools, setOpenDevTools, loading] = usePersistedState(
     'openDevTools',
     false
   );
@@ -28,24 +26,18 @@ export default function OpenDevTools({
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
     const checked = event.target.checked ?? false;
     setOpenDevTools(checked);
-    onChange?.(checked);
   };
 
-  const handleRef = (current: HTMLInputElement): void => {
-    if (current) {
-      current.checked = openDevTools;
-    }
-  };
+  if (loading) {
+    return <></>;
+  }
 
   return (
-    <>
-      <Form.InputCheck
-        ref={handleRef}
-        className={c(className)}
-        label="open dev tools"
-        onChange={handleChange}
-        position="right"
-      />
-    </>
+    <Form.InputCheck
+      className={c(className)}
+      label="open dev tools"
+      onChange={handleChange}
+      position="right"
+    />
   );
 }

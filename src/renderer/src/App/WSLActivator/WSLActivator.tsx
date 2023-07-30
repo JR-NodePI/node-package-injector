@@ -1,21 +1,47 @@
 import { useRef, useState } from 'react';
 
+import PackageConfig from '@renderer/models/PackageConfig';
+import PackageConfigBunch from '@renderer/models/PackageConfigBunch';
 import PathService from '@renderer/services/PathService';
+import PersistService from '@renderer/services/PersistService';
+import { getTabTitle } from '@renderer/utils';
 import { Form, Modal, ModalProps } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
+import getRandomColor from 'fratch-ui/helpers/getRandomColor';
+
+import useGlobalData from '../GlobalDataProvider/hooks/useGlobalData';
+import usePersistedState from '../GlobalDataProvider/hooks/usePersistedState';
+
 export default function WSLActivator({
-  cwd,
-  onChange,
   className,
 }: {
-  cwd?: string;
-  onChange: (checked: boolean) => void;
   className?: string;
 }): JSX.Element {
-  const isWSLPath = PathService.isWSL(cwd);
+  const { setPackageConfigBunches } = useGlobalData();
+  const [activeWSL, setActiveWSL, loading] = usePersistedState(
+    'activeWSL',
+    false
+  );
 
   const ref = useRef<HTMLInputElement>(null);
   const [confirmVisible, setConfirmVisible] = useState(false);
+
+  const handleWSLActiveChange = (setWSL: boolean): void => {
+    (async (): Promise<void> => {
+      setActiveWSL(setWSL);
+
+      await PersistService.clear();
+
+      const bunch = new PackageConfigBunch();
+      bunch.packageConfig = new PackageConfig();
+      bunch.packageConfig.cwd = await PathService.getHomePath(setWSL);
+      bunch.active = true;
+      bunch.name = getTabTitle(1);
+      bunch.color = getRandomColor();
+
+      setPackageConfigBunches?.([bunch]);
+    })();
+  };
 
   const handleWSLChange = (): void => {
     setConfirmVisible(true);
@@ -29,19 +55,22 @@ export default function WSLActivator({
     }
 
     if (type === 'accept') {
-      onChange(ref.current.checked);
+      handleWSLActiveChange(ref.current.checked);
     } else {
       ref.current.checked = !ref.current.checked;
     }
   };
 
+  if (loading) {
+    return <></>;
+  }
+
   return (
     <>
       <Form.InputCheck
         ref={ref}
-        key={cwd}
         className={c(className)}
-        checked={isWSLPath}
+        checked={activeWSL}
         label="activate WSL"
         onChange={handleWSLChange}
         position="right"
@@ -50,7 +79,7 @@ export default function WSLActivator({
         visible={confirmVisible}
         type="confirm"
         onClose={handleConfirmClose}
-        title={`Are you sure to change to ${isWSLPath ? 'windows' : 'WSL'}?`}
+        title={`Are you sure to change to ${activeWSL ? 'windows' : 'WSL'}?`}
       >
         It will clear all dependencies and configurations.
       </Modal>

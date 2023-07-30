@@ -55,7 +55,8 @@ export default function usePersistedState<T>(
   key: string,
   defaultValue: T,
   templateValue?: T
-): [T, React.Dispatch<React.SetStateAction<T>>] {
+): [T, React.Dispatch<React.SetStateAction<T>>, boolean] {
+  const [loading, setLoading] = useState<boolean>(true);
   const [data, setData] = useState<T>(defaultValue);
 
   useEffect(() => {
@@ -69,8 +70,9 @@ export default function usePersistedState<T>(
       const persistedData = await PersistService.getItem<T>(key);
       const parsedData = parseModel<T>(persistedData, templateValue);
       setData(parsedData);
+      setLoading(false);
     })();
   }, [key]);
 
-  return [data, setData];
+  return [data, setData, loading];
 }
