@@ -3,8 +3,10 @@ import PackageConfigBunch from '@renderer/models/PackageConfigBunch';
 import PathService from '@renderer/services/PathService';
 import PersistService from '@renderer/services/PersistService';
 import TerminalService from '@renderer/services/TerminalService';
+import { getTabTitle } from '@renderer/utils';
 import { SettingsMenu } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
+import getRandomColor from 'fratch-ui/helpers/getRandomColor';
 
 import useGlobalData from '../GlobalDataProvider/hooks/useGlobalData';
 import OpenDevTools from '../OpenDevTools/OpenDevTools';
@@ -26,11 +28,14 @@ export default function MainSettings({
 
     const handleWSLActiveChange = (setWSL: boolean): void => {
       (async (): Promise<void> => {
-        const newBunch = new PackageConfigBunch();
-        newBunch.packageConfig = new PackageConfig();
-        newBunch.packageConfig.cwd = await PathService.getHomePath(setWSL);
         await PersistService.clear();
-        setPackageConfigBunches?.([newBunch]);
+        const bunch = new PackageConfigBunch();
+        bunch.packageConfig = new PackageConfig();
+        bunch.packageConfig.cwd = await PathService.getHomePath(setWSL);
+        bunch.active = true;
+        bunch.name = getTabTitle(1);
+        bunch.color = getRandomColor();
+        setPackageConfigBunches?.([bunch]);
       })();
     };
 
