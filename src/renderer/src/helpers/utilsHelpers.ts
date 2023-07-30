@@ -1,4 +1,4 @@
-import { TAB_TITLE_TEMPLATE } from './constants';
+import { TAB_TITLE_TEMPLATE } from '../constants';
 
 export const getTextReplaced = (
   text: string,

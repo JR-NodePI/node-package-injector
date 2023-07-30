@@ -3,17 +3,25 @@
   width: 100%;
   left: 0;
   bottom: 0;
-  padding: 16px 32px 0 32px;
+  padding: 16px var(--ft-container-padding-right) 0
+    var(--ft-container-padding-left);
   box-sizing: border-box;
   height: var(--ft-footer-height);
   display: flex;
   flex-direction: row;
-  align-items: flex-start;
+  flex-wrap: wrap;
   gap: 16px;
   z-index: 99999;
-  justify-content: flex-end;
+  justify-content: space-between;
 }
 
 .footer > * {
   min-width: calc(16px * 7);
+}
+.footer .version {
+  align-self: end;
+  margin-right: auto;
+  margin-bottom: 24px;
+  font-size: 12px;
+  color: var(--ft-color-primary);
 }

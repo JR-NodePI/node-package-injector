@@ -4,7 +4,7 @@ import PackageConfig from '@renderer/models/PackageConfig';
 import PackageConfigBunch from '@renderer/models/PackageConfigBunch';
 import PathService from '@renderer/services/PathService';
 import PersistService from '@renderer/services/PersistService';
-import { getTabTitle } from '@renderer/utils';
+import { getTabTitle } from '@renderer/helpers/utilsHelpers';
 import { Form, Modal, ModalProps } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 import getRandomColor from 'fratch-ui/helpers/getRandomColor';
