@@ -7,6 +7,7 @@ import PackageConfigBunch from '@renderer/models/PackageConfigBunch';
 export type GlobalDataProps = {
   activeDependencies: DependencyConfig[];
   activePackageConfig: PackageConfig;
+  defaultPackageConfig: PackageConfig;
   activePackageConfigBunch: PackageConfigBunch;
   isValidTerminal: boolean;
   loading?: boolean;
@@ -20,6 +21,7 @@ export type GlobalDataProps = {
 const GlobalDataContext = React.createContext<GlobalDataProps>({
   activeDependencies: [],
   activePackageConfig: new PackageConfig(),
+  defaultPackageConfig: new PackageConfig(),
   activePackageConfigBunch: new PackageConfigBunch(),
   isValidTerminal: false,
   loading: true,

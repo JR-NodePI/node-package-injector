@@ -6,7 +6,7 @@ import TerminalService from '@renderer/services/TerminalService';
 import { SettingsMenu } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
-import useGlobalData from '../GlobalDataProvider/useGlobalData';
+import useGlobalData from '../GlobalDataProvider/hooks/useGlobalData';
 import OpenDevTools from '../OpenDevTools/OpenDevTools';
 import WSLActivator from '../WSLActivator/WSLActivator';
 

@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo } from 'react';
 import DependencyConfig from '@renderer/models/DependencyConfig';
 import PackageConfig from '@renderer/models/PackageConfig';
 import PackageConfigBunch from '@renderer/models/PackageConfigBunch';
+import { getTabTitle } from '@renderer/utils';
 import { debounce } from 'lodash';
 
 import GlobalDataContext, { GlobalDataProps } from './GlobalDataContext';
@@ -52,6 +53,7 @@ export default function GlobalDataProvider({
       defaultPackageConfig?.cwd != null
     ) {
       const bunch = new PackageConfigBunch();
+      bunch.name = getTabTitle(1);
       bunch.packageConfig = defaultPackageConfig;
       bunch.dependencies = [];
       bunch.active = true;
@@ -75,7 +77,7 @@ export default function GlobalDataProvider({
 
   const providerValue = useMemo<GlobalDataProps>((): GlobalDataProps => {
     const activePackageConfigBunch =
-      packageConfigBunches.find(bunch => bunch.active) ??
+      packageConfigBunches?.find(bunch => bunch.active) ??
       new PackageConfigBunch();
 
     return {
@@ -89,6 +91,7 @@ export default function GlobalDataProvider({
       setActiveDependencies,
       setActivePackageConfig,
       setPackageConfigBunches,
+      defaultPackageConfig,
     };
   }, [
     isValidTerminal,
@@ -98,6 +101,7 @@ export default function GlobalDataProvider({
     setActiveDependencies,
     setActivePackageConfig,
     setPackageConfigBunches,
+    defaultPackageConfig,
   ]);
 
   return (

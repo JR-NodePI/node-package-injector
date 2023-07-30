@@ -4,7 +4,7 @@ import { Spinner } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
 import GlobalError from '../components/GlobalError/GlobalError';
-import useGlobalData from './GlobalDataProvider/useGlobalData';
+import useGlobalData from './GlobalDataProvider/hooks/useGlobalData';
 import MainSettings from './MainSettings/MainSettings';
 import PackagePage from './PackagePage/PackagePage';
 import PackagesTabsMenu from './PackagesTabsMenu';
@@ -12,8 +12,8 @@ import PackagesTabsMenu from './PackagesTabsMenu';
 import styles from './Main.module.css';
 
 function Main(): JSX.Element {
-  const { loading, isValidTerminal, packageConfigBunches } = useGlobalData();
-  const activeBunch = packageConfigBunches.find(bunch => bunch.active);
+  const { loading, isValidTerminal, activePackageConfigBunch } =
+    useGlobalData();
 
   if (loading) {
     return createPortal(<Spinner cover />, document.body);
@@ -31,7 +31,7 @@ function Main(): JSX.Element {
     <>
       <MainSettings className={c(styles.main_settings)} />
       <PackagesTabsMenu />
-      <PackagePage key={activeBunch?.id} />
+      <PackagePage key={activePackageConfigBunch?.id} />
     </>
   );
 }
