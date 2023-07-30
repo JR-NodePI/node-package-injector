@@ -1,11 +1,3 @@
-.tabs_menu {
-  position: fixed;
-  z-index: 98;
-  max-width: 100vw;
-  left: 0;
-  top: var(--ft-header-height);
-}
-
 .main_settings {
   position: fixed !important;
   top: 80px;
