@@ -1,10 +1,9 @@
 import { useRef, useState } from 'react';
 
+import { getTabTitle } from '@renderer/helpers/utilsHelpers';
 import PackageConfig from '@renderer/models/PackageConfig';
 import PackageConfigBunch from '@renderer/models/PackageConfigBunch';
 import PathService from '@renderer/services/PathService';
-import PersistService from '@renderer/services/PersistService';
-import { getTabTitle } from '@renderer/helpers/utilsHelpers';
 import { Form, Modal, ModalProps } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 import getRandomColor from 'fratch-ui/helpers/getRandomColor';
@@ -16,25 +15,22 @@ export default function WSLActivator({
 }: {
   className?: string;
 }): JSX.Element {
-  const { setPackageConfigBunches, isWSLActive, setIsWSLActive } =
+  const { setPackageConfigBunches, isWSLActive, setIsWSLActive, loading } =
     useGlobalData();
 
   const ref = useRef<HTMLInputElement>(null);
   const [confirmVisible, setConfirmVisible] = useState(false);
 
   const handleWSLActiveChange = (setWSL: boolean): void => {
+    setIsWSLActive?.(setWSL);
+
     (async (): Promise<void> => {
-      setIsWSLActive?.(setWSL);
-
-      await PersistService.clear();
-
       const bunch = new PackageConfigBunch();
       bunch.packageConfig = new PackageConfig();
       bunch.packageConfig.cwd = await PathService.getHomePath(setWSL);
       bunch.active = true;
       bunch.name = getTabTitle(1);
       bunch.color = getRandomColor();
-
       setPackageConfigBunches?.([bunch]);
     })();
   };
@@ -56,6 +52,10 @@ export default function WSLActivator({
       ref.current.checked = !ref.current.checked;
     }
   };
+
+  if (loading) {
+    return <></>;
+  }
 
   return (
     <>
