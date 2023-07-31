@@ -34,6 +34,7 @@ export default function OpenDevTools({
 
   return (
     <Form.InputCheck
+      checked={openDevTools}
       className={c(className)}
       label="open dev tools"
       onChange={handleChange}

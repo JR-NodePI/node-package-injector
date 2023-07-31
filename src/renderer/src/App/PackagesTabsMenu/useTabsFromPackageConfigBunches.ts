@@ -4,8 +4,9 @@ import {
   TABS_MAXIMUM_ADDABLE,
   TABS_MINIMUM_REMOVABLE,
 } from '@renderer/constants';
-import PackageConfigBunch from '@renderer/models/PackageConfigBunch';
 import { getTabTitle } from '@renderer/helpers/utilsHelpers';
+import PackageConfigBunch from '@renderer/models/PackageConfigBunch';
+import PathService from '@renderer/services/PathService';
 import { Tab } from 'fratch-ui/components/TabsMenu/TabsMenuProps';
 import getRandomColor from 'fratch-ui/helpers/getRandomColor';
 
@@ -70,22 +71,24 @@ export default function useTabsFromPackageConfigBunches(): Props {
   };
 
   const onTabAdd = ({ label }: TabEvent): void => {
-    const newBunch = new PackageConfigBunch();
-    newBunch.name = label;
-    newBunch.packageConfig = defaultPackageConfig.clone();
+    (async (): Promise<void> => {
+      const newBunch = new PackageConfigBunch();
+      newBunch.name = label;
+      newBunch.packageConfig = defaultPackageConfig.clone();
+      newBunch.packageConfig.cwd = await PathService.getHomePath(isWSLActive);
+      newBunch.active = true;
+      newBunch.color = newTabTemplate.color;
 
-    newBunch.active = true;
-    newBunch.color = newTabTemplate.color;
+      setPackageConfigBunches?.([
+        ...(packageConfigBunches ?? []).map(bunch => {
+          const clone = bunch.clone();
+          clone.active = false;
 
-    setPackageConfigBunches?.([
-      ...(packageConfigBunches ?? []).map(bunch => {
-        const clone = bunch.clone();
-        clone.active = false;
-
-        return clone;
-      }),
-      newBunch,
-    ]);
+          return clone;
+        }),
+        newBunch,
+      ]);
+    })();
   };
 
   const onTabsChange = (newTabs: Tab[]): void => {

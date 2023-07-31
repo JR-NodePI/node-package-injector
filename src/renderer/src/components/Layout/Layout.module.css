@@ -5,14 +5,14 @@
   height: calc(
     100vh -
       calc(
-        calc(var(--ft-header-height) + var(--ft-tabs-height)) +
+        calc(var(--ft-header-height) + var(--ft-packages-tabs-height)) +
           var(--ft-footer-height)
       )
   );
   width: 100%;
   box-sizing: border-box;
   overflow: auto;
-  top: calc(var(--ft-header-height) + var(--ft-tabs-height));
+  top: calc(var(--ft-header-height) + var(--ft-packages-tabs-height));
   left: 0;
   position: fixed;
 }
