@@ -4,55 +4,52 @@ import { Button, Icons, Modal, Spinner, ToasterListContext } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
 import useGlobalData from '../GlobalDataProvider/hooks/useGlobalData';
+import { ProcessService } from './ProcessService';
 
 import styles from './Process.module.css';
 
 export default function Process(): JSX.Element {
   const { addToaster } = useContext(ToasterListContext);
   const { activePackageConfig, activeDependencies } = useGlobalData();
+
   const [isRunning, setIsRunning] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false); //TODO: get from process
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   useEffect(() => {
-    if (isRunning) {
-      setTimeout(() => {
-        setIsSyncing(!isSyncing);
-      }, 2000); // TODO: remove this simulation process
-    } else {
-      setIsSyncing(false);
-    }
-  }, [isSyncing, isRunning]);
-
-  useEffect(() => {
-    let timerId;
-    if (isRunning) {
-      timerId = setTimeout(() => {
+    (async (): Promise<void> => {
+      if (isRunning) {
+        // console.log('>>>----->> activePackageConfig ', activePackageConfig);
+        // const output = await ProcessService.run(
+        //   activePackageConfig,
+        //   activeDependencies
+        // );
         setIsRunning(false);
-        setShowSuccessMessage(true);
-      }, 5000); // TODO: remove this simulation process
-    }
-    return () => {
-      if (timerId) {
-        clearTimeout(timerId);
+
+        // console.log('>>>----->> output', output);
+        // addToaster({
+        //   message: 'Running finished successfully!',
+        //   type: 'success',
+        //   duration: 3000,
+        // });
       }
-    };
+    })();
   }, [isRunning, addToaster]);
 
   const handleRunClick = (): void => {
     setIsRunning(true);
   };
 
-  const handleCloseClick = (): void => {
+  const handleStopClick = (): void => {
     setIsRunning(false);
   };
 
   const showRunButton =
+    !isRunning &&
     activePackageConfig?.isValidPackage &&
     activeDependencies &&
     activeDependencies?.length > 0 &&
-    activeDependencies?.every(d => d.isValidPackage) &&
-    !isRunning;
+    activeDependencies?.every(d => d.isValidPackage);
 
   const showStopButton = isRunning;
 
@@ -85,7 +82,7 @@ export default function Process(): JSX.Element {
           className={c(styles.stop_button)}
           label="Pause"
           type="secondary"
-          onClick={handleCloseClick}
+          onClick={handleStopClick}
         />
       )}
       <Modal

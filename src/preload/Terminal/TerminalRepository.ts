@@ -73,28 +73,16 @@ export default class TerminalRepository {
       cmd.stderr.on('data', data => {
         const message = data instanceof Buffer ? data.toString() : data;
         const cleanMessage = cleanOutput(message);
-        const isError = [
-          new RegExp('error', 'gi'),
-          new RegExp('command not found', 'gi'),
-        ].some(regExp => regExp.test(cleanMessage));
 
-        if (isError) {
-          const error = new Error(cleanMessage);
-          consoleError(
-            ExecuteCommandOutputType.STDERR,
-            ': ',
-            commandID,
-            ': ',
-            error
-          );
-          reject(error);
-        } else {
-          consoleLog(ExecuteCommandOutputType.STDERR, '\n', cleanMessage);
-          outputs.push({
-            type: ExecuteCommandOutputType.STDERR,
-            data: cleanMessage,
-          });
-        }
+        const error = new Error(cleanMessage);
+        consoleError(
+          ExecuteCommandOutputType.STDERR,
+          ': ',
+          commandID,
+          ': ',
+          error
+        );
+        reject(error);
       });
 
       cmd.on('error', error => {
