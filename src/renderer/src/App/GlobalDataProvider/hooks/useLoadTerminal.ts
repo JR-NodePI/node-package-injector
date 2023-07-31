@@ -4,10 +4,10 @@ import NPMService from '@renderer/services/NPMService';
 import TerminalService from '@renderer/services/TerminalService';
 
 const useLoadTerminal = (): {
-  loadingTerminal: boolean;
+  isValidTerminalLoading: boolean;
   isValidTerminal: boolean;
 } => {
-  const [loadingTerminal, setIsLoading] = useState<boolean>(true);
+  const [isValidTerminalLoading, setIsLoading] = useState<boolean>(true);
   const [isValidTerminal, setIsValid] = useState<boolean>(true);
 
   useEffect(() => {
@@ -20,7 +20,7 @@ const useLoadTerminal = (): {
     })();
   }, []);
 
-  return { loadingTerminal, isValidTerminal };
+  return { isValidTerminalLoading, isValidTerminal };
 };
 
 export default useLoadTerminal;

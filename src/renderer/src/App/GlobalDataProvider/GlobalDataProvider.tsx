@@ -1,18 +1,15 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
-import { getTabTitle } from '@renderer/helpers/utilsHelpers';
 import DependencyConfig from '@renderer/models/DependencyConfig';
 import PackageConfig from '@renderer/models/PackageConfig';
 import PackageConfigBunch from '@renderer/models/PackageConfigBunch';
-import getRandomColor from 'fratch-ui/helpers/getRandomColor';
 import { debounce } from 'lodash';
 
 import GlobalDataContext, { GlobalDataProps } from './GlobalDataContext';
-import useDefaultPackageConfig from './hooks/useDefaultPackageConfig';
 import useLoadTerminal from './hooks/useLoadTerminal';
 import usePersistedState from './hooks/usePersistedState';
 
-const getTemplateValuePackageConfigBunches = (): PackageConfigBunch[] => {
+const getPackageConfigBunchesTemplateValue = (): PackageConfigBunch[] => {
   const template = new PackageConfigBunch();
   template.packageConfig = new PackageConfig();
   template.dependencies = [new DependencyConfig()];
@@ -24,22 +21,19 @@ export default function GlobalDataProvider({
 }: {
   children: React.ReactNode;
 }): JSX.Element {
-  const { loadingTerminal, isValidTerminal } = useLoadTerminal();
+  const { isValidTerminal, isValidTerminalLoading } = useLoadTerminal();
 
   const [isWSLActive, setIsWSLActive, isWSLActiveLoading] =
     usePersistedState<boolean>('isWSLActive', false);
 
-  const { defaultPackageConfig, loadingDefaultPackage } =
-    useDefaultPackageConfig();
-
   const [
     packageConfigBunches,
     setPackageConfigBunches,
-    loadingPersistedPackageConfigBunches,
+    packageConfigBunchesLoading,
   ] = usePersistedState<PackageConfigBunch[]>(
     'packageConfigBunches',
     [],
-    getTemplateValuePackageConfigBunches()
+    getPackageConfigBunchesTemplateValue()
   );
 
   const setPackageConfigBunchActive = (key: string, data: unknown): void => {
@@ -55,22 +49,6 @@ export default function GlobalDataProvider({
       );
     }
   };
-
-  useEffect(() => {
-    if (
-      !loadingDefaultPackage &&
-      !packageConfigBunches?.length &&
-      defaultPackageConfig?.cwd != null
-    ) {
-      const bunch = new PackageConfigBunch();
-      bunch.name = getTabTitle(1);
-      bunch.color = getRandomColor();
-      bunch.packageConfig = defaultPackageConfig;
-      bunch.dependencies = [];
-      bunch.active = true;
-      setPackageConfigBunches([bunch]);
-    }
-  }, [loadingDefaultPackage, defaultPackageConfig, packageConfigBunches]);
 
   const setActivePackageConfig = useCallback(
     debounce((packageConfig: PackageConfig) => {
@@ -97,16 +75,14 @@ export default function GlobalDataProvider({
       activePackageConfigBunch?.packageConfig ?? new PackageConfig();
 
     const loading =
-      loadingTerminal ||
-      loadingDefaultPackage ||
-      loadingPersistedPackageConfigBunches ||
+      isValidTerminalLoading ||
+      packageConfigBunchesLoading ||
       isWSLActiveLoading;
 
     return {
       activeDependencies,
       activePackageConfig,
       activePackageConfigBunch,
-      defaultPackageConfig,
       isValidTerminal,
       isWSLActive,
       loading,
@@ -117,13 +93,11 @@ export default function GlobalDataProvider({
       setPackageConfigBunches,
     };
   }, [
-    defaultPackageConfig,
     isValidTerminal,
+    isValidTerminalLoading,
     isWSLActive,
     isWSLActiveLoading,
-    loadingDefaultPackage,
-    loadingPersistedPackageConfigBunches,
-    loadingTerminal,
+    packageConfigBunchesLoading,
     packageConfigBunches,
     setActiveDependencies,
     setActivePackageConfig,

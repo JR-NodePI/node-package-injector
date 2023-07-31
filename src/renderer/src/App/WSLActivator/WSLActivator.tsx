@@ -1,12 +1,7 @@
 import { useRef, useState } from 'react';
 
-import { getTabTitle } from '@renderer/helpers/utilsHelpers';
-import PackageConfig from '@renderer/models/PackageConfig';
-import PackageConfigBunch from '@renderer/models/PackageConfigBunch';
-import PathService from '@renderer/services/PathService';
 import { Form, Modal, ModalProps } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
-import getRandomColor from 'fratch-ui/helpers/getRandomColor';
 
 import useGlobalData from '../GlobalDataProvider/hooks/useGlobalData';
 
@@ -22,17 +17,8 @@ export default function WSLActivator({
   const [confirmVisible, setConfirmVisible] = useState(false);
 
   const handleWSLActiveChange = (setWSL: boolean): void => {
-    (async (): Promise<void> => {
-      const bunch = new PackageConfigBunch();
-      bunch.packageConfig = new PackageConfig();
-      bunch.packageConfig.cwd = await PathService.getHomePath(setWSL);
-      bunch.active = true;
-      bunch.name = getTabTitle(1);
-      bunch.color = getRandomColor();
-      setPackageConfigBunches?.([bunch]);
-
-      setIsWSLActive?.(setWSL);
-    })();
+    setIsWSLActive?.(setWSL);
+    setPackageConfigBunches?.([]);
   };
 
   const handleWSLChange = (): void => {

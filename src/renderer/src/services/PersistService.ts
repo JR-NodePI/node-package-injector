@@ -1,3 +1,5 @@
+import { debounce } from 'lodash';
+
 export default class PersistService {
   private static key = 'persist_data';
 
@@ -15,10 +17,24 @@ export default class PersistService {
     PersistService.save({});
   }
 
-  public static async setItem<T>(key: string, value: T): Promise<void> {
+  private static itemsToSaveQueue: { [key: string]: unknown } = {};
+  private static async saveQueue(): Promise<void> {
     const data = await PersistService.load();
-    data[key] = value;
-    PersistService.save(data);
+    const newData = Object.entries(PersistService.itemsToSaveQueue).reduce(
+      (newData, [key, value]) => {
+        newData[key] = value;
+        return newData;
+      },
+      data
+    );
+    PersistService.itemsToSaveQueue = {};
+    PersistService.save(newData);
+  }
+  private static debouncedSaveQueue = debounce(PersistService.saveQueue, 100);
+
+  public static async setItem<T>(key: string, value: T): Promise<void> {
+    PersistService.itemsToSaveQueue[key] = value;
+    await PersistService.debouncedSaveQueue();
   }
 
   public static async getItem<T>(key: string): Promise<T> {

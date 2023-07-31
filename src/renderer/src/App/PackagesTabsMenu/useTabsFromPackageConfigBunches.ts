@@ -5,20 +5,21 @@ import {
   TABS_MINIMUM_REMOVABLE,
 } from '@renderer/constants';
 import { getTabTitle } from '@renderer/helpers/utilsHelpers';
+import PackageConfig from '@renderer/models/PackageConfig';
 import PackageConfigBunch from '@renderer/models/PackageConfigBunch';
 import PathService from '@renderer/services/PathService';
-import { Tab } from 'fratch-ui/components/TabsMenu/TabsMenuProps';
+import {
+  type Tab,
+  type TabEvent,
+  type TabsMenuProps,
+} from 'fratch-ui/components/TabsMenu/TabsMenuProps';
 import getRandomColor from 'fratch-ui/helpers/getRandomColor';
 
 import useGlobalData from '../GlobalDataProvider/hooks/useGlobalData';
 
-type TabEvent = Pick<Tab, 'label'> & {
-  index: number;
-};
-
 type Props = {
   tabs: Tab[];
-  newTabTemplate: Pick<Tab, 'color' | 'label' | 'Icon'>;
+  newTabTemplate: TabsMenuProps['newTabTemplate'];
   onTabRemove: (event: TabEvent) => void;
   onTabAdd: (event: TabEvent) => void;
   onTabsChange: (tabs: Tab[]) => void;
@@ -26,13 +27,21 @@ type Props = {
   removable?: boolean;
 };
 
+const getDefaultPackageConfigBunch = async (
+  isWSLActive?: boolean
+): Promise<PackageConfigBunch> => {
+  const bunch = new PackageConfigBunch();
+  bunch.packageConfig = new PackageConfig();
+  bunch.packageConfig.cwd = await PathService.getHomePath(isWSLActive);
+  bunch.active = true;
+  bunch.name = getTabTitle(1);
+  bunch.color = getRandomColor();
+  return bunch;
+};
+
 export default function useTabsFromPackageConfigBunches(): Props {
-  const {
-    isWSLActive,
-    packageConfigBunches,
-    setPackageConfigBunches,
-    defaultPackageConfig,
-  } = useGlobalData();
+  const { isWSLActive, packageConfigBunches, setPackageConfigBunches } =
+    useGlobalData();
 
   const newTabTemplate = useMemo<Props['newTabTemplate']>(() => {
     const excludedColors = packageConfigBunches.map(bunch => bunch.color);
@@ -50,19 +59,22 @@ export default function useTabsFromPackageConfigBunches(): Props {
     }))
   );
 
-  const [initialActiveWSL, setInitialActiveWSL] = useState<boolean>();
+  // fill with one bunch and one tab if the list of bunches is empty
   useEffect(() => {
-    if (initialActiveWSL !== isWSLActive) {
-      setTabs(
-        packageConfigBunches.map(bunch => ({
-          label: bunch.name,
-          active: bunch.active,
-          color: bunch.color,
-        }))
-      );
-      setInitialActiveWSL(isWSLActive);
+    if (!packageConfigBunches.length) {
+      (async (): Promise<void> => {
+        const newBunch = await getDefaultPackageConfigBunch(isWSLActive);
+        setPackageConfigBunches?.([newBunch]);
+
+        const tab = {
+          label: newBunch.name,
+          active: newBunch.active,
+          color: newBunch.color,
+        };
+        setTabs([tab]);
+      })();
     }
-  }, [isWSLActive, initialActiveWSL, packageConfigBunches]);
+  }, [isWSLActive, packageConfigBunches]);
 
   const onTabRemove = ({ index }: TabEvent): void => {
     setPackageConfigBunches?.(
@@ -70,24 +82,23 @@ export default function useTabsFromPackageConfigBunches(): Props {
     );
   };
 
-  const onTabAdd = ({ label }: TabEvent): void => {
+  const onTabAdd = ({ label, color }: TabEvent): void => {
     (async (): Promise<void> => {
-      const newBunch = new PackageConfigBunch();
-      newBunch.name = label;
-      newBunch.packageConfig = defaultPackageConfig.clone();
-      newBunch.packageConfig.cwd = await PathService.getHomePath(isWSLActive);
+      const newBunch = await getDefaultPackageConfigBunch(isWSLActive);
       newBunch.active = true;
-      newBunch.color = newTabTemplate.color;
+      newBunch.color = color;
+      newBunch.name = label;
 
-      setPackageConfigBunches?.([
+      const newBunches = [
         ...(packageConfigBunches ?? []).map(bunch => {
           const clone = bunch.clone();
           clone.active = false;
-
           return clone;
         }),
         newBunch,
-      ]);
+      ];
+
+      setPackageConfigBunches?.(newBunches);
     })();
   };
 

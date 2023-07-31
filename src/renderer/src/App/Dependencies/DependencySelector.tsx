@@ -1,11 +1,10 @@
-import DependencyConfig, {
-  DependencyMode,
-} from '@renderer/models/DependencyConfig';
+import { DependencyMode } from '@renderer/models/DependencyConfig';
 import { Button, Form } from 'fratch-ui';
 import { Icons } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
 import PackageSelector from '../PackageSelector/PackageSelector';
+import { type DependencySelectorProps } from './DependencySelectorProps';
 
 import styles from './DependencySelector.module.css';
 
@@ -18,29 +17,7 @@ function DependencySelector({
   onPathChange,
   onSyncModeChange,
   onYarnInstallChange,
-}: {
-  disabled?: boolean;
-  dependencyConfig: DependencyConfig;
-  excludedDirectories: string[];
-  onClickRemove?: (dependencyConfig: DependencyConfig) => void;
-  onGitPullChange: (
-    dependencyConfig: DependencyConfig,
-    checked?: boolean
-  ) => void;
-  onPathChange: (
-    dependencyConfig: DependencyConfig,
-    cwd: string,
-    isValidPackage: boolean
-  ) => void;
-  onSyncModeChange: (
-    dependencyConfig: DependencyConfig,
-    mode: (typeof DependencyMode)[keyof typeof DependencyMode]
-  ) => void;
-  onYarnInstallChange: (
-    dependencyConfig: DependencyConfig,
-    checked?: boolean
-  ) => void;
-}): JSX.Element {
+}: DependencySelectorProps): JSX.Element {
   const handlePathChange = (cwd: string, isValidPackage): void => {
     onPathChange(dependencyConfig, cwd, isValidPackage);
   };
