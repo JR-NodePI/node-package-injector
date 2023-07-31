@@ -22,8 +22,6 @@ export default function WSLActivator({
   const [confirmVisible, setConfirmVisible] = useState(false);
 
   const handleWSLActiveChange = (setWSL: boolean): void => {
-    setIsWSLActive?.(setWSL);
-
     (async (): Promise<void> => {
       const bunch = new PackageConfigBunch();
       bunch.packageConfig = new PackageConfig();
@@ -32,6 +30,8 @@ export default function WSLActivator({
       bunch.name = getTabTitle(1);
       bunch.color = getRandomColor();
       setPackageConfigBunches?.([bunch]);
+
+      setIsWSLActive?.(setWSL);
     })();
   };
 
