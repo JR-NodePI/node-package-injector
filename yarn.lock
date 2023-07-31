@@ -2644,10 +2644,10 @@ form-data@~2.3.2:
     combined-stream "^1.0.6"
     mime-types "^2.1.12"
 
-fratch-ui@^1.1.74:
-  version "1.1.74"
-  resolved "https://registry.yarnpkg.com/fratch-ui/-/fratch-ui-1.1.74.tgz#b255f8f9fce543b4f140d24a8266a0bc9cc20430"
-  integrity sha512-mT4SNBfJZNs/E+t7qKq0+lZ4dyJWEDcvlIepGsTnrHuEPdTnicRJ9lc9lHyeihoQWvr/hBaBILnDTas49vSw4Q==
+fratch-ui@1.1.76:
+  version "1.1.76"
+  resolved "https://registry.yarnpkg.com/fratch-ui/-/fratch-ui-1.1.76.tgz#250915d1e790e2e62ba983de650c1faf29152712"
+  integrity sha512-hEJrDs2EYjNwoXBQ0XMnfn95B0cUMOoGHxhxxHxe58+D7nw7oFcr0qgsL+bELq/QqNKyxIYUvi2q2+c+zWzHKQ==
 
 fs-extra@^1.0.0:
   version "1.0.0"
