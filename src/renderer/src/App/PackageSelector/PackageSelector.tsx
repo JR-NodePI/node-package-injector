@@ -9,6 +9,7 @@ import { c } from 'fratch-ui/helpers/classNameHelpers';
 
 import LinkButton from '../../components/linkButton/LinkButton';
 import BranchSelector from '../BranchSelector/BranchSelector';
+import { type PackageSelectorProps } from './PackageSelectorProps';
 
 import styles from './PackageSelector.module.css';
 
@@ -20,15 +21,7 @@ function PackageSelector({
   onGitPullChange,
   onPathChange,
   onYarnInstallChange,
-}: {
-  disabled?: boolean;
-  excludedDirectories?: string[];
-  packageConfig?: PackageConfig;
-  additionalComponent?: JSX.Element;
-  onGitPullChange?: (checked?: boolean) => void;
-  onPathChange?: (cwd: string, isValidPackage: boolean) => void;
-  onYarnInstallChange?: (checked?: boolean) => void;
-}): JSX.Element {
+}: PackageSelectorProps): JSX.Element {
   const triggerElementRef = useRef<HTMLInputElement>(null);
   const [statePathDirectories, setPathDirectories] = useState<string[]>();
   const pathDirectories = statePathDirectories ?? [];
@@ -154,7 +147,7 @@ function PackageSelector({
             cwd={cwd}
           />
           <Form.InputCheck
-            disabled={isDisabled}
+            disabled={disabled}
             checked={packageConfig.performGitPull}
             label="git pull"
             onChange={(event): void => {
@@ -162,7 +155,7 @@ function PackageSelector({
             }}
           />
           <Form.InputCheck
-            disabled={isDisabled}
+            disabled={disabled}
             checked={packageConfig.performYarnInstall}
             label="yarn install"
             onChange={(event): void => {
