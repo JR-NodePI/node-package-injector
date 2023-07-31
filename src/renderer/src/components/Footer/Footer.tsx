@@ -9,7 +9,7 @@ function Footer({ children }: { children: ReactNode }): JSX.Element {
     <>
       <footer className={c(styles.footer)}>
         <p className={c(styles.version)}>
-          version: {window.api.PACKAGE_VERSION}
+          version: {import.meta.env.PACKAGE_VERSION}
         </p>
         {children}
       </footer>

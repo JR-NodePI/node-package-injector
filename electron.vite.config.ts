@@ -4,17 +4,20 @@ import { resolve } from 'path';
 
 import packageJson from './package.json';
 
+const APP_TITLE = 'Node Package Injector';
+
 export default defineConfig({
   main: {
     plugins: [externalizeDepsPlugin()],
   },
   preload: {
-    define: {
-      'import.meta.env.PACKAGE_VERSION': JSON.stringify(packageJson.version),
-    },
     plugins: [externalizeDepsPlugin()],
   },
   renderer: {
+    define: {
+      'import.meta.env.PACKAGE_VERSION': JSON.stringify(packageJson.version),
+      'import.meta.env.APP_TITLE': JSON.stringify(APP_TITLE),
+    },
     resolve: {
       alias: {
         '@renderer': resolve('src/renderer/src'),

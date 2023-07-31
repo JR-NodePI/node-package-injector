@@ -14,7 +14,6 @@ declare global {
       os: typeof os;
       path: typeof path;
       TerminalService: typeof TerminalService;
-      PACKAGE_VERSION: string;
     };
   }
 }

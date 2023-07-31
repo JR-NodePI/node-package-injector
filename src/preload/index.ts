@@ -7,7 +7,6 @@ import os from 'os';
 import TerminalService from './Terminal/TerminalService';
 
 const isDev = process.env.NODE_ENV === 'development';
-const PACKAGE_VERSION = import.meta.env.PACKAGE_VERSION;
 
 // Custom APIs for renderer
 const api = {
@@ -18,7 +17,6 @@ const api = {
   os,
   path,
   TerminalService,
-  PACKAGE_VERSION,
 };
 
 // Use `contextBridge` APIs to expose Electron APIs to

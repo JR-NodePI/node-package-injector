@@ -5,6 +5,7 @@
     "src/main/*",
     "src/preload/**/*",
     "src/renderer/src/types.ts",
+    "./electron-builder.yml",
     "./package.json"
   ],
   "compilerOptions": {
