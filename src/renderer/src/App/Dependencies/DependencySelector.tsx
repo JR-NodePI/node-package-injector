@@ -1,4 +1,4 @@
-import { DependencyMode } from '@renderer/models/DependencyConfig';
+import { DependencyMode } from '@renderer/models/DependencyConfigConstants';
 import { Button, Form } from 'fratch-ui';
 import { Icons } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';

@@ -1,6 +1,5 @@
-import DependencyConfig, {
-  DependencyMode,
-} from '@renderer/models/DependencyConfig';
+import type DependencyConfig from '@renderer/models/DependencyConfig';
+import { type DependencyMode } from '@renderer/models/DependencyConfigConstants';
 
 export type DependencySelectorProps = {
   disabled?: boolean;

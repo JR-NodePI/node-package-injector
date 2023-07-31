@@ -1,9 +1,6 @@
-import PackageConfig from './PackageConfig';
+import { DependencyMode } from '@renderer/models/DependencyConfigConstants';
 
-export const DependencyMode = {
-  BUILD: 'build' as const,
-  SYNC: 'sync' as const,
-};
+import PackageConfig from './PackageConfig';
 
 export default class DependencyConfig extends PackageConfig {
   public mode: (typeof DependencyMode)[keyof typeof DependencyMode] =
