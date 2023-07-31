@@ -77,13 +77,12 @@ export default class TerminalService {
     try {
       outputs = await promise;
     } catch (error) {
-      // eslint-disable-next-line no-console
-      // console.error(error);
       return { error: (error as Error).message ?? '' };
     }
 
     const content = outputs.reduce((value, output) => {
       switch (output.type) {
+        case ExecuteCommandOutputType.STDERR:
         case ExecuteCommandOutputType.STDOUT:
           return value + output.data ?? '';
         case ExecuteCommandOutputType.CLOSE:

@@ -19,19 +19,23 @@ export default function Process(): JSX.Element {
   useEffect(() => {
     (async (): Promise<void> => {
       if (isRunning) {
-        // console.log('>>>----->> activePackageConfig ', activePackageConfig);
-        // const output = await ProcessService.run(
-        //   activePackageConfig,
-        //   activeDependencies
-        // );
+        const output = await ProcessService.run(
+          activePackageConfig,
+          activeDependencies
+        );
+
         setIsRunning(false);
 
-        // console.log('>>>----->> output', output);
-        // addToaster({
-        //   message: 'Running finished successfully!',
-        //   type: 'success',
-        //   duration: 3000,
-        // });
+        const hasErrors = output.some(({ error }) => !!error);
+
+        output.forEach(({ title, content, error }) => {
+          addToaster({
+            title,
+            message: content || error || '',
+            type: content ? (hasErrors ? 'info' : 'success') : 'error',
+            nlToBr: true,
+          });
+        });
       }
     })();
   }, [isRunning, addToaster]);
@@ -45,11 +49,11 @@ export default function Process(): JSX.Element {
   };
 
   const showRunButton =
-    !isRunning &&
     activePackageConfig?.isValidPackage &&
     activeDependencies &&
     activeDependencies?.length > 0 &&
-    activeDependencies?.every(d => d.isValidPackage);
+    activeDependencies?.every(d => d.isValidPackage) &&
+    !isRunning;
 
   const showStopButton = isRunning;
 

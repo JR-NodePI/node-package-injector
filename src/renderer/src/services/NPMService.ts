@@ -1,7 +1,7 @@
 import type DependencyConfig from '@renderer/models/DependencyConfig';
 
 import PathService from './PathService';
-import TerminalService from './TerminalService';
+import TerminalService, { TerminalResponse } from './TerminalService';
 
 export default class NPMService {
   private static async getDependenciesNamesFromPackageJSON(
@@ -94,5 +94,48 @@ export default class NPMService {
     });
 
     return await Promise.all(promises);
+  }
+
+  static async install(cwd: string): Promise<TerminalResponse> {
+    //TODO: check is yarn or npm
+    return await TerminalService.executeCommand({
+      command: 'yarn',
+      args: ['install', '--pure-lock'],
+      cwd,
+    });
+  }
+
+  static async yarnDist(cwd: string): Promise<TerminalResponse> {
+    return await TerminalService.executeCommand({
+      command: 'yarn',
+      args: ['dist'],
+      cwd,
+    });
+  }
+
+  static async getBuildScripts(cwd: string): Promise<string> {
+    const output = await TerminalService.executeCommand({
+      command: 'npm',
+      args: ['pkg', 'get', 'scripts'],
+      cwd,
+    });
+
+    let scripts: { [key: string]: string };
+    try {
+      scripts = JSON.parse(output.content ?? '{}');
+    } catch (error) {
+      scripts = {};
+    }
+
+    // TODO: determine the script if contains "pack" or "dist"
+    if (scripts.dist) {
+      return scripts.dist;
+    }
+
+    if (scripts.compile) {
+      return scripts.compile;
+    }
+
+    return '';
   }
 }
