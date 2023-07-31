@@ -7,15 +7,7 @@ import os from 'os';
 import TerminalService from './Terminal/TerminalService';
 
 const isDev = process.env.NODE_ENV === 'development';
-
-const getVersion = async (): Promise<string> => {
-  try {
-    const data = await fs.readFile('./package.json', 'utf8');
-    return JSON.parse(data).version;
-  } catch {
-    return '0.0.0';
-  }
-};
+const PACKAGE_VERSION = import.meta.env.PACKAGE_VERSION;
 
 // Custom APIs for renderer
 const api = {
@@ -26,7 +18,7 @@ const api = {
   os,
   path,
   TerminalService,
-  version: getVersion(),
+  PACKAGE_VERSION,
 };
 
 // Use `contextBridge` APIs to expose Electron APIs to

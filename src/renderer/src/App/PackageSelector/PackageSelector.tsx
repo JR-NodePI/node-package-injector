@@ -1,6 +1,5 @@
 import { memo, useEffect, useRef, useState } from 'react';
 
-import PackageConfig from '@renderer/models/PackageConfig';
 import GitService from '@renderer/services/GitService';
 import NPMService from '@renderer/services/NPMService';
 import PathService from '@renderer/services/PathService';

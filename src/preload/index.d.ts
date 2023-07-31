@@ -14,7 +14,7 @@ declare global {
       os: typeof os;
       path: typeof path;
       TerminalService: typeof TerminalService;
-      version: Promise<string>;
+      PACKAGE_VERSION: string;
     };
   }
 }
