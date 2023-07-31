@@ -49,7 +49,7 @@ export default function WSLActivator({
         ref={ref}
         className={c(className)}
         checked={isWSLActive}
-        label="activate WSL"
+        label="activate ⚡WSL"
         onChange={handleWSLChange}
         position="right"
       />
