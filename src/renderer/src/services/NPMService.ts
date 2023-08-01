@@ -125,8 +125,14 @@ export default class NPMService {
 
   static async getPackageScripts(cwd: string): Promise<Record<string, string>> {
     const output = await TerminalService.executeCommand({
-      command: 'npm',
-      args: ['pkg', 'get', 'scripts'],
+      command: 'bash',
+      args: [
+        window.api.path.join(
+          window.api.extraResourcesPath,
+          '/',
+          'npm_get_scripts.sh'
+        ),
+      ],
       cwd,
     });
 
