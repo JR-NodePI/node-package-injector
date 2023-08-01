@@ -4,24 +4,26 @@ import { type PackageInstallModeValue } from '@renderer/models/PackageInstallMod
 
 export type DependencySelectorProps = {
   disabled?: boolean;
-  dependencyConfig: DependencyPackage;
+  dependency: DependencyPackage;
   excludedDirectories: string[];
-  onClickRemove?: (dependencyConfig: DependencyPackage) => void;
-  onGitPullChange: (
-    dependencyConfig: DependencyPackage,
-    checked?: boolean
-  ) => void;
+  onClickRemove?: (dependency: DependencyPackage) => void;
+  onGitPullChange: (dependency: DependencyPackage, checked?: boolean) => void;
   onPathChange: (
-    dependencyConfig: DependencyPackage,
+    dependency: DependencyPackage,
     cwd: string,
     isValidPackage: boolean
   ) => void;
   onModeChange: (
-    dependencyConfig: DependencyPackage,
+    dependency: DependencyPackage,
     mode: (typeof DependencyMode)[keyof typeof DependencyMode]
   ) => void;
   onInstallChange: (
-    dependencyConfig: DependencyPackage,
+    dependency: DependencyPackage,
     mode?: PackageInstallModeValue
   ) => void;
 };
+
+export type DependencyModeSelectorProps = Pick<
+  DependencySelectorProps,
+  'disabled' | 'dependency' | 'onModeChange'
+>;

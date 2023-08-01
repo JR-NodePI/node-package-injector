@@ -22,16 +22,9 @@ export default function PackageInstallCheck({
   useEffect(() => {
     (async (): Promise<void> => {
       if (targetPackage?.cwd != null) {
-        const isNPM = await NPMService.checkNPM(targetPackage.cwd);
-        const isYarn =
-          !isNPM && (await NPMService.checkYarn(targetPackage.cwd));
-
+        const isYarn = await NPMService.checkYarn(targetPackage.cwd);
         setInstallMode(
-          isNPM
-            ? PackageInstallMode.NPM
-            : isYarn
-            ? PackageInstallMode.YARN
-            : undefined
+          isYarn ? PackageInstallMode.YARN : PackageInstallMode.NPM
         );
       }
     })();

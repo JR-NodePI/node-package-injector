@@ -2,11 +2,12 @@ import { type PackageInstallModeValue } from '@renderer/models/PackageInstallMod
 import type TargetPackage from '@renderer/models/TargetPackage';
 
 export type PackageSelectorProps = {
+  additionalComponent?: JSX.Element;
+  additionalOptionComponent?: JSX.Element;
   disabled?: boolean;
   excludedDirectories?: string[];
-  targetPackage?: TargetPackage;
-  additionalComponent?: JSX.Element;
   onGitPullChange?: (checked?: boolean) => void;
-  onPathChange?: (cwd: string, isValidPackage: boolean) => void;
   onInstallChange?: (mode?: PackageInstallModeValue) => void;
+  onPathChange?: (cwd: string, isValidPackage: boolean) => void;
+  targetPackage?: TargetPackage;
 };

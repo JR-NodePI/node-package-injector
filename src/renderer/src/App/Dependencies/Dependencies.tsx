@@ -14,14 +14,14 @@ import styles from './Dependencies.module.css';
 
 const getUpdatedDependencyLits = (
   dependencies: DependencyPackage[] = [],
-  dependencyConfigToUpdate: DependencyPackage,
+  dependencyToUpdate: DependencyPackage,
   updateCallback: () => DependencyPackage
 ): DependencyPackage[] =>
-  dependencies.map((dependencyConfig: DependencyPackage) => {
-    if (dependencyConfig.id === dependencyConfigToUpdate.id) {
+  dependencies.map((dependency: DependencyPackage) => {
+    if (dependency.id === dependencyToUpdate.id) {
       return updateCallback();
     }
-    return dependencyConfig;
+    return dependency;
   });
 
 function Dependencies({
@@ -59,21 +59,21 @@ function Dependencies({
   };
 
   const handlePathChange = (
-    dependencyConfig: DependencyPackage,
+    dependency: DependencyPackage,
     cwd: string,
     isValidPackage: boolean
   ): void => {
     const newDependencies = getUpdatedDependencyLits(
       dependencies,
-      dependencyConfig,
+      dependency,
       () => {
         const newDependency = isValidPackage
-          ? dependencyConfig.clone()
+          ? dependency.clone()
           : new DependencyPackage();
 
         newDependency.cwd = cwd;
         newDependency.isValidPackage = isValidPackage;
-        newDependency.id = dependencyConfig.id;
+        newDependency.id = dependency.id;
         newDependency.relatedDependencyConfigIds = undefined;
 
         return newDependency;
@@ -92,14 +92,14 @@ function Dependencies({
   };
 
   const handleModeChange = (
-    dependencyConfig: DependencyPackage,
-    mode: typeof dependencyConfig.mode
+    dependency: DependencyPackage,
+    mode: typeof dependency.mode
   ): void => {
     const newDependencies = getUpdatedDependencyLits(
       dependencies,
-      dependencyConfig,
+      dependency,
       () => {
-        const clone = dependencyConfig.clone();
+        const clone = dependency.clone();
         clone.mode = mode;
         return clone;
       }
@@ -108,14 +108,14 @@ function Dependencies({
   };
 
   const handleGitPullChange = (
-    dependencyConfig: DependencyPackage,
+    dependency: DependencyPackage,
     checked?: boolean
   ): void => {
     const newDependencies = getUpdatedDependencyLits(
       dependencies,
-      dependencyConfig,
+      dependency,
       () => {
-        const clone = dependencyConfig.clone();
+        const clone = dependency.clone();
         clone.performGitPull = Boolean(checked);
         return clone;
       }
@@ -124,14 +124,14 @@ function Dependencies({
   };
 
   const handleInstallChange = (
-    dependencyConfig: DependencyPackage,
+    dependency: DependencyPackage,
     mode?: PackageInstallModeValue
   ): void => {
     const newDependencies = getUpdatedDependencyLits(
       dependencies,
-      dependencyConfig,
+      dependency,
       () => {
-        const clone = dependencyConfig.clone();
+        const clone = dependency.clone();
         clone.installMode = mode;
         return clone;
       }
@@ -147,13 +147,13 @@ function Dependencies({
     <div className={c(styles.dependencies)}>
       <h2>Dependencies</h2>
       {(dependencies ?? []).map(
-        dependencyConfig =>
-          (dependencyConfig.cwd ?? '').length > 2 && (
+        dependency =>
+          (dependency.cwd ?? '').length > 2 && (
             <DependencySelector
               disabled={loading}
-              dependencyConfig={dependencyConfig}
+              dependency={dependency}
               excludedDirectories={excludedDirectories}
-              key={dependencyConfig.id}
+              key={dependency.id}
               onClickRemove={handleRemoveDependency}
               onGitPullChange={handleGitPullChange}
               onPathChange={handlePathChange}
