@@ -13,7 +13,7 @@ export default function Process(): JSX.Element {
   const { activePackageConfig, activeDependencies } = useGlobalData();
 
   const [isRunning, setIsRunning] = useState(false);
-  const [isSyncing, setIsSyncing] = useState(false); //TODO: get from process
+  const [isSyncing] = useState(false); //TODO: get from process
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   useEffect(() => {

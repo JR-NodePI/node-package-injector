@@ -1,4 +1,5 @@
 import DependencyConfig from '@renderer/models/DependencyConfig';
+import { type PackageInstallModeValue } from '@renderer/models/PackageInstallMode';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
 import Dependencies from '../Dependencies/Dependencies';
@@ -35,10 +36,10 @@ export default function PackagePage(): JSX.Element {
     }
   };
 
-  const handleYarnInstallChange = (checked?: boolean): void => {
+  const handlePackageInstallChange = (mode?: PackageInstallModeValue): void => {
     const packageConfig = activePackageConfig?.clone();
     if (packageConfig) {
-      packageConfig.performYarnInstall = checked ?? false;
+      packageConfig.performInstallMode = mode;
       setActivePackageConfig?.(packageConfig);
     }
   };
@@ -68,7 +69,7 @@ export default function PackagePage(): JSX.Element {
         packageConfig={activePackageConfig}
         onPathChange={handlePathChange}
         onGitPullChange={handleGitPullChange}
-        onYarnInstallChange={handleYarnInstallChange}
+        onPackageInstallChange={handlePackageInstallChange}
       />
       <Dependencies
         excludedDirectories={excludedDirectories}

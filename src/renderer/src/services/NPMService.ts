@@ -113,6 +113,32 @@ export default class NPMService {
     });
   }
 
+  static async checkYarn(cwd: string): Promise<boolean> {
+    try {
+      await window.api.fs.access(
+        window.api.path.join(cwd, 'yarn.lock'),
+        window.api.fs.constants.F_OK
+      );
+    } catch (error) {
+      return false;
+    }
+
+    return true;
+  }
+
+  static async checkNPM(cwd: string): Promise<boolean> {
+    try {
+      await window.api.fs.access(
+        window.api.path.join(cwd, 'package-lock.json'),
+        window.api.fs.constants.F_OK
+      );
+    } catch (error) {
+      return false;
+    }
+
+    return true;
+  }
+
   static async getBuildScripts(cwd: string): Promise<string> {
     const output = await TerminalService.executeCommand({
       command: 'npm',

@@ -1,12 +1,14 @@
 import { v4 as uuid } from 'uuid';
 
+import { type PackageInstallModeValue } from './PackageInstallMode';
+
 export default class PackageConfig {
   public id = uuid();
 
   public cwd?: string;
   public isValidPackage = false;
   public performGitPull = false;
-  public performYarnInstall = false;
+  public performInstallMode?: PackageInstallModeValue;
 
   public clone(): PackageConfig {
     const clone = new PackageConfig();
@@ -16,7 +18,7 @@ export default class PackageConfig {
     clone.cwd = this.cwd;
     clone.isValidPackage = this.isValidPackage;
     clone.performGitPull = this.performGitPull;
-    clone.performYarnInstall = this.performYarnInstall;
+    clone.performInstallMode = this.performInstallMode;
 
     return clone;
   }
