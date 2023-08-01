@@ -28,10 +28,10 @@ export default class NPMService {
   }
 
   private static getDependencyIdsByNames(
-    dependencys: DependencyPackage[],
+    dependencies: DependencyPackage[],
     names: string[]
   ): string[] {
-    return dependencys
+    return dependencies
       .filter(({ cwd }) => {
         const pathDirectories = PathService.getPathDirectories(cwd);
         const name = pathDirectories.pop();
@@ -77,14 +77,14 @@ export default class NPMService {
   }
 
   public static async getDependenciesWithRelatedDependencyIds(
-    dependencys: DependencyPackage[]
+    dependencies: DependencyPackage[]
   ): Promise<DependencyPackage[]> {
-    const promises = dependencys.map(async depConf => {
+    const promises = dependencies.map(async depConf => {
       const npmDepNames = await NPMService.getDependenciesNames(depConf.cwd);
 
       const newDependency = depConf.clone();
       newDependency.relatedDependencyConfigIds =
-        NPMService.getDependencyIdsByNames(dependencys, npmDepNames);
+        NPMService.getDependencyIdsByNames(dependencies, npmDepNames);
       return newDependency;
     });
 
