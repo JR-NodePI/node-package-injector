@@ -2,7 +2,7 @@ import { v4 as uuid } from 'uuid';
 
 import { type PackageInstallModeValue } from './PackageInstallMode';
 
-export default class PackageConfig {
+export default class TargetPackage {
   public id = uuid();
 
   public cwd?: string;
@@ -10,8 +10,8 @@ export default class PackageConfig {
   public performGitPull = false;
   public performInstallMode?: PackageInstallModeValue;
 
-  public clone(): PackageConfig {
-    const clone = new PackageConfig();
+  public clone(): TargetPackage {
+    const clone = new TargetPackage();
 
     clone.id = this.id;
 

@@ -12,8 +12,7 @@ import PackagesTabsMenu from './PackagesTabsMenu/PackagesTabsMenu';
 import styles from './Main.module.css';
 
 function Main(): JSX.Element {
-  const { loading, isValidTerminal, activePackageConfigBunch } =
-    useGlobalData();
+  const { loading, isValidTerminal, activePackageBunch } = useGlobalData();
 
   if (loading) {
     return createPortal(<Spinner cover />, document.body);
@@ -31,7 +30,7 @@ function Main(): JSX.Element {
     <>
       <MainSettings className={c(styles.main_settings)} />
       <PackagesTabsMenu />
-      <PackagePage key={activePackageConfigBunch?.id} />
+      <PackagePage key={activePackageBunch?.id} />
     </>
   );
 }

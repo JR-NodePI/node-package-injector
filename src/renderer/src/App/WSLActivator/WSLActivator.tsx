@@ -10,7 +10,7 @@ export default function WSLActivator({
 }: {
   className?: string;
 }): JSX.Element {
-  const { setPackageConfigBunches, isWSLActive, setIsWSLActive, loading } =
+  const { setPackageBunch, isWSLActive, setIsWSLActive, loading } =
     useGlobalData();
 
   const ref = useRef<HTMLInputElement>(null);
@@ -18,7 +18,7 @@ export default function WSLActivator({
 
   const handleWSLActiveChange = (setWSL: boolean): void => {
     setIsWSLActive?.(setWSL);
-    setPackageConfigBunches?.([]);
+    setPackageBunch?.([]);
   };
 
   const handleWSLChange = (): void => {

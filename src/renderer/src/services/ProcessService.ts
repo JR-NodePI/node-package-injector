@@ -1,6 +1,6 @@
-import DependencyConfig from '@renderer/models/DependencyConfig';
-import { DependencyMode } from '@renderer/models/DependencyConfigConstants';
-import PackageConfig from '@renderer/models/PackageConfig';
+import { DependencyMode } from '@renderer/models/DependencyConstants';
+import DependencyPackage from '@renderer/models/DependencyPackage';
+import TargetPackage from '@renderer/models/TargetPackage';
 import GitService from '@renderer/services/GitService';
 import NPMService from '@renderer/services/NPMService';
 import PathService from '@renderer/services/PathService';
@@ -10,17 +10,17 @@ type Resp = TerminalResponse & { title: string };
 
 export class ProcessService {
   public static async run(
-    packageConfig: PackageConfig,
-    dependencies: DependencyConfig[]
+    targetPackage: TargetPackage,
+    dependencies: DependencyPackage[]
   ): Promise<Resp[]> {
-    if (packageConfig.cwd == null) {
+    if (targetPackage.cwd == null) {
       return [{ error: 'Package cwd is null', title: 'Invalid package' }];
     }
 
-    const swd = packageConfig.cwd ?? '';
+    const swd = targetPackage.cwd ?? '';
 
     // package git pull
-    if (packageConfig.performGitPull) {
+    if (targetPackage.performGitPull) {
       const output = await GitService.pull(swd);
       if (output.error) {
         return [{ ...output, title: 'Package git pull' }];
@@ -28,7 +28,7 @@ export class ProcessService {
     }
 
     // package yarn install
-    if (packageConfig.performInstallMode) {
+    if (targetPackage.performInstallMode) {
       const output = await NPMService.install(swd);
       if (output.error) {
         return [{ ...output, title: 'Package yarn install' }];
@@ -66,12 +66,12 @@ export class ProcessService {
           }
         }
 
-        return { content: 'success', title: `Dependency "${depName}" success` };
+        return { title: `Dependency "${depName}" success` };
       }
     );
 
     const results = await Promise.all(promises);
 
-    return [{ content: 'success', title: 'Package success' }, ...results];
+    return [{ title: 'Package success' }, ...results];
   }
 }

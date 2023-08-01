@@ -1,27 +1,27 @@
-import type DependencyConfig from '@renderer/models/DependencyConfig';
-import { type DependencyMode } from '@renderer/models/DependencyConfigConstants';
+import { type DependencyMode } from '@renderer/models/DependencyConstants';
+import type DependencyPackage from '@renderer/models/DependencyPackage';
 import { type PackageInstallModeValue } from '@renderer/models/PackageInstallMode';
 
 export type DependencySelectorProps = {
   disabled?: boolean;
-  dependencyConfig: DependencyConfig;
+  dependencyConfig: DependencyPackage;
   excludedDirectories: string[];
-  onClickRemove?: (dependencyConfig: DependencyConfig) => void;
+  onClickRemove?: (dependencyConfig: DependencyPackage) => void;
   onGitPullChange: (
-    dependencyConfig: DependencyConfig,
+    dependencyConfig: DependencyPackage,
     checked?: boolean
   ) => void;
   onPathChange: (
-    dependencyConfig: DependencyConfig,
+    dependencyConfig: DependencyPackage,
     cwd: string,
     isValidPackage: boolean
   ) => void;
-  onSyncModeChange: (
-    dependencyConfig: DependencyConfig,
+  onModeChange: (
+    dependencyConfig: DependencyPackage,
     mode: (typeof DependencyMode)[keyof typeof DependencyMode]
   ) => void;
-  onPackageInstallChange: (
-    dependencyConfig: DependencyConfig,
+  onInstallChange: (
+    dependencyConfig: DependencyPackage,
     mode?: PackageInstallModeValue
   ) => void;
 };

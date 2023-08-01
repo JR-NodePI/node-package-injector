@@ -17,10 +17,10 @@ function PackageSelector({
   disabled,
   excludedDirectories,
   additionalComponent,
-  packageConfig,
+  targetPackage,
   onGitPullChange,
   onPathChange,
-  onPackageInstallChange: onYarnInstallChange,
+  onInstallChange,
 }: PackageSelectorProps): JSX.Element {
   const triggerElementRef = useRef<HTMLInputElement>(null);
   const [statePathDirectories, setPathDirectories] = useState<string[]>();
@@ -30,13 +30,13 @@ function PackageSelector({
   >([]);
 
   useEffect(() => {
-    if ((packageConfig?.cwd ?? '').length > 2 && statePathDirectories == null) {
+    if ((targetPackage?.cwd ?? '').length > 2 && statePathDirectories == null) {
       const newPathDirectories = PathService.getPathDirectories(
-        packageConfig?.cwd
+        targetPackage?.cwd
       );
       setPathDirectories(newPathDirectories);
     }
-  }, [packageConfig?.cwd, pathDirectories]);
+  }, [targetPackage?.cwd, pathDirectories]);
 
   const cwd = PathService.getPath(pathDirectories);
 
@@ -51,7 +51,7 @@ function PackageSelector({
 
         if (!isValid) {
           onGitPullChange?.(undefined);
-          onYarnInstallChange?.(undefined);
+          onInstallChange?.(undefined);
         }
 
         setIsValidating(false);
@@ -139,16 +139,17 @@ function PackageSelector({
           />
         }
       />
-      {packageConfig?.isValidPackage && (
+      {targetPackage?.isValidPackage && (
         <div className={c(styles.options)}>
           <BranchSelector
             disabled={isDisabled}
             className={c(styles.branch)}
             cwd={cwd}
           />
+          {additionalComponent}
           <Form.InputCheck
             disabled={disabled}
-            checked={packageConfig.performGitPull}
+            checked={targetPackage.performGitPull}
             label="git pull"
             onChange={(event): void => {
               onGitPullChange && onGitPullChange(event.target.checked ?? false);
@@ -156,10 +157,9 @@ function PackageSelector({
           />
           <PackageInstallCheck
             disabled={disabled}
-            packageConfig={packageConfig}
-            onPackageInstallChange={onYarnInstallChange}
+            targetPackage={targetPackage}
+            onInstallChange={onInstallChange}
           />
-          {additionalComponent}
         </div>
       )}
     </div>

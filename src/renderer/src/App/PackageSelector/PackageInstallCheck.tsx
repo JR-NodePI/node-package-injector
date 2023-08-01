@@ -11,20 +11,20 @@ import { PackageSelectorProps } from './PackageSelectorProps';
 
 export default function PackageInstallCheck({
   disabled,
-  packageConfig,
-  onPackageInstallChange,
+  targetPackage,
+  onInstallChange,
 }: Pick<
   PackageSelectorProps,
-  'disabled' | 'packageConfig' | 'onPackageInstallChange'
+  'disabled' | 'targetPackage' | 'onInstallChange'
 >): JSX.Element {
   const [installMode, setInstallMode] = useState<PackageInstallModeValue>();
 
   useEffect(() => {
     (async (): Promise<void> => {
-      if (packageConfig?.cwd != null) {
-        const isNPM = await NPMService.checkNPM(packageConfig.cwd);
+      if (targetPackage?.cwd != null) {
+        const isNPM = await NPMService.checkNPM(targetPackage.cwd);
         const isYarn =
-          !isNPM && (await NPMService.checkYarn(packageConfig.cwd));
+          !isNPM && (await NPMService.checkYarn(targetPackage.cwd));
 
         setInstallMode(
           isNPM
@@ -35,7 +35,7 @@ export default function PackageInstallCheck({
         );
       }
     })();
-  }, [packageConfig?.cwd]);
+  }, [targetPackage?.cwd]);
 
   if (installMode == null) {
     return <></>;
@@ -46,13 +46,13 @@ export default function PackageInstallCheck({
   } install`;
 
   const handleOnChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
-    onPackageInstallChange?.(event.target.checked ? installMode : undefined);
+    onInstallChange?.(event.target.checked ? installMode : undefined);
   };
 
   return (
     <Form.InputCheck
       disabled={disabled}
-      checked={packageConfig?.performInstallMode != null}
+      checked={targetPackage?.performInstallMode != null}
       label={label}
       onChange={handleOnChange}
     />

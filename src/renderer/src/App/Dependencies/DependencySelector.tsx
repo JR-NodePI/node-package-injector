@@ -1,22 +1,22 @@
-import { DependencyMode } from '@renderer/models/DependencyConfigConstants';
-import { Button, Form } from 'fratch-ui';
+import { Button } from 'fratch-ui';
 import { Icons } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
 import PackageSelector from '../PackageSelector/PackageSelector';
+import DependencyModeSelector from './DependencyModeSelector';
 import { type DependencySelectorProps } from './DependencySelectorProps';
 
 import styles from './DependencySelector.module.css';
 
-function DependencySelector({
+export default function DependencySelector({
   disabled,
   dependencyConfig,
   excludedDirectories,
   onClickRemove,
   onGitPullChange,
   onPathChange,
-  onSyncModeChange,
-  onPackageInstallChange,
+  onModeChange,
+  onInstallChange,
 }: DependencySelectorProps): JSX.Element {
   const handlePathChange = (cwd: string, isValidPackage): void => {
     onPathChange(dependencyConfig, cwd, isValidPackage);
@@ -28,27 +28,19 @@ function DependencySelector({
         disabled={disabled}
         excludedDirectories={excludedDirectories}
         additionalComponent={
-          <Form.InputCheck
+          <DependencyModeSelector
             disabled={disabled}
-            checked={dependencyConfig.mode === DependencyMode.SYNC}
-            label="sync mode"
-            onChange={(event): void => {
-              onSyncModeChange(
-                dependencyConfig,
-                event.target.checked
-                  ? DependencyMode.SYNC
-                  : DependencyMode.BUILD
-              );
-            }}
+            dependencyConfig={dependencyConfig}
+            onModeChange={onModeChange}
           />
         }
-        packageConfig={dependencyConfig}
+        targetPackage={dependencyConfig}
         onPathChange={handlePathChange}
         onGitPullChange={(checked): void => {
           onGitPullChange(dependencyConfig, checked);
         }}
-        onPackageInstallChange={(checked): void => {
-          onPackageInstallChange(dependencyConfig, checked);
+        onInstallChange={(checked): void => {
+          onInstallChange(dependencyConfig, checked);
         }}
       />
       {onClickRemove && (
@@ -66,5 +58,3 @@ function DependencySelector({
     </div>
   );
 }
-
-export default DependencySelector;

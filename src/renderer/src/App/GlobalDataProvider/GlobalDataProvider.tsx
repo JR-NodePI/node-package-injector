@@ -1,18 +1,18 @@
 import { useCallback, useMemo } from 'react';
 
-import DependencyConfig from '@renderer/models/DependencyConfig';
-import PackageConfig from '@renderer/models/PackageConfig';
-import PackageConfigBunch from '@renderer/models/PackageConfigBunch';
+import DependencyPackage from '@renderer/models/DependencyPackage';
+import PackageBunch from '@renderer/models/PackageBunch';
+import TargetPackage from '@renderer/models/TargetPackage';
 import { debounce } from 'lodash';
 
 import GlobalDataContext, { GlobalDataProps } from './GlobalDataContext';
 import useLoadTerminal from './hooks/useLoadTerminal';
 import usePersistedState from './hooks/usePersistedState';
 
-const getPackageConfigBunchesTemplateValue = (): PackageConfigBunch[] => {
-  const template = new PackageConfigBunch();
-  template.packageConfig = new PackageConfig();
-  template.dependencies = [new DependencyConfig()];
+const getPackageBunchTemplateValue = (): PackageBunch[] => {
+  const template = new PackageBunch();
+  template.targetPackage = new TargetPackage();
+  template.dependencies = [new DependencyPackage()];
   return [template];
 };
 
@@ -26,21 +26,21 @@ export default function GlobalDataProvider({
   const [isWSLActive, setIsWSLActive, isWSLActiveLoading] =
     usePersistedState<boolean>('isWSLActive', false);
 
-  const [
-    packageConfigBunches,
-    setPackageConfigBunches,
-    packageConfigBunchesLoading,
-  ] = usePersistedState<PackageConfigBunch[]>(
-    'packageConfigBunches',
-    [],
-    getPackageConfigBunchesTemplateValue()
-  );
+  const [packageBunches, setPackageBunch, packageBunchesLoading] =
+    usePersistedState<PackageBunch[]>(
+      'packageBunches',
+      [],
+      getPackageBunchTemplateValue()
+    );
 
-  const setPackageConfigBunchActive = (key: string, data: unknown): void => {
-    const bunchIndex = packageConfigBunches.findIndex(bunch => bunch.active);
+  const setPackageBunchActive = (
+    key: keyof PackageBunch,
+    data: unknown
+  ): void => {
+    const bunchIndex = packageBunches.findIndex(bunch => bunch.active);
     if (bunchIndex >= 0) {
-      setPackageConfigBunches(
-        packageConfigBunches.map((bunch, index) => {
+      setPackageBunch(
+        packageBunches.map((bunch, index) => {
           if (index === bunchIndex) {
             bunch[key] = data;
           }
@@ -50,59 +50,56 @@ export default function GlobalDataProvider({
     }
   };
 
-  const setActivePackageConfig = useCallback(
-    debounce((packageConfig: PackageConfig) => {
-      setPackageConfigBunchActive('packageConfig', packageConfig);
+  const setActiveTargetPackage = useCallback(
+    debounce((targetPackage: TargetPackage) => {
+      setPackageBunchActive('targetPackage', targetPackage);
     }, 10),
-    [packageConfigBunches]
+    [packageBunches]
   );
 
   const setActiveDependencies = useCallback(
-    debounce((dependencies: DependencyConfig[]) => {
-      setPackageConfigBunchActive('dependencies', dependencies);
+    debounce((dependencies: DependencyPackage[]) => {
+      setPackageBunchActive('dependencies', dependencies);
     }, 10),
-    [packageConfigBunches]
+    [packageBunches]
   );
 
   const providerValue = useMemo<GlobalDataProps>((): GlobalDataProps => {
-    const activePackageConfigBunch =
-      packageConfigBunches?.find(bunch => bunch.active) ??
-      new PackageConfigBunch();
+    const activePackageBunch =
+      packageBunches?.find(bunch => bunch.active) ?? new PackageBunch();
 
-    const activeDependencies = activePackageConfigBunch?.dependencies ?? [];
+    const activeDependencies = activePackageBunch?.dependencies ?? [];
 
-    const activePackageConfig =
-      activePackageConfigBunch?.packageConfig ?? new PackageConfig();
+    const activeTargetPackage =
+      activePackageBunch?.targetPackage ?? new TargetPackage();
 
     const loading =
-      isValidTerminalLoading ||
-      packageConfigBunchesLoading ||
-      isWSLActiveLoading;
+      isValidTerminalLoading || packageBunchesLoading || isWSLActiveLoading;
 
     return {
       activeDependencies,
-      activePackageConfig,
-      activePackageConfigBunch,
+      activeTargetPackage,
+      activePackageBunch,
       isValidTerminal,
       isWSLActive,
       loading,
-      packageConfigBunches,
+      packageBunches,
       setActiveDependencies,
-      setActivePackageConfig,
+      setActiveTargetPackage,
       setIsWSLActive,
-      setPackageConfigBunches,
+      setPackageBunch,
     };
   }, [
     isValidTerminal,
     isValidTerminalLoading,
     isWSLActive,
     isWSLActiveLoading,
-    packageConfigBunchesLoading,
-    packageConfigBunches,
+    packageBunchesLoading,
+    packageBunches,
     setActiveDependencies,
-    setActivePackageConfig,
+    setActiveTargetPackage,
     setIsWSLActive,
-    setPackageConfigBunches,
+    setPackageBunch,
   ]);
 
   return (

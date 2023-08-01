@@ -1,4 +1,4 @@
-import DependencyConfig from '@renderer/models/DependencyConfig';
+import DependencyPackage from '@renderer/models/DependencyPackage';
 import { type PackageInstallModeValue } from '@renderer/models/PackageInstallMode';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
@@ -10,46 +10,48 @@ import styles from './PackagePage.module.css';
 
 export default function PackagePage(): JSX.Element {
   const {
-    packageConfigBunches,
-    activePackageConfigBunch,
-    setActivePackageConfig,
+    packageBunches,
+    activePackageBunch,
+    setActiveTargetPackage,
     setActiveDependencies,
   } = useGlobalData();
-  const activeBunch = packageConfigBunches.find(bunch => bunch.active);
-  const activePackageConfig = activeBunch?.packageConfig;
+  const activeBunch = packageBunches.find(bunch => bunch.active);
+  const activeTargetPackage = activeBunch?.targetPackage;
   const activeDependencies = activeBunch?.dependencies;
 
   const handlePathChange = (cwd: string, isValidPackage): void => {
-    const packageConfig = activePackageConfig?.clone();
-    if (packageConfig) {
-      packageConfig.cwd = cwd;
-      packageConfig.isValidPackage = isValidPackage;
-      setActivePackageConfig?.(packageConfig);
+    const targetPackage = activeTargetPackage?.clone();
+    if (targetPackage) {
+      targetPackage.cwd = cwd;
+      targetPackage.isValidPackage = isValidPackage;
+      setActiveTargetPackage?.(targetPackage);
     }
   };
 
   const handleGitPullChange = (checked?: boolean): void => {
-    const packageConfig = activePackageConfig?.clone();
-    if (packageConfig) {
-      packageConfig.performGitPull = checked ?? false;
-      setActivePackageConfig?.(packageConfig);
+    const targetPackage = activeTargetPackage?.clone();
+    if (targetPackage) {
+      targetPackage.performGitPull = checked ?? false;
+      setActiveTargetPackage?.(targetPackage);
     }
   };
 
-  const handlePackageInstallChange = (mode?: PackageInstallModeValue): void => {
-    const packageConfig = activePackageConfig?.clone();
-    if (packageConfig) {
-      packageConfig.performInstallMode = mode;
-      setActivePackageConfig?.(packageConfig);
+  const handleInstallChange = (mode?: PackageInstallModeValue): void => {
+    const targetPackage = activeTargetPackage?.clone();
+    if (targetPackage) {
+      targetPackage.performInstallMode = mode;
+      setActiveTargetPackage?.(targetPackage);
     }
   };
 
-  const handleDependenciesChange = (dependencies: DependencyConfig[]): void => {
+  const handleDependenciesChange = (
+    dependencies: DependencyPackage[]
+  ): void => {
     setActiveDependencies?.(dependencies);
   };
 
   const excludedDirectories = [
-    activePackageConfig?.cwd ?? '',
+    activeTargetPackage?.cwd ?? '',
     ...(activeDependencies?.map(d => d.cwd ?? '').filter(Boolean) ?? []),
   ];
 
@@ -60,22 +62,22 @@ export default function PackagePage(): JSX.Element {
         <span className={c(styles.badge)}>
           <span
             className={c(styles.dot_color)}
-            style={{ background: activePackageConfigBunch.color }}
+            style={{ background: activePackageBunch.color }}
           />
-          {activePackageConfigBunch.name}
+          {activePackageBunch.name}
         </span>
       </h1>
       <PackageSelector
-        packageConfig={activePackageConfig}
+        targetPackage={activeTargetPackage}
         onPathChange={handlePathChange}
         onGitPullChange={handleGitPullChange}
-        onPackageInstallChange={handlePackageInstallChange}
+        onInstallChange={handleInstallChange}
       />
       <Dependencies
         excludedDirectories={excludedDirectories}
         dependencies={activeDependencies}
         onDependenciesChange={handleDependenciesChange}
-        activePackageConfig={activePackageConfig}
+        activeTargetPackage={activeTargetPackage}
       />
     </>
   );

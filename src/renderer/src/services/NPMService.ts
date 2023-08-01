@@ -1,4 +1,4 @@
-import type DependencyConfig from '@renderer/models/DependencyConfig';
+import type DependencyPackage from '@renderer/models/DependencyPackage';
 
 import PathService from './PathService';
 import TerminalService, { TerminalResponse } from './TerminalService';
@@ -26,7 +26,7 @@ export default class NPMService {
   }
 
   private static getDependencyConfigIdsByNames(
-    dependencyConfigs: DependencyConfig[],
+    dependencyConfigs: DependencyPackage[],
     names: string[]
   ): string[] {
     return dependencyConfigs
@@ -77,8 +77,8 @@ export default class NPMService {
   }
 
   public static async getDependencyConfigsWithRelatedDependencyIds(
-    dependencyConfigs: DependencyConfig[]
-  ): Promise<DependencyConfig[]> {
+    dependencyConfigs: DependencyPackage[]
+  ): Promise<DependencyPackage[]> {
     const promises = dependencyConfigs.map(async depConf => {
       const npmDepNames = await NPMService.getDependenciesNamesFromPackageJSON(
         depConf.cwd

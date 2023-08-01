@@ -3,14 +3,14 @@ import { useContext, useEffect, useState } from 'react';
 import { Button, Icons, Modal, Spinner, ToasterListContext } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
+import { ProcessService } from '../../services/ProcessService';
 import useGlobalData from '../GlobalDataProvider/hooks/useGlobalData';
-import { ProcessService } from './ProcessService';
 
 import styles from './Process.module.css';
 
 export default function Process(): JSX.Element {
   const { addToaster } = useContext(ToasterListContext);
-  const { activePackageConfig, activeDependencies } = useGlobalData();
+  const { activeTargetPackage, activeDependencies } = useGlobalData();
 
   const [isRunning, setIsRunning] = useState(false);
   const [isSyncing] = useState(false); //TODO: get from process
@@ -20,7 +20,7 @@ export default function Process(): JSX.Element {
     (async (): Promise<void> => {
       if (isRunning) {
         const output = await ProcessService.run(
-          activePackageConfig,
+          activeTargetPackage,
           activeDependencies
         );
 
@@ -32,8 +32,9 @@ export default function Process(): JSX.Element {
           addToaster({
             title,
             message: content || error || '',
-            type: content ? (hasErrors ? 'info' : 'success') : 'error',
+            type: error ? 'error' : hasErrors ? 'info' : 'success',
             nlToBr: true,
+            duration: !hasErrors ? 3000 : 0,
           });
         });
       }
@@ -48,17 +49,15 @@ export default function Process(): JSX.Element {
     setIsRunning(false);
   };
 
-  const showRunButton =
-    activePackageConfig?.isValidPackage &&
-    activeDependencies &&
-    activeDependencies?.length > 0 &&
-    activeDependencies?.every(d => d.isValidPackage) &&
-    !isRunning;
-
-  const showStopButton = isRunning;
-
   const processType = isSyncing ? 'secondary' : 'tertiary';
   const processMsg = isSyncing ? 'Syncing...' : 'Building...';
+
+  const showRunButton =
+    !isRunning &&
+    activeTargetPackage?.isValidPackage &&
+    activeDependencies?.every(d => d.isValidPackage);
+
+  const showStopButton = isSyncing;
 
   return (
     <>
@@ -81,7 +80,6 @@ export default function Process(): JSX.Element {
       )}
       {showStopButton && (
         <Button
-          disabled={!isSyncing}
           Icon={Icons.IconPause}
           className={c(styles.stop_button)}
           label="Pause"

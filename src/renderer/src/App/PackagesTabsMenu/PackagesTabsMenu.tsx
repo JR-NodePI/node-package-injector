@@ -1,7 +1,7 @@
 import { TabsMenu } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
-import useTabsFromPackageConfigBunches from './useTabsFromPackageConfigBunches';
+import useTabsFromPackageBunches from './useTabsFromPackageBunches';
 
 import styles from './PackagesTabsMenu.module.css';
 
@@ -14,7 +14,7 @@ export default function PackagesTabsMenu(): JSX.Element {
     onTabsChange,
     removable,
     tabs,
-  } = useTabsFromPackageConfigBunches();
+  } = useTabsFromPackageBunches();
 
   return (
     <TabsMenu
