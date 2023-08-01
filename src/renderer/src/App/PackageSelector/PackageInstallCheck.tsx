@@ -42,7 +42,7 @@ export default function PackageInstallCheck({
   }
 
   const label = `${
-    installMode === PackageInstallMode.NPM ? 'npm' : 'yarn'
+    installMode === PackageInstallMode.YARN ? 'yarn' : 'npm'
   } install`;
 
   const handleOnChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
@@ -52,7 +52,7 @@ export default function PackageInstallCheck({
   return (
     <Form.InputCheck
       disabled={disabled}
-      checked={targetPackage?.performInstallMode != null}
+      checked={targetPackage?.installMode != null}
       label={label}
       onChange={handleOnChange}
     />

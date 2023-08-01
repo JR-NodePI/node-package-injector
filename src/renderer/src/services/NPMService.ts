@@ -1,12 +1,14 @@
 import type DependencyPackage from '@renderer/models/DependencyPackage';
+import {
+  PackageInstallMode,
+  PackageInstallModeValue,
+} from '@renderer/models/PackageInstallMode';
 
 import PathService from './PathService';
 import TerminalService, { TerminalResponse } from './TerminalService';
 
 export default class NPMService {
-  private static async getDependenciesNamesFromPackageJSON(
-    cwd?: string
-  ): Promise<string[]> {
+  private static async getDependenciesNames(cwd?: string): Promise<string[]> {
     try {
       const fileContent = await window.api.fs.readFile(
         window.api.path.join(cwd ?? '', 'package.json'),
@@ -25,7 +27,7 @@ export default class NPMService {
     }
   }
 
-  private static getDependencyConfigIdsByNames(
+  private static getDependencyIdsByNames(
     dependencyConfigs: DependencyPackage[],
     names: string[]
   ): string[] {
@@ -38,9 +40,7 @@ export default class NPMService {
       .map(({ id: uuid }) => uuid);
   }
 
-  private static async getNodeNpmYarnVersions(): Promise<{
-    [key: string]: string;
-  }> {
+  private static async getNodeVersions(): Promise<Record<string, string>> {
     const output = await TerminalService.executeCommand({
       command: 'bash',
       args: [window.api.path.join('.', '/', 'check_node.sh')],
@@ -59,7 +59,7 @@ export default class NPMService {
   }
 
   public static async checkNodeNpmYarn(): Promise<boolean> {
-    const data = await NPMService.getNodeNpmYarnVersions();
+    const data = await NPMService.getNodeVersions();
     return data?.node != null && data?.npm != null && data?.yarn != null;
   }
 
@@ -76,39 +76,36 @@ export default class NPMService {
     return true;
   }
 
-  public static async getDependencyConfigsWithRelatedDependencyIds(
+  public static async getDependenciesWithRelatedDependencyIds(
     dependencyConfigs: DependencyPackage[]
   ): Promise<DependencyPackage[]> {
     const promises = dependencyConfigs.map(async depConf => {
-      const npmDepNames = await NPMService.getDependenciesNamesFromPackageJSON(
-        depConf.cwd
-      );
+      const npmDepNames = await NPMService.getDependenciesNames(depConf.cwd);
 
       const newDependency = depConf.clone();
       newDependency.relatedDependencyConfigIds =
-        NPMService.getDependencyConfigIdsByNames(
-          dependencyConfigs,
-          npmDepNames
-        );
+        NPMService.getDependencyIdsByNames(dependencyConfigs, npmDepNames);
       return newDependency;
     });
 
     return await Promise.all(promises);
   }
 
-  static async install(cwd: string): Promise<TerminalResponse> {
-    //TODO: check is yarn or npm
-    return await TerminalService.executeCommand({
-      command: 'yarn',
-      args: ['install', '--pure-lock'],
-      cwd,
-    });
-  }
+  static async install(
+    cwd: string,
+    mode: PackageInstallModeValue
+  ): Promise<TerminalResponse> {
+    if (mode === PackageInstallMode.YARN) {
+      return await TerminalService.executeCommand({
+        command: 'yarn',
+        args: ['install', '--pure-lock'],
+        cwd,
+      });
+    }
 
-  static async yarnDist(cwd: string): Promise<TerminalResponse> {
     return await TerminalService.executeCommand({
-      command: 'yarn',
-      args: ['dist'],
+      command: 'npm',
+      args: ['install', '--pure-lockfile'],
       cwd,
     });
   }
@@ -139,29 +136,17 @@ export default class NPMService {
     return true;
   }
 
-  static async getBuildScripts(cwd: string): Promise<string> {
+  static async getPackageScripts(cwd: string): Promise<Record<string, string>> {
     const output = await TerminalService.executeCommand({
       command: 'npm',
       args: ['pkg', 'get', 'scripts'],
       cwd,
     });
 
-    let scripts: { [key: string]: string };
     try {
-      scripts = JSON.parse(output.content ?? '{}');
+      return JSON.parse(output.content ?? '{}');
     } catch (error) {
-      scripts = {};
+      return {};
     }
-
-    // TODO: determine the script if contains "pack" or "dist"
-    if (scripts.dist) {
-      return scripts.dist;
-    }
-
-    if (scripts.compile) {
-      return scripts.compile;
-    }
-
-    return '';
   }
 }

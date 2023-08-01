@@ -39,7 +39,7 @@ export default function PackagePage(): JSX.Element {
   const handleInstallChange = (mode?: PackageInstallModeValue): void => {
     const targetPackage = activeTargetPackage?.clone();
     if (targetPackage) {
-      targetPackage.performInstallMode = mode;
+      targetPackage.installMode = mode;
       setActiveTargetPackage?.(targetPackage);
     }
   };

@@ -8,7 +8,7 @@ export default class TargetPackage {
   public cwd?: string;
   public isValidPackage = false;
   public performGitPull = false;
-  public performInstallMode?: PackageInstallModeValue;
+  public installMode?: PackageInstallModeValue;
 
   public clone(): TargetPackage {
     const clone = new TargetPackage();
@@ -18,7 +18,7 @@ export default class TargetPackage {
     clone.cwd = this.cwd;
     clone.isValidPackage = this.isValidPackage;
     clone.performGitPull = this.performGitPull;
-    clone.performInstallMode = this.performInstallMode;
+    clone.installMode = this.installMode;
 
     return clone;
   }
