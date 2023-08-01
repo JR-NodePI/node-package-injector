@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import DependencyConfig from '@renderer/models/DependencyConfig';
 import PackageConfig from '@renderer/models/PackageConfig';
+import { type PackageInstallModeValue } from '@renderer/models/PackageInstallMode';
 import NPMService from '@renderer/services/NPMService';
 import PathService from '@renderer/services/PathService';
 import { Button, Icons } from 'fratch-ui';
@@ -124,16 +125,16 @@ function Dependencies({
     onDependenciesChange?.(newDependencies);
   };
 
-  const handleYarnInstallChange = (
+  const handlePackageInstallChange = (
     dependencyConfig: DependencyConfig,
-    checked?: boolean
+    mode?: PackageInstallModeValue
   ): void => {
     const newDependencies = getUpdatedDependencyLits(
       dependencies,
       dependencyConfig,
       () => {
         const clone = dependencyConfig.clone();
-        clone.performYarnInstall = Boolean(checked);
+        clone.performInstallMode = mode;
         return clone;
       }
     );
@@ -159,7 +160,7 @@ function Dependencies({
               onGitPullChange={handleGitPullChange}
               onPathChange={handlePathChange}
               onSyncModeChange={handleSyncModeChange}
-              onYarnInstallChange={handleYarnInstallChange}
+              onPackageInstallChange={handlePackageInstallChange}
             />
           )
       )}

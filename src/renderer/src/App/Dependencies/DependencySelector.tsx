@@ -16,7 +16,7 @@ function DependencySelector({
   onGitPullChange,
   onPathChange,
   onSyncModeChange,
-  onYarnInstallChange,
+  onPackageInstallChange,
 }: DependencySelectorProps): JSX.Element {
   const handlePathChange = (cwd: string, isValidPackage): void => {
     onPathChange(dependencyConfig, cwd, isValidPackage);
@@ -47,8 +47,8 @@ function DependencySelector({
         onGitPullChange={(checked): void => {
           onGitPullChange(dependencyConfig, checked);
         }}
-        onYarnInstallChange={(checked): void => {
-          onYarnInstallChange(dependencyConfig, checked);
+        onPackageInstallChange={(checked): void => {
+          onPackageInstallChange(dependencyConfig, checked);
         }}
       />
       {onClickRemove && (

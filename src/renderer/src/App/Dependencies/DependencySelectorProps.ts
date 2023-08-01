@@ -1,5 +1,6 @@
 import type DependencyConfig from '@renderer/models/DependencyConfig';
 import { type DependencyMode } from '@renderer/models/DependencyConfigConstants';
+import { type PackageInstallModeValue } from '@renderer/models/PackageInstallMode';
 
 export type DependencySelectorProps = {
   disabled?: boolean;
@@ -19,8 +20,8 @@ export type DependencySelectorProps = {
     dependencyConfig: DependencyConfig,
     mode: (typeof DependencyMode)[keyof typeof DependencyMode]
   ) => void;
-  onYarnInstallChange: (
+  onPackageInstallChange: (
     dependencyConfig: DependencyConfig,
-    checked?: boolean
+    mode?: PackageInstallModeValue
   ) => void;
 };

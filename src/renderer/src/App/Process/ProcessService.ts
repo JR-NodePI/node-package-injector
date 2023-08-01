@@ -28,7 +28,7 @@ export class ProcessService {
     }
 
     // package yarn install
-    if (packageConfig.performYarnInstall) {
+    if (packageConfig.performInstallMode) {
       const output = await NPMService.install(swd);
       if (output.error) {
         return [{ ...output, title: 'Package yarn install' }];
@@ -49,7 +49,7 @@ export class ProcessService {
         }
 
         // dependency yarn install
-        if (dependency.performYarnInstall) {
+        if (dependency.performInstallMode) {
           const output = await NPMService.install(depCwd);
           if (output.error) {
             return { ...output, title: `Dependency "${depName}" yarn install` };
