@@ -1,13 +1,18 @@
 import { DependencyMode } from '@renderer/models/DependencyConstants';
 import { Form } from 'fratch-ui';
 
-import { DependencyModeSelectorProps } from './DependencySelectorProps';
+import { DependencySelectorProps } from './DependencySelectorProps';
+
+type DependencyModeCheckProps = Pick<
+  DependencySelectorProps,
+  'disabled' | 'dependency' | 'onModeChange'
+>;
 
 export default function DependencyModeCheck({
   disabled,
   dependency,
   onModeChange,
-}: DependencyModeSelectorProps): JSX.Element {
+}: DependencyModeCheckProps): JSX.Element {
   return (
     <Form.InputCheck
       disabled={disabled}

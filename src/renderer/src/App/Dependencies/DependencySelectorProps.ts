@@ -21,9 +21,5 @@ export type DependencySelectorProps = {
     dependency: DependencyPackage,
     mode?: PackageInstallModeValue
   ) => void;
+  onScriptChange?: (dependency: DependencyPackage, script?: string) => void;
 };
-
-export type DependencyModeSelectorProps = Pick<
-  DependencySelectorProps,
-  'disabled' | 'dependency' | 'onModeChange'
->;

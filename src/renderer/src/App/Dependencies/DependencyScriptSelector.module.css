@@ -2,6 +2,7 @@
   display: flex;
   gap: 16px;
   align-items: center;
+  max-width: 100%;
 }
 .mode_scripts > * {
   white-space: nowrap;
@@ -9,11 +10,20 @@
 }
 
 .mode_scripts .scripts_value {
-  flex: 1 1 auto;
-  padding: 4px 8px;
-  background-color: var(--ft-button-default-bg-color);
+  flex: 1 1 100%;
+  position: relative;
+  padding: 0 8px;
+  background-color: var(--ft-select-list-item-bg-color-hover);
+  border-radius: var(--ft-form-item-border-radius);
+  font-size: 12px;
+  overflow: hidden;
+  height: 2em;
+  line-height: 2em;
+}
+
+.mode_scripts .scripts_value > * {
+  position: absolute;
+  width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
-  border-radius: var(--ft-form-item-border-radius);
-  font-weight: 12px;
 }

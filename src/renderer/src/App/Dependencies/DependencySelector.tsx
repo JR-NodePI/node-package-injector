@@ -19,6 +19,7 @@ export default function DependencySelector({
   onPathChange,
   onModeChange,
   onInstallChange,
+  onScriptChange,
 }: DependencySelectorProps): JSX.Element {
   const handlePathChange = (cwd: string, isValidPackage): void => {
     onPathChange(dependency, cwd, isValidPackage);
@@ -29,7 +30,7 @@ export default function DependencySelector({
       <PackageSelector
         additionalOptionComponent={
           <DependencyModeCheck
-            disabled={disabled}
+            disabled //TODO: ={disabled}, enable when sync mode will be implemented
             dependency={dependency}
             onModeChange={onModeChange}
           />
@@ -38,9 +39,8 @@ export default function DependencySelector({
           dependency.isValidPackage &&
           dependency.mode === DependencyMode.BUILD ? (
             <DependencyScriptSelector
-              disabled={disabled}
               dependency={dependency}
-              onModeChange={onModeChange}
+              onScriptChange={onScriptChange}
             />
           ) : (
             <></>
