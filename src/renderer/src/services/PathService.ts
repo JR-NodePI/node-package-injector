@@ -45,4 +45,14 @@ export default class PathService {
     const homedir = window.api.os.homedir();
     return setWSL ? await WSLService.getSWLHomePath(homedir) : homedir;
   }
+
+  public static getExtraResourcesScriptPath(scriptFileName: string): string {
+    return window.api.path
+      .join(window.api.extraResourcesPath, '/', scriptFileName)
+      .replace(
+        /^[a-z]{1}:/gi,
+        match => `/mnt/${match.toLowerCase().replace(':', '')}`
+      )
+      .replace(/\\/gi, '/');
+  }
 }
