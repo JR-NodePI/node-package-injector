@@ -42,9 +42,7 @@ function Dependencies({
   ): Promise<void> => {
     setLoading(true);
     onDependenciesChange?.(
-      await NPMService.getDependencyConfigsWithRelatedDependencyIds(
-        newDependencies
-      )
+      await NPMService.getDependenciesWithRelatedDependencyIds(newDependencies)
     );
     setLoading(false);
   };
@@ -134,7 +132,7 @@ function Dependencies({
       dependencyConfig,
       () => {
         const clone = dependencyConfig.clone();
-        clone.performInstallMode = mode;
+        clone.installMode = mode;
         return clone;
       }
     );

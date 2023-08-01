@@ -1,4 +1,3 @@
-import { DependencyMode } from '@renderer/models/DependencyConstants';
 import DependencyPackage from '@renderer/models/DependencyPackage';
 import TargetPackage from '@renderer/models/TargetPackage';
 import GitService from '@renderer/services/GitService';
@@ -6,13 +5,13 @@ import NPMService from '@renderer/services/NPMService';
 import PathService from '@renderer/services/PathService';
 import { TerminalResponse } from '@renderer/services/TerminalService';
 
-type Resp = TerminalResponse & { title: string };
+type ProcessServiceResponse = TerminalResponse & { title: string };
 
 export class ProcessService {
   public static async run(
     targetPackage: TargetPackage,
     dependencies: DependencyPackage[]
-  ): Promise<Resp[]> {
+  ): Promise<ProcessServiceResponse[]> {
     if (targetPackage.cwd == null) {
       return [{ error: 'Package cwd is null', title: 'Invalid package' }];
     }
@@ -28,10 +27,10 @@ export class ProcessService {
     }
 
     // package yarn install
-    if (targetPackage.performInstallMode) {
-      const output = await NPMService.install(swd);
+    if (targetPackage.installMode) {
+      const output = await NPMService.install(swd, targetPackage.installMode);
       if (output.error) {
-        return [{ ...output, title: 'Package yarn install' }];
+        return [{ ...output, title: 'Package install' }];
       }
     }
 
@@ -40,7 +39,7 @@ export class ProcessService {
         const depCwd = dependency.cwd ?? '';
         const depName = PathService.getPathDirectories(depCwd).pop();
 
-        // dependency git pull
+        // dependency pull
         if (dependency.performGitPull) {
           const output = await GitService.pull(depCwd);
           if (output.error) {
@@ -48,23 +47,26 @@ export class ProcessService {
           }
         }
 
-        // dependency yarn install
-        if (dependency.performInstallMode) {
-          const output = await NPMService.install(depCwd);
+        // dependency install
+        if (dependency.installMode) {
+          const output = await NPMService.install(
+            depCwd,
+            dependency.installMode
+          );
           if (output.error) {
-            return { ...output, title: `Dependency "${depName}" yarn install` };
+            return { ...output, title: `Dependency "${depName}" install` };
           }
         }
 
-        // dependency yarn dist
-        if (dependency.mode === DependencyMode.BUILD) {
-          await NPMService.getBuildScripts(depCwd);
-
-          const output = await NPMService.yarnDist(depCwd);
-          if (output.error) {
-            return { ...output, title: `Dependency "${depName}" yarn dist` };
-          }
-        }
+        //         // dependency yarn dist
+        //         if (dependency.mode === DependencyMode.BUILD) {
+        //           await NPMService.getBuildScripts(depCwd);
+        //
+        //           const output = await NPMService.yarnDist(depCwd);
+        //           if (output.error) {
+        //             return { ...output, title: `Dependency "${depName}" yarn dist` };
+        //           }
+        //         }
 
         return { title: `Dependency "${depName}" success` };
       }
