@@ -91,52 +91,49 @@ function Dependencies({
     setDependenciesWithNPM(newDependencies);
   };
 
-  const handleModeChange = (
+  const changeDependencyProp = (
     dependency: DependencyPackage,
-    mode: typeof dependency.mode
+    key: string,
+    value: unknown
   ): void => {
     const newDependencies = getUpdatedDependencyLits(
       dependencies,
       dependency,
       () => {
         const clone = dependency.clone();
-        clone.mode = mode;
+        clone[key] = value;
         return clone;
       }
     );
     onDependenciesChange?.(newDependencies);
+  };
+
+  const handleModeChange = (
+    dependency: DependencyPackage,
+    mode: typeof dependency.mode
+  ): void => {
+    changeDependencyProp(dependency, 'mode', mode);
   };
 
   const handleGitPullChange = (
     dependency: DependencyPackage,
     checked?: boolean
   ): void => {
-    const newDependencies = getUpdatedDependencyLits(
-      dependencies,
-      dependency,
-      () => {
-        const clone = dependency.clone();
-        clone.performGitPull = Boolean(checked);
-        return clone;
-      }
-    );
-    onDependenciesChange?.(newDependencies);
+    changeDependencyProp(dependency, 'performGitPull', Boolean(checked));
   };
 
   const handleInstallChange = (
     dependency: DependencyPackage,
-    mode?: PackageInstallModeValue
+    installMode?: PackageInstallModeValue
   ): void => {
-    const newDependencies = getUpdatedDependencyLits(
-      dependencies,
-      dependency,
-      () => {
-        const clone = dependency.clone();
-        clone.installMode = mode;
-        return clone;
-      }
-    );
-    onDependenciesChange?.(newDependencies);
+    changeDependencyProp(dependency, 'installMode', installMode);
+  };
+
+  const handleScriptChange = (
+    dependency: DependencyPackage,
+    script?: string
+  ): void => {
+    changeDependencyProp(dependency, 'script', script);
   };
 
   if (!activeTargetPackage?.isValidPackage) {
@@ -159,6 +156,7 @@ function Dependencies({
               onPathChange={handlePathChange}
               onModeChange={handleModeChange}
               onInstallChange={handleInstallChange}
+              onScriptChange={handleScriptChange}
             />
           )
       )}

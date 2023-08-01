@@ -5,32 +5,39 @@ import NPMService from '@renderer/services/NPMService';
 import { Form } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
-import { DependencyModeSelectorProps } from './DependencySelectorProps';
+import { type DependencySelectorProps } from './DependencySelectorProps';
 
 import styles from './DependencyScriptSelector.module.css';
 
+type DependencyScriptSelectorProps = Pick<
+  DependencySelectorProps,
+  'dependency' | 'onScriptChange'
+>;
+
 export default function DependencyScriptSelector({
   dependency,
-}: DependencyModeSelectorProps): JSX.Element {
-  const [options, setScripts] = useState<
+  onScriptChange,
+}: DependencyScriptSelectorProps): JSX.Element {
+  const selectorPlaceholder = 'Select script...';
+  const [script, setScript] = useState<string>(dependency.script ?? '');
+  const [scriptOptions, setScriptOptions] = useState<
     Form.SelectProps.SelectOption<string>[]
   >([]);
 
   useEffect(() => {
     (async (): Promise<void> => {
       const scripts = await NPMService.getPackageScripts(dependency?.cwd ?? '');
-      setScripts(
-        Object.entries(scripts).map(([key, value]) => ({
-          value,
-          label: key,
-        }))
-      );
+      const scriptOptions = Object.entries(scripts).map(([key, value]) => ({
+        value,
+        label: key,
+      }));
+      setScriptOptions(scriptOptions);
     })();
   }, []);
 
-  const [script, setScript] = useState<string>();
   const handleOnChange = (value?: string): void => {
-    setScript(value);
+    onScriptChange?.(dependency, value);
+    setScript(value ?? '');
   };
 
   return (
@@ -41,15 +48,17 @@ export default function DependencyScriptSelector({
             label={<>Package script</>}
             field={
               <Form.Select
-                options={options}
-                placeholder="Select script..."
+                value={script}
+                options={scriptOptions}
+                placeholder={selectorPlaceholder}
                 onChange={handleOnChange}
+                cleanable
               />
             }
           />
           {script && (
             <p title={script} className={c(styles.scripts_value)}>
-              {script}
+              <span>{script}</span>
             </p>
           )}
         </>
