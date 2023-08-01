@@ -43,7 +43,7 @@ export default class NPMService {
   private static async getNodeVersions(): Promise<Record<string, string>> {
     const output = await TerminalService.executeCommand({
       command: 'bash',
-      args: [window.api.path.join('.', '/', 'check_node.sh')],
+      args: [PathService.getExtraResourcesScriptPath('check_node.sh')],
       cwd: window.api.path.join(window.api.extraResourcesPath),
     });
 
@@ -91,7 +91,7 @@ export default class NPMService {
     return await Promise.all(promises);
   }
 
-  static async install(
+  public static async install(
     cwd: string,
     mode: PackageInstallModeValue
   ): Promise<TerminalResponse> {
@@ -110,7 +110,7 @@ export default class NPMService {
     });
   }
 
-  static async checkYarn(cwd: string): Promise<boolean> {
+  public static async checkYarn(cwd: string): Promise<boolean> {
     try {
       await window.api.fs.access(
         window.api.path.join(cwd, 'yarn.lock'),
@@ -123,16 +123,12 @@ export default class NPMService {
     return true;
   }
 
-  static async getPackageScripts(cwd: string): Promise<Record<string, string>> {
+  public static async getPackageScripts(
+    cwd: string
+  ): Promise<Record<string, string>> {
     const output = await TerminalService.executeCommand({
       command: 'bash',
-      args: [
-        window.api.path.join(
-          window.api.extraResourcesPath,
-          '/',
-          'npm_get_scripts.sh'
-        ),
-      ],
+      args: [PathService.getExtraResourcesScriptPath('npm_get_scripts.sh')],
       cwd,
     });
 
