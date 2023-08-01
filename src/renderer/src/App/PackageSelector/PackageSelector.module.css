@@ -1,18 +1,18 @@
-.project .label {
+.package .label {
   display: block;
   margin-bottom: 8px;
 }
-.project .options {
+.package .options {
   display: flex;
   gap: 16px;
   align-items: center;
 }
-.project .options > * {
+.package .options > * {
   white-space: nowrap;
   margin-bottom: 8px;
 }
 
-.project .options .branch {
+.package .options .branch {
   width: 100%;
   margin-bottom: 0;
 }

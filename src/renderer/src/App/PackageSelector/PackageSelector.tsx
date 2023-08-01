@@ -14,13 +14,14 @@ import { type PackageSelectorProps } from './PackageSelectorProps';
 import styles from './PackageSelector.module.css';
 
 function PackageSelector({
+  additionalComponent,
+  additionalOptionComponent,
   disabled,
   excludedDirectories,
-  additionalComponent,
-  targetPackage,
   onGitPullChange,
-  onPathChange,
   onInstallChange,
+  onPathChange,
+  targetPackage,
 }: PackageSelectorProps): JSX.Element {
   const triggerElementRef = useRef<HTMLInputElement>(null);
   const [statePathDirectories, setPathDirectories] = useState<string[]>();
@@ -82,7 +83,7 @@ function PackageSelector({
       const newPathDirectories = [...pathDirectories, value];
       setPathDirectories(newPathDirectories);
     }
-    // wait to focus the trigger input element again
+    //TODO: wait to focus the trigger input element again
     setTimeout(() => {
       triggerElementRef.current?.focus();
     }, 10);
@@ -111,7 +112,7 @@ function PackageSelector({
   const isDisabled = disabled || isValidating;
 
   return (
-    <div className={c(styles.project)}>
+    <div className={c(styles.package)}>
       <Form.LeftLabeledField
         label={
           <>
@@ -146,7 +147,6 @@ function PackageSelector({
             className={c(styles.branch)}
             cwd={cwd}
           />
-          {additionalComponent}
           <Form.InputCheck
             disabled={disabled}
             checked={targetPackage.performGitPull}
@@ -160,8 +160,10 @@ function PackageSelector({
             targetPackage={targetPackage}
             onInstallChange={onInstallChange}
           />
+          {additionalOptionComponent}
         </div>
       )}
+      {additionalComponent}
     </div>
   );
 }

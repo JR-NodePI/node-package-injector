@@ -28,10 +28,10 @@ export default class NPMService {
   }
 
   private static getDependencyIdsByNames(
-    dependencyConfigs: DependencyPackage[],
+    dependencys: DependencyPackage[],
     names: string[]
   ): string[] {
-    return dependencyConfigs
+    return dependencys
       .filter(({ cwd }) => {
         const pathDirectories = PathService.getPathDirectories(cwd);
         const name = pathDirectories.pop();
@@ -77,14 +77,14 @@ export default class NPMService {
   }
 
   public static async getDependenciesWithRelatedDependencyIds(
-    dependencyConfigs: DependencyPackage[]
+    dependencys: DependencyPackage[]
   ): Promise<DependencyPackage[]> {
-    const promises = dependencyConfigs.map(async depConf => {
+    const promises = dependencys.map(async depConf => {
       const npmDepNames = await NPMService.getDependenciesNames(depConf.cwd);
 
       const newDependency = depConf.clone();
       newDependency.relatedDependencyConfigIds =
-        NPMService.getDependencyIdsByNames(dependencyConfigs, npmDepNames);
+        NPMService.getDependencyIdsByNames(dependencys, npmDepNames);
       return newDependency;
     });
 
@@ -114,19 +114,6 @@ export default class NPMService {
     try {
       await window.api.fs.access(
         window.api.path.join(cwd, 'yarn.lock'),
-        window.api.fs.constants.F_OK
-      );
-    } catch (error) {
-      return false;
-    }
-
-    return true;
-  }
-
-  static async checkNPM(cwd: string): Promise<boolean> {
-    try {
-      await window.api.fs.access(
-        window.api.path.join(cwd, 'package-lock.json'),
         window.api.fs.constants.F_OK
       );
     } catch (error) {

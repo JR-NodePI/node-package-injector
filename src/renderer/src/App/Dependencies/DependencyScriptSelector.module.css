@@ -1,0 +1,19 @@
+.mode_scripts {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+.mode_scripts > * {
+  white-space: nowrap;
+  margin: 0 0 8px 0;
+}
+
+.mode_scripts .scripts_value {
+  flex: 1 1 auto;
+  padding: 4px 8px;
+  background-color: var(--ft-button-default-bg-color);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-radius: var(--ft-form-item-border-radius);
+  font-weight: 12px;
+}
