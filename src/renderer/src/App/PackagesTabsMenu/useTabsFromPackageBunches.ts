@@ -5,8 +5,8 @@ import {
   TABS_MINIMUM_REMOVABLE,
 } from '@renderer/constants';
 import { getTabTitle } from '@renderer/helpers/utilsHelpers';
-import PackageConfig from '@renderer/models/PackageConfig';
-import PackageConfigBunch from '@renderer/models/PackageConfigBunch';
+import PackageBunch from '@renderer/models/PackageBunch';
+import TargetPackage from '@renderer/models/TargetPackage';
 import PathService from '@renderer/services/PathService';
 import {
   type Tab,
@@ -27,32 +27,31 @@ type Props = {
   removable?: boolean;
 };
 
-const getDefaultPackageConfigBunch = async (
+const getDefaultPackageBunch = async (
   isWSLActive?: boolean
-): Promise<PackageConfigBunch> => {
-  const bunch = new PackageConfigBunch();
-  bunch.packageConfig = new PackageConfig();
-  bunch.packageConfig.cwd = await PathService.getHomePath(isWSLActive);
+): Promise<PackageBunch> => {
+  const bunch = new PackageBunch();
+  bunch.targetPackage = new TargetPackage();
+  bunch.targetPackage.cwd = await PathService.getHomePath(isWSLActive);
   bunch.active = true;
   bunch.name = getTabTitle(1);
   bunch.color = getRandomColor();
   return bunch;
 };
 
-export default function useTabsFromPackageConfigBunches(): Props {
-  const { isWSLActive, packageConfigBunches, setPackageConfigBunches } =
-    useGlobalData();
+export default function useTabsFromPackageBunches(): Props {
+  const { isWSLActive, packageBunches, setPackageBunch } = useGlobalData();
 
   const newTabTemplate = useMemo<Props['newTabTemplate']>(() => {
-    const excludedColors = packageConfigBunches.map(bunch => bunch.color);
+    const excludedColors = packageBunches.map(bunch => bunch.color);
     return {
-      label: getTabTitle(packageConfigBunches.length + 1),
+      label: getTabTitle(packageBunches.length + 1),
       color: getRandomColor(excludedColors),
     };
-  }, [packageConfigBunches]);
+  }, [packageBunches]);
 
   const [tabs, setTabs] = useState<Tab[]>(
-    packageConfigBunches.map(bunch => ({
+    packageBunches.map(bunch => ({
       label: bunch.name,
       active: bunch.active,
       color: bunch.color,
@@ -61,10 +60,10 @@ export default function useTabsFromPackageConfigBunches(): Props {
 
   // fill with one bunch and one tab if the list of bunches is empty
   useEffect(() => {
-    if (!packageConfigBunches.length) {
+    if (!packageBunches.length) {
       (async (): Promise<void> => {
-        const newBunch = await getDefaultPackageConfigBunch(isWSLActive);
-        setPackageConfigBunches?.([newBunch]);
+        const newBunch = await getDefaultPackageBunch(isWSLActive);
+        setPackageBunch?.([newBunch]);
 
         const tab = {
           label: newBunch.name,
@@ -74,23 +73,21 @@ export default function useTabsFromPackageConfigBunches(): Props {
         setTabs([tab]);
       })();
     }
-  }, [isWSLActive, packageConfigBunches]);
+  }, [isWSLActive, packageBunches]);
 
   const onTabRemove = ({ index }: TabEvent): void => {
-    setPackageConfigBunches?.(
-      packageConfigBunches.filter((_bunch, i) => i !== index)
-    );
+    setPackageBunch?.(packageBunches.filter((_bunch, i) => i !== index));
   };
 
   const onTabAdd = ({ label, color }: TabEvent): void => {
     (async (): Promise<void> => {
-      const newBunch = await getDefaultPackageConfigBunch(isWSLActive);
+      const newBunch = await getDefaultPackageBunch(isWSLActive);
       newBunch.active = true;
       newBunch.color = color;
       newBunch.name = label;
 
       const newBunches = [
-        ...(packageConfigBunches ?? []).map(bunch => {
+        ...(packageBunches ?? []).map(bunch => {
           const clone = bunch.clone();
           clone.active = false;
           return clone;
@@ -98,16 +95,16 @@ export default function useTabsFromPackageConfigBunches(): Props {
         newBunch,
       ];
 
-      setPackageConfigBunches?.(newBunches);
+      setPackageBunch?.(newBunches);
     })();
   };
 
   const onTabsChange = (newTabs: Tab[]): void => {
-    if (newTabs.length !== packageConfigBunches.length) {
+    if (newTabs.length !== packageBunches.length) {
       return;
     }
-    setPackageConfigBunches?.([
-      ...packageConfigBunches.map((bunch, index) => {
+    setPackageBunch?.([
+      ...packageBunches.map((bunch, index) => {
         const tab = newTabs[index];
         const clone = bunch.clone();
         clone.active = tab.active ?? false;
@@ -123,7 +120,7 @@ export default function useTabsFromPackageConfigBunches(): Props {
     onTabRemove,
     onTabAdd,
     onTabsChange,
-    addable: packageConfigBunches.length < TABS_MAXIMUM_ADDABLE,
-    removable: packageConfigBunches.length > TABS_MINIMUM_REMOVABLE,
+    addable: packageBunches.length < TABS_MAXIMUM_ADDABLE,
+    removable: packageBunches.length > TABS_MINIMUM_REMOVABLE,
   };
 }

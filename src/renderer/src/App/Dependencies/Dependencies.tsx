@@ -1,8 +1,8 @@
 import { useState } from 'react';
 
-import DependencyConfig from '@renderer/models/DependencyConfig';
-import PackageConfig from '@renderer/models/PackageConfig';
+import DependencyPackage from '@renderer/models/DependencyPackage';
 import { type PackageInstallModeValue } from '@renderer/models/PackageInstallMode';
+import TargetPackage from '@renderer/models/TargetPackage';
 import NPMService from '@renderer/services/NPMService';
 import PathService from '@renderer/services/PathService';
 import { Button, Icons } from 'fratch-ui';
@@ -13,11 +13,11 @@ import DependencySelector from './DependencySelector';
 import styles from './Dependencies.module.css';
 
 const getUpdatedDependencyLits = (
-  dependencies: DependencyConfig[] = [],
-  dependencyConfigToUpdate: DependencyConfig,
-  updateCallback: () => DependencyConfig
-): DependencyConfig[] =>
-  dependencies.map((dependencyConfig: DependencyConfig) => {
+  dependencies: DependencyPackage[] = [],
+  dependencyConfigToUpdate: DependencyPackage,
+  updateCallback: () => DependencyPackage
+): DependencyPackage[] =>
+  dependencies.map((dependencyConfig: DependencyPackage) => {
     if (dependencyConfig.id === dependencyConfigToUpdate.id) {
       return updateCallback();
     }
@@ -28,17 +28,17 @@ function Dependencies({
   excludedDirectories,
   dependencies,
   onDependenciesChange,
-  activePackageConfig,
+  activeTargetPackage,
 }: {
   excludedDirectories: string[];
-  dependencies?: DependencyConfig[];
-  onDependenciesChange?: (dependencies: DependencyConfig[]) => void;
-  activePackageConfig?: PackageConfig;
+  dependencies?: DependencyPackage[];
+  onDependenciesChange?: (dependencies: DependencyPackage[]) => void;
+  activeTargetPackage?: TargetPackage;
 }): JSX.Element {
   const [loading, setLoading] = useState(false);
 
   const setDependenciesWithNPM = async (
-    newDependencies: DependencyConfig[]
+    newDependencies: DependencyPackage[]
   ): Promise<void> => {
     setLoading(true);
     onDependenciesChange?.(
@@ -51,17 +51,17 @@ function Dependencies({
 
   const handleAddDependency = (): void => {
     if (
-      activePackageConfig?.cwd != null &&
-      activePackageConfig.isValidPackage
+      activeTargetPackage?.cwd != null &&
+      activeTargetPackage.isValidPackage
     ) {
-      const dependency = new DependencyConfig();
-      dependency.cwd = PathService.getPreviousPath(activePackageConfig.cwd);
+      const dependency = new DependencyPackage();
+      dependency.cwd = PathService.getPreviousPath(activeTargetPackage.cwd);
       setDependenciesWithNPM([...(dependencies ?? []), dependency]);
     }
   };
 
   const handlePathChange = (
-    dependencyConfig: DependencyConfig,
+    dependencyConfig: DependencyPackage,
     cwd: string,
     isValidPackage: boolean
   ): void => {
@@ -71,7 +71,7 @@ function Dependencies({
       () => {
         const newDependency = isValidPackage
           ? dependencyConfig.clone()
-          : new DependencyConfig();
+          : new DependencyPackage();
 
         newDependency.cwd = cwd;
         newDependency.isValidPackage = isValidPackage;
@@ -85,16 +85,16 @@ function Dependencies({
     setDependenciesWithNPM(newDependencies);
   };
 
-  const handleRemoveDependency = (dependency: DependencyConfig): void => {
+  const handleRemoveDependency = (dependency: DependencyPackage): void => {
     const newDependencies = (dependencies ?? []).filter(
-      (d: DependencyConfig) => d !== dependency
+      (d: DependencyPackage) => d !== dependency
     );
 
     setDependenciesWithNPM(newDependencies);
   };
 
-  const handleSyncModeChange = (
-    dependencyConfig: DependencyConfig,
+  const handleModeChange = (
+    dependencyConfig: DependencyPackage,
     mode: typeof dependencyConfig.mode
   ): void => {
     const newDependencies = getUpdatedDependencyLits(
@@ -110,7 +110,7 @@ function Dependencies({
   };
 
   const handleGitPullChange = (
-    dependencyConfig: DependencyConfig,
+    dependencyConfig: DependencyPackage,
     checked?: boolean
   ): void => {
     const newDependencies = getUpdatedDependencyLits(
@@ -125,8 +125,8 @@ function Dependencies({
     onDependenciesChange?.(newDependencies);
   };
 
-  const handlePackageInstallChange = (
-    dependencyConfig: DependencyConfig,
+  const handleInstallChange = (
+    dependencyConfig: DependencyPackage,
     mode?: PackageInstallModeValue
   ): void => {
     const newDependencies = getUpdatedDependencyLits(
@@ -141,7 +141,7 @@ function Dependencies({
     onDependenciesChange?.(newDependencies);
   };
 
-  if (!activePackageConfig?.isValidPackage) {
+  if (!activeTargetPackage?.isValidPackage) {
     return <></>;
   }
 
@@ -159,8 +159,8 @@ function Dependencies({
               onClickRemove={handleRemoveDependency}
               onGitPullChange={handleGitPullChange}
               onPathChange={handlePathChange}
-              onSyncModeChange={handleSyncModeChange}
-              onPackageInstallChange={handlePackageInstallChange}
+              onModeChange={handleModeChange}
+              onInstallChange={handleInstallChange}
             />
           )
       )}

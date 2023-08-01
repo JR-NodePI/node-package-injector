@@ -1,31 +1,29 @@
 import React from 'react';
 
-import DependencyConfig from '@renderer/models/DependencyConfig';
-import PackageConfig from '@renderer/models/PackageConfig';
-import PackageConfigBunch from '@renderer/models/PackageConfigBunch';
+import DependencyPackage from '@renderer/models/DependencyPackage';
+import PackageBunch from '@renderer/models/PackageBunch';
+import TargetPackage from '@renderer/models/TargetPackage';
 
 export type GlobalDataProps = {
   isWSLActive?: boolean;
-  activeDependencies: DependencyConfig[];
-  activePackageConfig: PackageConfig;
-  activePackageConfigBunch: PackageConfigBunch;
+  activeDependencies: DependencyPackage[];
+  activeTargetPackage: TargetPackage;
+  activePackageBunch: PackageBunch;
   isValidTerminal: boolean;
   loading?: boolean;
-  packageConfigBunches: PackageConfigBunch[];
+  packageBunches: PackageBunch[];
   setIsWSLActive?: React.Dispatch<React.SetStateAction<boolean>>;
-  setActiveDependencies?: (dependencies: DependencyConfig[]) => void;
-  setActivePackageConfig?: (packageConfig: PackageConfig) => void;
-  setPackageConfigBunches?: React.Dispatch<
-    React.SetStateAction<PackageConfigBunch[]>
-  >;
+  setActiveDependencies?: (dependencies: DependencyPackage[]) => void;
+  setActiveTargetPackage?: (targetPackage: TargetPackage) => void;
+  setPackageBunch?: React.Dispatch<React.SetStateAction<PackageBunch[]>>;
 };
 const GlobalDataContext = React.createContext<GlobalDataProps>({
   activeDependencies: [],
-  activePackageConfig: new PackageConfig(),
-  activePackageConfigBunch: new PackageConfigBunch(),
+  activeTargetPackage: new TargetPackage(),
+  activePackageBunch: new PackageBunch(),
   isValidTerminal: false,
   loading: true,
-  packageConfigBunches: [],
+  packageBunches: [],
 });
 
 export default GlobalDataContext;
