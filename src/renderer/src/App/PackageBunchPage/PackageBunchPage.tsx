@@ -6,9 +6,9 @@ import Dependencies from '../Dependencies/Dependencies';
 import useGlobalData from '../GlobalDataProvider/useGlobalData';
 import PackageSelector from '../PackageSelector/PackageSelector';
 
-import styles from './PackagePage.module.css';
+import styles from './PackageBunchPage.module.css';
 
-export default function PackagePage(): JSX.Element {
+export default function PackageBunchPage(): JSX.Element {
   const {
     packageBunches,
     activePackageBunch,
