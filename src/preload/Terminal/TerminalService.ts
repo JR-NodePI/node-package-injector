@@ -1,8 +1,8 @@
+import { ExecuteCommandOutputType } from './TerminalConstants';
 import TerminalRepository from './TerminalRepository';
 import {
   type ExecuteCommandOptions,
   ExecuteCommandOutput,
-  ExecuteCommandOutputType,
 } from './TerminalTypes';
 
 export type TerminalResponse = {
@@ -82,9 +82,10 @@ export default class TerminalService {
 
     const content = outputs.reduce((value, output) => {
       switch (output.type) {
-        case ExecuteCommandOutputType.STDERR:
+        case ExecuteCommandOutputType.STDERR_WARN:
         case ExecuteCommandOutputType.STDOUT:
           return value + output.data ?? '';
+        case ExecuteCommandOutputType.STDERR_ERROR:
         case ExecuteCommandOutputType.CLOSE:
         case ExecuteCommandOutputType.EXIT:
         default:

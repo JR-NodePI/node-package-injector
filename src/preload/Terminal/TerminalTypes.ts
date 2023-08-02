@@ -1,15 +1,8 @@
-export const ExecuteCommandOutputType = {
-  STDOUT: 'stdout',
-  STDERR: 'stderr',
-  CLOSE: 'close',
-  EXIT: 'exit',
-  ERROR: 'error',
-  INIT: 'init',
-} as const;
+import { ExecuteCommandOutputType } from './TerminalConstants';
 
 export type ExecuteCommandOutput = {
   type: (typeof ExecuteCommandOutputType)[keyof typeof ExecuteCommandOutputType];
-  data: null | string | number;
+  data: null | string | number | Error;
 };
 
 export type ExecuteCommandOptions = {
