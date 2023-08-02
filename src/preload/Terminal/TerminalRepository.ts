@@ -1,38 +1,76 @@
 import { spawn } from 'child_process';
 
 import {
+  ExecuteCommandOutputType,
+  OutputBadIcons,
+  OutputColor,
+  OutputGoodIcons,
+  OutputTypeToColor,
+} from './TerminalConstants';
+import {
   type ExecuteCommandOptions,
   type ExecuteCommandOutput,
-  ExecuteCommandOutputType,
 } from './TerminalTypes';
 
 const cleanOutput = (output: string): string =>
   output.replace(/[^a-z0-9-\n\s\r\t{}()"',:_\\/\\*+.@]/gi, '').trim();
 
 const getConsoleInitColorizedFlag = (
-  type: ExecuteCommandOutput['type']
+  type: ExecuteCommandOutput['type'],
+  icon: string
 ): string[] => {
-  const typeColor =
-    type === ExecuteCommandOutputType.INIT
-      ? '#3ba93b'
-      : type === ExecuteCommandOutputType.ERROR ||
-        type === ExecuteCommandOutputType.STDERR
-      ? '#d70065'
-      : type === ExecuteCommandOutputType.CLOSE ||
-        type === ExecuteCommandOutputType.EXIT
-      ? '#ffa600'
-      : '#007390';
-  return [`%c> terminal %c${type}`, `color:#5858f0`, `color:${typeColor}`];
+  const typeColor = OutputTypeToColor[type];
+  return [
+    `%c> terminal ${icon} %c${type}`,
+    `color:${OutputColor}`,
+    `color:${typeColor}`,
+  ];
 };
 
-const consoleLog = (type: ExecuteCommandOutput['type'], ...params): void =>
+const consoleLog = (
+  type: ExecuteCommandOutput['type'],
+  icon: string,
+  ...params
+): void =>
   // eslint-disable-next-line no-console
-  console.log(...getConsoleInitColorizedFlag(type), ...params);
-const consoleError = (type: ExecuteCommandOutput['type'], ...params): void =>
+  console.log(...getConsoleInitColorizedFlag(type, icon), ...params);
+const consoleError = (
+  type: ExecuteCommandOutput['type'],
+  icon: string,
+  ...params
+): void =>
   // eslint-disable-next-line no-console
-  console.error(...getConsoleInitColorizedFlag(type), ...params);
+  console.error(...getConsoleInitColorizedFlag(type, icon), ...params);
 
-const TimeoutToExit = 500;
+const displayLogs = (outputStack: ExecuteCommandOutput[]): void => {
+  const hasErrors = outputStack.some(
+    ({ type }) =>
+      type === ExecuteCommandOutputType.ERROR ||
+      type === ExecuteCommandOutputType.STDERR_ERROR
+  );
+  const randIcon = hasErrors
+    ? OutputBadIcons[Math.floor(Math.random() * OutputBadIcons.length)]
+    : OutputGoodIcons[Math.floor(Math.random() * OutputGoodIcons.length)];
+
+  outputStack.forEach(({ type, data }) => {
+    switch (type) {
+      case ExecuteCommandOutputType.CLOSE:
+      case ExecuteCommandOutputType.EXIT:
+      case ExecuteCommandOutputType.INIT:
+      case ExecuteCommandOutputType.STDOUT:
+        consoleLog(type, randIcon, data);
+        break;
+      case ExecuteCommandOutputType.ERROR:
+      case ExecuteCommandOutputType.STDERR_ERROR:
+        consoleError(type, randIcon, data);
+        break;
+      default:
+        break;
+    }
+  });
+};
+
+const exitDelay = 500;
 let exitTimeoutId: NodeJS.Timeout;
 export default class TerminalRepository {
   static executeCommand({
@@ -45,8 +83,13 @@ export default class TerminalRepository {
         reject(new Error('cwd is required'));
       }
 
-      const commandID = `${cwd} ${command} ${args.join(' ')}`;
-      consoleLog(ExecuteCommandOutputType.INIT, commandID);
+      const commandTrace = `${cwd} ${command} ${args.join(' ')}`;
+      const outputs: ExecuteCommandOutput[] = [];
+      const outputStack: ExecuteCommandOutput[] = [];
+      outputStack.push({
+        type: ExecuteCommandOutputType.INIT,
+        data: commandTrace,
+      });
 
       const soShell = ['win32'].includes(process.platform)
         ? 'powershell'
@@ -58,16 +101,15 @@ export default class TerminalRepository {
         shell: soShell,
       });
 
-      const outputs: ExecuteCommandOutput[] = [];
-
       cmd.stdout.on('data', data => {
         const message = data instanceof Buffer ? data.toString() : data;
         const cleanMessage = cleanOutput(message);
-        consoleLog(ExecuteCommandOutputType.STDOUT, '\n', cleanMessage);
-        outputs.push({
+        const output = {
           type: ExecuteCommandOutputType.STDOUT,
           data: cleanMessage,
-        });
+        };
+        outputs.push(output);
+        outputStack.push(output);
       });
 
       cmd.stderr.on('data', data => {
@@ -81,31 +123,30 @@ export default class TerminalRepository {
 
         if (isError) {
           const error = new Error(cleanMessage);
-          consoleError(
-            ExecuteCommandOutputType.STDERR,
-            ': ',
-            commandID,
-            ': ',
-            error
-          );
+          const output = {
+            type: ExecuteCommandOutputType.STDERR_ERROR,
+            data: error,
+          };
+          outputStack.push(output);
+          displayLogs(outputStack);
           reject(error);
         } else {
-          consoleLog(ExecuteCommandOutputType.STDERR, '\n', cleanMessage);
-          outputs.push({
-            type: ExecuteCommandOutputType.STDERR,
+          const output = {
+            type: ExecuteCommandOutputType.STDERR_WARN,
             data: cleanMessage,
-          });
+          };
+          outputs.push(output);
+          outputStack.push(output);
         }
       });
 
       cmd.on('error', error => {
-        consoleError(
-          ExecuteCommandOutputType.ERROR,
-          ': ',
-          commandID,
-          ': \n',
-          error
-        );
+        const output = {
+          type: ExecuteCommandOutputType.ERROR,
+          data: error,
+        };
+        outputStack.push(output);
+        displayLogs(outputStack);
         reject(error);
       });
 
@@ -113,7 +154,12 @@ export default class TerminalRepository {
         if (exitTimeoutId) {
           clearTimeout(exitTimeoutId);
         }
-        consoleLog(ExecuteCommandOutputType.CLOSE, ': ', commandID, ': ', code);
+        const output = {
+          type: ExecuteCommandOutputType.CLOSE,
+          data: code,
+        };
+        outputStack.push(output);
+        displayLogs(outputStack);
         resolve(outputs);
       });
 
@@ -122,15 +168,14 @@ export default class TerminalRepository {
           clearTimeout(exitTimeoutId);
         }
         exitTimeoutId = setTimeout(() => {
-          consoleLog(
-            ExecuteCommandOutputType.EXIT,
-            ': ',
-            commandID,
-            ': ',
-            code
-          );
+          const output = {
+            type: ExecuteCommandOutputType.EXIT,
+            data: code,
+          };
+          outputStack.push(output);
+          displayLogs(outputStack);
           resolve(outputs);
-        }, TimeoutToExit);
+        }, exitDelay);
       });
     });
   }
