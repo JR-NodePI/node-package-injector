@@ -9,12 +9,10 @@ import GlobalDataContext, { GlobalDataProps } from './GlobalDataContext';
 import useLoadTerminal from './useCheckInitials';
 import usePersistedState from './usePersistedState';
 
-const getPackageBunchTemplateValue = (): PackageBunch[] => {
-  const template = new PackageBunch();
-  template.targetPackage = new TargetPackage();
-  template.dependencies = [new DependencyPackage()];
-  return [template];
-};
+const packageBunchTemplateValue = new PackageBunch();
+packageBunchTemplateValue.targetPackage = new TargetPackage();
+packageBunchTemplateValue.dependencies = [new DependencyPackage()];
+const packageBunchesTemplateValue = [packageBunchTemplateValue];
 
 export default function GlobalDataProvider({
   children,
@@ -30,39 +28,40 @@ export default function GlobalDataProvider({
     usePersistedState<PackageBunch[]>(
       'packageBunches',
       [],
-      getPackageBunchTemplateValue()
+      packageBunchesTemplateValue
     );
 
-  const setPackageBunchActive = (
-    key: keyof PackageBunch,
-    data: unknown
-  ): void => {
-    const bunchIndex = packageBunches.findIndex(bunch => bunch.active);
-    if (bunchIndex >= 0) {
-      setPackageBunch(
-        packageBunches.map((bunch, index) => {
+  const setPackageBunchActive = useCallback(
+    (key: keyof PackageBunch, data: unknown): void => {
+      const bunchIndex = packageBunches.findIndex(bunch => bunch.active);
+      if (bunchIndex >= 0) {
+        const newBunches = packageBunches.map((bunch, index) => {
           if (index === bunchIndex) {
             bunch[key] = data;
           }
           return bunch;
-        })
-      );
-    }
-  };
+        });
+        setPackageBunch(newBunches);
+      }
+    },
+    [packageBunches, setPackageBunch]
+  );
 
-  const setActiveTargetPackage = useCallback(
-    debounce((targetPackage: TargetPackage) => {
+  const _setActiveTargetPackage = useCallback(
+    (targetPackage: TargetPackage) => {
       setPackageBunchActive('targetPackage', targetPackage);
-    }, 10),
-    [packageBunches]
+    },
+    [setPackageBunchActive]
   );
+  const setActiveTargetPackage = debounce(_setActiveTargetPackage, 10);
 
-  const setActiveDependencies = useCallback(
-    debounce((dependencies: DependencyPackage[]) => {
+  const _setActiveDependencies = useCallback(
+    (dependencies: DependencyPackage[]) => {
       setPackageBunchActive('dependencies', dependencies);
-    }, 10),
-    [packageBunches]
+    },
+    [setPackageBunchActive]
   );
+  const setActiveDependencies = debounce(_setActiveDependencies, 10);
 
   const providerValue = useMemo<GlobalDataProps>((): GlobalDataProps => {
     const activePackageBunch =

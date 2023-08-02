@@ -41,7 +41,7 @@ export default function DependencyScriptSelector({
       );
       setScriptOptions(scriptOptions);
     })();
-  }, []);
+  }, [dependency?.cwd]);
 
   // determine the selected script
   useEffect(() => {
@@ -65,7 +65,7 @@ export default function DependencyScriptSelector({
     if (mustSetDependencyScript) {
       onScriptChange?.(dependency, initialSelectedScript.value.scriptName);
     }
-  }, [scriptOptions, dependency]);
+  }, [scriptOptions, dependency, onScriptChange]);
 
   const handleOnChange = (selectedScript?: ScriptSelectOption): void => {
     onScriptChange?.(dependency, selectedScript?.scriptName);

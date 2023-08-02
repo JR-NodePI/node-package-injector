@@ -73,7 +73,7 @@ export default function useTabsFromPackageBunches(): Props {
         setTabs([tab]);
       })();
     }
-  }, [isWSLActive, packageBunches]);
+  }, [isWSLActive, packageBunches, setPackageBunch]);
 
   const onTabRemove = ({ index }: TabEvent): void => {
     setPackageBunch?.(packageBunches.filter((_bunch, i) => i !== index));

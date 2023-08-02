@@ -1,7 +1,8 @@
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useState } from 'react';
 
 import { Button, Icons, Modal, Spinner, ToasterListContext } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
+import useDeepCompareEffect from 'use-deep-compare-effect';
 
 import { ProcessService } from '../../services/ProcessService';
 import useGlobalData from '../GlobalDataProvider/useGlobalData';
@@ -16,7 +17,7 @@ export default function Process(): JSX.Element {
   const [isSyncing] = useState(false); //TODO: get from process
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
-  useEffect(() => {
+  useDeepCompareEffect(() => {
     (async (): Promise<void> => {
       if (isRunning) {
         const output = await ProcessService.run(
@@ -39,7 +40,7 @@ export default function Process(): JSX.Element {
         });
       }
     })();
-  }, [isRunning, addToaster]);
+  }, [isRunning, addToaster, activeTargetPackage, activeDependencies]);
 
   const handleRunClick = (): void => {
     setIsRunning(true);
