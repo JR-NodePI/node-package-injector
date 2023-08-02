@@ -42,6 +42,7 @@ export default class TerminalService {
     args = [],
     cwd,
     skipWSL = false,
+    traceOnTime = false,
   }: ExecuteCommandOptions): Promise<TerminalResponse> {
     if (TerminalService.isTerminalInitialized === false) {
       throw new Error('Terminal is not enabled');
@@ -71,6 +72,7 @@ export default class TerminalService {
         command: finalCommand,
         args: finalArgs,
         cwd,
+        traceOnTime,
       });
     }
 
