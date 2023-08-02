@@ -1,6 +1,7 @@
 import { useContext, useState } from 'react';
 
 import { Button, Icons, Modal, Spinner, ToasterListContext } from 'fratch-ui';
+import { ToasterType } from 'fratch-ui/components/Toaster/ToasterConstants';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 import useDeepCompareEffect from 'use-deep-compare-effect';
 
@@ -28,14 +29,19 @@ export default function Process(): JSX.Element {
         setIsRunning(false);
 
         const hasErrors = output.some(({ error }) => !!error);
-
         output.forEach(({ title, content, error }) => {
+          const type = error
+            ? ToasterType.ERROR
+            : hasErrors
+            ? ToasterType.INFO
+            : ToasterType.SUCCESS;
+          const duration = type !== ToasterType.ERROR ? 3000 : 15000;
           addToaster({
             title,
             message: content || error || '',
-            type: error ? 'error' : hasErrors ? 'info' : 'success',
+            type,
             nlToBr: true,
-            duration: !hasErrors ? 3000 : 0,
+            duration,
           });
         });
       }
