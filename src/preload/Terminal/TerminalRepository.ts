@@ -17,11 +17,11 @@ const cleanOutput = (output: string): string =>
 
 const getConsoleInitColorizedFlag = (
   type: ExecuteCommandOutput['type'],
-  icon: string
+  icon?: string
 ): string[] => {
   const typeColor = OutputTypeToColor[type];
   return [
-    `%c> terminal ${icon} %c${type}`,
+    `%c> terminal${icon ? ` ${icon}` : ''} %c${type}`,
     `color:${OutputColor}`,
     `color:${typeColor}`,
   ];
@@ -29,26 +29,32 @@ const getConsoleInitColorizedFlag = (
 
 const consoleLog = (
   type: ExecuteCommandOutput['type'],
-  icon: string,
+  icon?: string,
   ...params
 ): void =>
   // eslint-disable-next-line no-console
   console.log(...getConsoleInitColorizedFlag(type, icon), ...params);
+
 const consoleError = (
   type: ExecuteCommandOutput['type'],
-  icon: string,
+  icon?: string,
   ...params
 ): void =>
   // eslint-disable-next-line no-console
   console.error(...getConsoleInitColorizedFlag(type, icon), ...params);
 
-const displayLogs = (outputStack: ExecuteCommandOutput[]): void => {
+const displayLogs = (
+  outputStack: ExecuteCommandOutput[],
+  traceOnTime?: boolean
+): void => {
   const hasErrors = outputStack.some(
     ({ type }) =>
       type === ExecuteCommandOutputType.ERROR ||
       type === ExecuteCommandOutputType.STDERR_ERROR
   );
-  const randIcon = hasErrors
+  const randIcon = traceOnTime
+    ? undefined
+    : hasErrors
     ? OutputBadIcons[Math.floor(Math.random() * OutputBadIcons.length)]
     : OutputGoodIcons[Math.floor(Math.random() * OutputGoodIcons.length)];
 
@@ -77,6 +83,7 @@ export default class TerminalRepository {
     command,
     args = [],
     cwd,
+    traceOnTime,
   }: ExecuteCommandOptions): Promise<ExecuteCommandOutput[]> {
     return new Promise((resolve, reject) => {
       if (!cwd) {
@@ -85,8 +92,27 @@ export default class TerminalRepository {
 
       const commandTrace = `${cwd} ${command} ${args.join(' ')}`;
       const outputs: ExecuteCommandOutput[] = [];
-      const outputStack: ExecuteCommandOutput[] = [];
-      outputStack.push({
+      let outputStack: ExecuteCommandOutput[] = [];
+      const enqueueOutput = (output: ExecuteCommandOutput): void => {
+        outputStack.push(output);
+
+        const mustDisplay =
+          traceOnTime ||
+          ExecuteCommandOutputType.STDERR_ERROR ||
+          ExecuteCommandOutputType.ERROR ||
+          ExecuteCommandOutputType.CLOSE ||
+          ExecuteCommandOutputType.EXIT;
+
+        if (mustDisplay) {
+          displayLogs(outputStack, traceOnTime);
+        }
+
+        if (traceOnTime) {
+          outputStack = [];
+        }
+      };
+
+      enqueueOutput({
         type: ExecuteCommandOutputType.INIT,
         data: commandTrace,
       });
@@ -109,7 +135,7 @@ export default class TerminalRepository {
           data: cleanMessage,
         };
         outputs.push(output);
-        outputStack.push(output);
+        enqueueOutput(output);
       });
 
       cmd.stderr.on('data', data => {
@@ -127,8 +153,7 @@ export default class TerminalRepository {
             type: ExecuteCommandOutputType.STDERR_ERROR,
             data: error,
           };
-          outputStack.push(output);
-          displayLogs(outputStack);
+          enqueueOutput(output);
           reject(error);
         } else {
           const output = {
@@ -136,7 +161,7 @@ export default class TerminalRepository {
             data: cleanMessage,
           };
           outputs.push(output);
-          outputStack.push(output);
+          enqueueOutput(output);
         }
       });
 
@@ -145,8 +170,7 @@ export default class TerminalRepository {
           type: ExecuteCommandOutputType.ERROR,
           data: error,
         };
-        outputStack.push(output);
-        displayLogs(outputStack);
+        enqueueOutput(output);
         reject(error);
       });
 
@@ -158,8 +182,7 @@ export default class TerminalRepository {
           type: ExecuteCommandOutputType.CLOSE,
           data: code,
         };
-        outputStack.push(output);
-        displayLogs(outputStack);
+        enqueueOutput(output);
         resolve(outputs);
       });
 
@@ -172,8 +195,7 @@ export default class TerminalRepository {
             type: ExecuteCommandOutputType.EXIT,
             data: code,
           };
-          outputStack.push(output);
-          displayLogs(outputStack);
+          enqueueOutput(output);
           resolve(outputs);
         }, exitDelay);
       });

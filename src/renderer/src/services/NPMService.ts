@@ -100,6 +100,7 @@ export default class NPMService {
         command: 'yarn',
         args: ['install', '--pure-lock'],
         cwd,
+        traceOnTime: true,
       });
     }
 
@@ -107,6 +108,7 @@ export default class NPMService {
       command: 'npm',
       args: ['install', '--pure-lockfile'],
       cwd,
+      traceOnTime: true,
     });
   }
 

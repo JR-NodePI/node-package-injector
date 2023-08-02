@@ -10,4 +10,5 @@ export type ExecuteCommandOptions = {
   cwd?: string;
   args?: string[];
   skipWSL?: boolean;
+  traceOnTime?: boolean;
 };
