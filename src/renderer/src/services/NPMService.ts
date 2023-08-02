@@ -140,4 +140,27 @@ export default class NPMService {
       return {};
     }
   }
+
+  public static async runScript(
+    cwd: string,
+    script: string
+  ): Promise<TerminalResponse> {
+    const isYarn = await NPMService.checkYarn(cwd);
+
+    if (isYarn) {
+      return await TerminalService.executeCommand({
+        command: 'yarn',
+        args: [script],
+        cwd,
+        traceOnTime: true,
+      });
+    }
+
+    return await TerminalService.executeCommand({
+      command: 'npm',
+      args: ['run', script],
+      cwd,
+      traceOnTime: true,
+    });
+  }
 }

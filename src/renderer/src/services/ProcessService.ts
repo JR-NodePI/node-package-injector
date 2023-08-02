@@ -34,46 +34,50 @@ export class ProcessService {
       }
     }
 
-    const promises = dependencies.map(
-      async (dependency): Promise<TerminalResponse & { title: string }> => {
-        const depCwd = dependency.cwd ?? '';
-        const depName = PathService.getPathDirectories(depCwd).pop();
-
-        // dependency pull
-        if (dependency.performGitPull) {
-          const output = await GitService.pull(depCwd);
-          if (output.error) {
-            return { ...output, title: `Dependency "${depName}" git pull` };
-          }
-        }
-
-        // dependency install
-        if (dependency.installMode) {
-          const output = await NPMService.install(
-            depCwd,
-            dependency.installMode
-          );
-          if (output.error) {
-            return { ...output, title: `Dependency "${depName}" install` };
-          }
-        }
-
-        //         // dependency yarn dist
-        //         if (dependency.mode === DependencyMode.BUILD) {
-        //           await NPMService.getBuildScripts(depCwd);
-        //
-        //           const output = await NPMService.yarnDist(depCwd);
-        //           if (output.error) {
-        //             return { ...output, title: `Dependency "${depName}" yarn dist` };
-        //           }
-        //         }
-
-        return { title: `Dependency "${depName}" success` };
-      }
+    const dependenciesResponses = await Promise.all(
+      dependencies.map(ProcessService.runDependency)
     );
 
-    const results = await Promise.all(promises);
+    return [{ title: 'Package success' }, ...dependenciesResponses];
+  }
 
-    return [{ title: 'Package success' }, ...results];
+  private static async runDependency(
+    dependency: DependencyPackage
+  ): Promise<TerminalResponse & { title: string }> {
+    const depCwd = dependency.cwd ?? '';
+    const depName = PathService.getPathDirectories(depCwd).pop();
+
+    //TODO: execute each child-dependency before and, if it has npm package, try to inject in this one.
+
+    // dependency git pull
+    if (dependency.performGitPull) {
+      const output = await GitService.pull(depCwd);
+      if (output.error) {
+        return { ...output, title: `Dependency "${depName}" git pull` };
+      }
+    }
+
+    // dependency node install
+    if (dependency.installMode) {
+      const output = await NPMService.install(depCwd, dependency.installMode);
+      if (output.error) {
+        return { ...output, title: `Dependency "${depName}" install` };
+      }
+    }
+
+    // execute script package
+    if (dependency.installMode && dependency.script) {
+      const output = await NPMService.runScript(depCwd, dependency.script);
+      if (output.error) {
+        return {
+          ...output,
+          title: `Dependency "${depName}" run ${dependency.script}`,
+        };
+      }
+    }
+
+    //TODO: if a npm package exists, try to inject in targetPackage
+
+    return { title: `Dependency "${depName}" success` };
   }
 }
