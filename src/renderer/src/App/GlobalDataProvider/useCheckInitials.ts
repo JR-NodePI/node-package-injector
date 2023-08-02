@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import NPMService from '@renderer/services/NPMService';
 import TerminalService from '@renderer/services/TerminalService';
 
-const useLoadTerminal = (): {
+const useCheckInitials = (): {
   isValidTerminalLoading: boolean;
   isValidTerminal: boolean;
 } => {
@@ -23,4 +23,4 @@ const useLoadTerminal = (): {
   return { isValidTerminalLoading, isValidTerminal };
 };
 
-export default useLoadTerminal;
+export default useCheckInitials;

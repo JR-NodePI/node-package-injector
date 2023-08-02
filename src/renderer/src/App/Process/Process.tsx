@@ -4,7 +4,7 @@ import { Button, Icons, Modal, Spinner, ToasterListContext } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
 import { ProcessService } from '../../services/ProcessService';
-import useGlobalData from '../GlobalDataProvider/hooks/useGlobalData';
+import useGlobalData from '../GlobalDataProvider/useGlobalData';
 
 import styles from './Process.module.css';
 

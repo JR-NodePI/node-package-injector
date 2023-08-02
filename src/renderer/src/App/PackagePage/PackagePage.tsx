@@ -3,7 +3,7 @@ import { type PackageInstallModeValue } from '@renderer/models/PackageInstallMod
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
 import Dependencies from '../Dependencies/Dependencies';
-import useGlobalData from '../GlobalDataProvider/hooks/useGlobalData';
+import useGlobalData from '../GlobalDataProvider/useGlobalData';
 import PackageSelector from '../PackageSelector/PackageSelector';
 
 import styles from './PackagePage.module.css';

@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { Form } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
-import usePersistedState from '../GlobalDataProvider/hooks/usePersistedState';
+import usePersistedState from '../GlobalDataProvider/usePersistedState';
 
 export default function OpenDevTools({
   className,

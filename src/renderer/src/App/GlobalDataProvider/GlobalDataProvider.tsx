@@ -6,8 +6,8 @@ import TargetPackage from '@renderer/models/TargetPackage';
 import { debounce } from 'lodash';
 
 import GlobalDataContext, { GlobalDataProps } from './GlobalDataContext';
-import useLoadTerminal from './hooks/useLoadTerminal';
-import usePersistedState from './hooks/usePersistedState';
+import useLoadTerminal from './useCheckInitials';
+import usePersistedState from './usePersistedState';
 
 const getPackageBunchTemplateValue = (): PackageBunch[] => {
   const template = new PackageBunch();
