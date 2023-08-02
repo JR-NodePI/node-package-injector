@@ -66,7 +66,7 @@ export class ProcessService {
     }
 
     // execute script package
-    if (dependency.installMode && dependency.script) {
+    if (dependency.script) {
       const output = await NPMService.runScript(depCwd, dependency.script);
       if (output.error) {
         return {
