@@ -1,15 +1,17 @@
-import { memo, useEffect, useRef, useState } from 'react';
+import { memo, useRef, useState } from 'react';
 
 import GitService from '@renderer/services/GitService';
 import NPMService from '@renderer/services/NPMService';
 import PathService from '@renderer/services/PathService';
 import { Form } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
+import useDeepCompareEffect from 'use-deep-compare-effect';
 
 import LinkButton from '../../components/linkButton/LinkButton';
-import BranchSelector from '../BranchSelector/BranchSelector';
+import PackageBranchSelector from './PackageBranchSelector';
 import PackageInstallCheck from './PackageInstallCheck';
 import { type PackageSelectorProps } from './PackageSelectorProps';
+import useEffectCWD from './useEffectCWD';
 
 import styles from './PackageSelector.module.css';
 
@@ -30,38 +32,32 @@ function PackageSelector({
     Form.SelectProps.SelectOption<string>[]
   >([]);
 
-  useEffect(() => {
+  useDeepCompareEffect(() => {
     if ((targetPackage?.cwd ?? '').length > 2 && statePathDirectories == null) {
       const newPathDirectories = PathService.getPathDirectories(
         targetPackage?.cwd
       );
       setPathDirectories(newPathDirectories);
     }
-  }, [targetPackage?.cwd, pathDirectories]);
+  }, [targetPackage?.cwd, pathDirectories, statePathDirectories]);
 
   const cwd = PathService.getPath(pathDirectories);
 
   const [isValidating, setIsValidating] = useState<boolean>(true);
-  useEffect(() => {
+  useEffectCWD(() => {
     if (cwd.length > 2) {
       (async (): Promise<void> => {
         setIsValidating(true);
         const isValidPackage = await NPMService.checkPackageJSON(cwd);
         const isValidGit = await GitService.checkGit(cwd);
         const isValid = isValidPackage && isValidGit;
-
-        if (!isValid) {
-          onGitPullChange?.(undefined);
-          onInstallChange?.(undefined);
-        }
-
         setIsValidating(false);
         onPathChange?.(cwd, isValid);
       })();
     }
-  }, [cwd]);
+  }, cwd);
 
-  useEffect(() => {
+  useEffectCWD(() => {
     if (cwd.length > 2) {
       (async (): Promise<void> => {
         const newDirectories = (
@@ -76,7 +72,7 @@ function PackageSelector({
         setDirectories(newDirectories);
       })();
     }
-  }, [cwd, excludedDirectories]);
+  }, cwd);
 
   const handlePathChange = (value?: string): void => {
     if (value) {
@@ -142,7 +138,7 @@ function PackageSelector({
       />
       {targetPackage?.isValidPackage && (
         <div className={c(styles.options)}>
-          <BranchSelector
+          <PackageBranchSelector
             disabled={isDisabled}
             className={c(styles.branch)}
             cwd={cwd}

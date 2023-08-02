@@ -1,4 +1,4 @@
-import { memo, useContext, useEffect, useState } from 'react';
+import { memo, useContext, useState } from 'react';
 
 import GitService from '@renderer/services/GitService';
 import { Form } from 'fratch-ui';
@@ -6,8 +6,9 @@ import ToasterListContext from 'fratch-ui/components/Toaster/ToasterListContext'
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
 import LinkButton from '../../components/linkButton/LinkButton';
+import useEffectCWD from './useEffectCWD';
 
-function BranchSelector({
+function PackageBranchSelector({
   disabled,
   cwd,
   className,
@@ -31,15 +32,15 @@ function BranchSelector({
     setBranches(data.map(branch => ({ label: branch, value: branch })));
   };
 
-  useEffect(() => {
+  useEffectCWD(() => {
     (async (): Promise<void> => {
-      if (cwd.length > 2 && !disabled) {
+      if (cwd.length > 2) {
         setLoading(true);
         await loadBranches();
         setLoading(false);
       }
     })();
-  }, [cwd, disabled]);
+  }, cwd);
 
   const handleRefreshBranches = async (): Promise<void> => {
     if (cwd.length > 2 && !disabled) {
@@ -98,4 +99,4 @@ function BranchSelector({
   );
 }
 
-export default memo(BranchSelector);
+export default memo(PackageBranchSelector);

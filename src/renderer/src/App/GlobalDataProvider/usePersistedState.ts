@@ -74,7 +74,7 @@ export default function usePersistedState<T>(
       }
       setLoading(false);
     })();
-  }, [key]);
+  }, [key, templateValue]);
 
   return [data, setData, loading];
 }

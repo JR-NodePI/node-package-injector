@@ -1,5 +1,6 @@
 import DependencyPackage from '@renderer/models/DependencyPackage';
 import { type PackageInstallModeValue } from '@renderer/models/PackageInstallMode';
+import TargetPackage from '@renderer/models/TargetPackage';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
 import Dependencies from '../Dependencies/Dependencies';
@@ -20,12 +21,16 @@ export default function PackageBunchPage(): JSX.Element {
   const activeDependencies = activeBunch?.dependencies;
 
   const handlePathChange = (cwd: string, isValidPackage): void => {
-    const targetPackage = activeTargetPackage?.clone();
-    if (targetPackage) {
-      targetPackage.cwd = cwd;
-      targetPackage.isValidPackage = isValidPackage;
-      setActiveTargetPackage?.(targetPackage);
+    const targetPackage = activeTargetPackage?.clone() ?? new TargetPackage();
+
+    if (!isValidPackage) {
+      targetPackage.performGitPull = false;
+      targetPackage.installMode = undefined;
     }
+    targetPackage.cwd = cwd;
+    targetPackage.isValidPackage = isValidPackage;
+
+    setActiveTargetPackage?.(targetPackage);
   };
 
   const handleGitPullChange = (checked?: boolean): void => {
