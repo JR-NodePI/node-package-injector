@@ -14,30 +14,62 @@ type DependencyScriptSelectorProps = Pick<
   'dependency' | 'onScriptChange'
 >;
 
+type ScriptSelectOption = {
+  scriptName: string;
+  scriptValue: string;
+};
+
 export default function DependencyScriptSelector({
   dependency,
   onScriptChange,
 }: DependencyScriptSelectorProps): JSX.Element {
   const selectorPlaceholder = 'Select script...';
-  const [script, setScript] = useState<string>(dependency.script ?? '');
+  const [script, setScript] = useState<ScriptSelectOption>();
   const [scriptOptions, setScriptOptions] = useState<
-    Form.SelectProps.SelectOption<string>[]
+    Form.SelectProps.SelectOption<ScriptSelectOption>[]
   >([]);
 
+  // load package scripts
   useEffect(() => {
     (async (): Promise<void> => {
       const scripts = await NPMService.getPackageScripts(dependency?.cwd ?? '');
-      const scriptOptions = Object.entries(scripts).map(([key, value]) => ({
-        value,
-        label: key,
-      }));
+      const scriptOptions = Object.entries(scripts).map(
+        ([scriptName, scriptValue]) => ({
+          value: { scriptName, scriptValue },
+          label: scriptName,
+        })
+      );
       setScriptOptions(scriptOptions);
     })();
   }, []);
 
-  const handleOnChange = (value?: string): void => {
-    onScriptChange?.(dependency, value);
-    setScript(value ?? '');
+  // determine the selected script
+  useEffect(() => {
+    const initialSelectedScript = scriptOptions.find(
+      option =>
+        option.value.scriptName === dependency.script ||
+        /\s(pack)\s/gi.test(option.value.scriptValue) ||
+        /\s(pack)$/gi.test(option.value.scriptValue)
+    );
+
+    const hasSelectedScript = initialSelectedScript?.value != null;
+
+    if (hasSelectedScript) {
+      setScript(initialSelectedScript.value);
+    }
+
+    const mustSetDependencyScript =
+      hasSelectedScript &&
+      initialSelectedScript.value.scriptName !== dependency.script;
+
+    if (mustSetDependencyScript) {
+      onScriptChange?.(dependency, initialSelectedScript.value.scriptName);
+    }
+  }, [scriptOptions, dependency]);
+
+  const handleOnChange = (selectedScript?: ScriptSelectOption): void => {
+    onScriptChange?.(dependency, selectedScript?.scriptName);
+    setScript(selectedScript);
   };
 
   return (
@@ -56,9 +88,9 @@ export default function DependencyScriptSelector({
               />
             }
           />
-          {script && (
-            <p title={script} className={c(styles.scripts_value)}>
-              <span>{script}</span>
+          {script?.scriptValue && (
+            <p title={script?.scriptValue} className={c(styles.scripts_value)}>
+              <span>{script?.scriptValue}</span>
             </p>
           )}
         </>
