@@ -15,7 +15,7 @@ import {
 } from 'fratch-ui/components/TabsMenu/TabsMenuProps';
 import getRandomColor from 'fratch-ui/helpers/getRandomColor';
 
-import useGlobalData from '../GlobalDataProvider/hooks/useGlobalData';
+import useGlobalData from '../GlobalDataProvider/useGlobalData';
 
 type Props = {
   tabs: Tab[];

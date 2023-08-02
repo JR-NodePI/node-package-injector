@@ -4,7 +4,7 @@ import { Spinner } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
 import GlobalError from '../components/GlobalError/GlobalError';
-import useGlobalData from './GlobalDataProvider/hooks/useGlobalData';
+import useGlobalData from './GlobalDataProvider/useGlobalData';
 import MainSettings from './MainSettings/MainSettings';
 import PackagePage from './PackagePage/PackagePage';
 import PackagesTabsMenu from './PackagesTabsMenu/PackagesTabsMenu';

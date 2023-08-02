@@ -1,6 +1,6 @@
 import { type ReactNode } from 'react';
 
-import useGlobalData from '@renderer/App/GlobalDataProvider/hooks/useGlobalData';
+import useGlobalData from '@renderer/App/GlobalDataProvider/useGlobalData';
 import { Header } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
