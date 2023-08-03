@@ -1,6 +1,6 @@
 .dependency {
   align-items: stretch;
-  border-bottom: var(--ft-select-list-item-bg-color-active) solid 1px;
+  border-bottom: var(--ft-color-item-hover) solid 2px;
   display: flex;
   flex-direction: row;
   gap: 16px;
@@ -9,7 +9,6 @@
   margin: 0 calc(var(--ft-container-padding-right) * -1) 16px
     calc(var(--ft-container-padding-left) * -1);
   position: relative;
-  align-items: end;
 }
 .dependency > * {
   width: 100%;
@@ -17,6 +16,5 @@
 
 .buttons {
   width: auto;
-  align-self: flex-end;
   padding-bottom: 8px;
 }

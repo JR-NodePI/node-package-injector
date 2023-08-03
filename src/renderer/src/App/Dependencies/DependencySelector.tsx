@@ -1,11 +1,9 @@
-import { DependencyMode } from '@renderer/models/DependencyConstants';
 import { Button } from 'fratch-ui';
 import { Icons } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
 import PackageSelector from '../PackageSelector/PackageSelector';
 import DependencyModeCheck from './DependencyModeCheck';
-import DependencyScriptSelector from './DependencyScriptSelector';
 import { type DependencySelectorProps } from './DependencySelectorProps';
 
 import styles from './DependencySelector.module.css';
@@ -18,10 +16,18 @@ export default function DependencySelector({
   onGitPullChange,
   onPathChange,
   onModeChange,
-  onScriptChange,
+  onScriptsChange,
 }: DependencySelectorProps): JSX.Element {
   const handlePathChange = (cwd: string, isValidPackage): void => {
     onPathChange(dependency, cwd, isValidPackage);
+  };
+
+  const handleGitPullChange = (checked): void => {
+    onGitPullChange(dependency, checked);
+  };
+
+  const handleScriptsChange = (scripts): void => {
+    onScriptsChange(dependency, scripts);
   };
 
   return (
@@ -38,9 +44,8 @@ export default function DependencySelector({
         excludedDirectories={excludedDirectories}
         targetPackage={dependency}
         onPathChange={handlePathChange}
-        onGitPullChange={(checked): void => {
-          onGitPullChange(dependency, checked);
-        }}
+        onGitPullChange={handleGitPullChange}
+        onScriptsChange={handleScriptsChange}
       />
       {onClickRemove && (
         <div className={c(styles.buttons)}>

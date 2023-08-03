@@ -1,11 +1,21 @@
+import { PackageScript } from '@renderer/models/PackageScriptsTypes';
 import { Button, Form } from 'fratch-ui';
 import { IconClose, IconPlus } from 'fratch-ui/components/Icons/Icons';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
-import { type PackageScript } from '../../models/PackageScriptsTypes';
 import PackageScriptSelector from './PackageScriptSelector';
 
 import styles from './PackageScriptRenderer.module.css';
+
+type PackageScriptRendererProps = {
+  index: number;
+  onAdd: () => void;
+  onChange: (index: number, script?: PackageScript) => void;
+  onRemove: (index: number) => void;
+  script: PackageScript;
+  scriptOptions: Form.SelectProps.SelectOption<PackageScript>[];
+  showAddButton: boolean;
+};
 
 export function PackageScriptRenderer({
   index,
@@ -15,15 +25,7 @@ export function PackageScriptRenderer({
   script,
   scriptOptions,
   showAddButton,
-}: {
-  script: PackageScript;
-  index: number;
-  onChange: (script: PackageScript, index: number) => void;
-  onRemove: (index: number) => void;
-  onAdd: () => void;
-  scriptOptions: Form.SelectProps.SelectOption<PackageScript>[];
-  showAddButton: boolean;
-}): JSX.Element {
+}: PackageScriptRendererProps): JSX.Element {
   return (
     <PackageScriptSelector
       key={index}
@@ -31,7 +33,7 @@ export function PackageScriptRenderer({
       selectedScript={script}
       scriptOptions={scriptOptions}
       onChange={(script): void => {
-        onChange(script, index);
+        onChange(index, script);
       }}
       additionalComponent={
         <div className={c(styles.add_script_buttons)}>
@@ -42,7 +44,6 @@ export function PackageScriptRenderer({
             isRound
             label="Remove package script"
           />
-
           {showAddButton && (
             <Button
               type="secondary"
