@@ -27,23 +27,12 @@ export default function DependencySelector({
   return (
     <div className={c(styles.dependency)}>
       <PackageSelector
-        additionalOptionComponent={
+        additionalComponent={
           <DependencyModeCheck
             disabled //TODO: ={disabled}, enable when sync mode will be implemented
             dependency={dependency}
             onModeChange={onModeChange}
           />
-        }
-        additionalComponent={
-          dependency.isValidPackage &&
-          dependency.mode === DependencyMode.BUILD ? (
-            <DependencyScriptSelector
-              dependency={dependency}
-              onScriptChange={onScriptChange}
-            />
-          ) : (
-            <></>
-          )
         }
         disabled={disabled}
         excludedDirectories={excludedDirectories}

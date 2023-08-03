@@ -17,7 +17,6 @@ import styles from './PackageSelector.module.css';
 
 function PackageSelector({
   additionalComponent,
-  additionalOptionComponent,
   disabled,
   excludedDirectories,
   onGitPullChange,
@@ -79,10 +78,9 @@ function PackageSelector({
       const newPathDirectories = [...pathDirectories, value];
       setPathDirectories(newPathDirectories);
     }
-    //TODO: wait to focus the trigger input element again
     setTimeout(() => {
       triggerElementRef.current?.focus();
-    }, 10);
+    }, 200);
   };
 
   const isDirBackEnabled =
@@ -153,7 +151,7 @@ function PackageSelector({
                   onGitPullChange(event.target.checked ?? false);
               }}
             />
-            {additionalOptionComponent}
+            {additionalComponent}
           </div>
           <PackageScripts
             onChange={onScriptsChange}

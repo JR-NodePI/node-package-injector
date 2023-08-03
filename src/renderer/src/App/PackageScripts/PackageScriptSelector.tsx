@@ -5,22 +5,38 @@ import { c } from 'fratch-ui/helpers/classNameHelpers';
 
 import styles from './PackageScriptSelector.module.css';
 
+type PackageScriptSelector = {
+  label: string;
+  selectedScript: PackageScript;
+  scriptOptions: SelectOption<PackageScript>[];
+  onChange: (script: PackageScript) => void;
+  additionalComponent?: JSX.Element;
+};
+
 export default function PackageScriptSelector({
   label,
   selectedScript,
   scriptOptions,
   onChange,
   additionalComponent,
-}: {
-  label: string;
-  selectedScript: PackageScript;
-  scriptOptions: SelectOption<PackageScript>[];
-  onChange: (script: PackageScript) => void;
-  additionalComponent?: JSX.Element;
-}): JSX.Element {
+}: PackageScriptSelector): JSX.Element {
   const handleOnChange = (selectedScript?: PackageScript): void => {
     onChange(selectedScript ?? { scriptName: '', scriptValue: '' });
   };
+  let finalOptions = [...scriptOptions];
+  const mustAddSelected = scriptOptions.every(
+    option => option.value.scriptName !== selectedScript.scriptName
+  );
+  if (mustAddSelected) {
+    finalOptions = [
+      { value: selectedScript, label: selectedScript.scriptName },
+      ...finalOptions,
+    ];
+  }
+  finalOptions = finalOptions.filter(
+    option => !!option.value.scriptName.trim()
+  );
+  finalOptions.sort((a, b) => a.label.localeCompare(b.label));
 
   const selectorPlaceholder = 'Select script...';
   return (
@@ -30,21 +46,24 @@ export default function PackageScriptSelector({
         field={
           <Form.Select
             value={selectedScript}
-            options={scriptOptions}
+            options={finalOptions}
             placeholder={selectorPlaceholder}
             onChange={handleOnChange}
             cleanable
           />
         }
       />
-      {selectedScript?.scriptValue && (
-        <p
-          title={selectedScript?.scriptValue}
-          className={c(styles.scripts_value)}
-        >
+      <p
+        title={selectedScript?.scriptValue}
+        className={c(
+          styles.scripts_value,
+          selectedScript?.scriptValue ? styles.scripts_value_filled : ''
+        )}
+      >
+        {selectedScript?.scriptValue && (
           <span>{selectedScript?.scriptValue}</span>
-        </p>
-      )}
+        )}
+      </p>
       {additionalComponent}
     </div>
   );
