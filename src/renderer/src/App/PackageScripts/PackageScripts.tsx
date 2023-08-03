@@ -6,7 +6,7 @@ import { Form } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
 import { type PackageScript } from '../../models/PackageScriptsTypes';
-import PackageScriptSelector from './PackageScriptSelector';
+import { PackageScriptRenderer } from './PackageScriptRenderer';
 
 import styles from './PackageScripts.module.css';
 
@@ -42,6 +42,12 @@ export default function PackageScripts({
   );
 
   useEffect(() => {
+    if (!selectedScrips.length) {
+      setSelectedScrips([{ scriptName: '', scriptValue: '' }]);
+    }
+  }, [selectedScrips]);
+
+  useEffect(() => {
     const initialHash = targetPackage.scripts
       .map(({ scriptName }) => scriptName)
       .join('-');
@@ -74,35 +80,24 @@ export default function PackageScripts({
     );
   };
 
-  const scriptOptionsWithoutSelected = scriptOptions.filter(({ label }) =>
+  const noSelectedScriptOptions = scriptOptions.filter(({ label }) =>
     selectedScrips.every(({ scriptName }) => scriptName !== label)
   );
 
   return (
     <div className={c(styles.package_scripts)}>
       {selectedScrips.map((script, index) => (
-        <div key={index}>
-          <PackageScriptSelector
-            label={`${index + 1}º package script`}
-            selectedScript={script}
-            scriptOptions={scriptOptionsWithoutSelected}
-            onChange={(script): void => {
-              handleScriptChange(script, index);
-            }}
-            additionalComponent={
-              <button
-                onClick={(): void => handleRemoveScript(index)}
-                title="Remove package script"
-              >
-                del -
-              </button>
-            }
-          />
-        </div>
+        <PackageScriptRenderer
+          index={index}
+          key={index}
+          onAdd={handleAddScript}
+          onChange={handleScriptChange}
+          onRemove={handleRemoveScript}
+          script={script}
+          scriptOptions={noSelectedScriptOptions}
+          showAddButton={index === selectedScrips.length - 1}
+        />
       ))}
-      <button onClick={handleAddScript} title="Add an package script">
-        add +
-      </button>
     </div>
   );
 }

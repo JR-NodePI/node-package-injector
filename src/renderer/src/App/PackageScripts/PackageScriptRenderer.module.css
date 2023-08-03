@@ -1,0 +1,7 @@
+.add_script_buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+  min-width: 74px;
+  margin-bottom: 8px;
+}
