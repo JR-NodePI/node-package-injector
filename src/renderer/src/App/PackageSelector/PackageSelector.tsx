@@ -6,6 +6,7 @@ import PathService from '@renderer/services/PathService';
 import { Form } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 import useDeepCompareEffect from 'use-deep-compare-effect';
+import { v4 as uuid } from 'uuid';
 
 import LinkButton from '../../components/linkButton/LinkButton';
 import PackageScripts from '../PackageScripts/PackageScripts';
@@ -24,6 +25,7 @@ function PackageSelector({
   onScriptsChange,
   targetPackage,
 }: PackageSelectorProps): JSX.Element {
+  const [id] = useState<string>(uuid());
   const triggerElementRef = useRef<HTMLInputElement>(null);
   const [statePathDirectories, setPathDirectories] = useState<string[]>();
   const pathDirectories = statePathDirectories ?? [];
@@ -110,8 +112,10 @@ function PackageSelector({
       <Form.LeftLabeledField
         label={
           <>
-            {rootPath}
-            <b>{lastDirectory}</b>
+            <label htmlFor={id}>
+              {rootPath}
+              <b>{lastDirectory}</b>
+            </label>
             {isDirBackEnabled && (
               <LinkButton
                 title="go back to previous"
@@ -124,6 +128,7 @@ function PackageSelector({
         }
         field={
           <Form.Select
+            id={id}
             disabled={isDisabled}
             key={cwd}
             onChange={handlePathChange}
@@ -159,7 +164,6 @@ function PackageSelector({
           />
         </>
       )}
-      {additionalComponent}
     </div>
   );
 }

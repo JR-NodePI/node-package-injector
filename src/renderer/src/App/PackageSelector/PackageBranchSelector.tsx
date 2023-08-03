@@ -4,6 +4,7 @@ import GitService from '@renderer/services/GitService';
 import { Form } from 'fratch-ui';
 import ToasterListContext from 'fratch-ui/components/Toaster/ToasterListContext';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
+import { v4 as uuid } from 'uuid';
 
 import LinkButton from '../../components/linkButton/LinkButton';
 import useEffectCWD from './useEffectCWD';
@@ -17,6 +18,7 @@ function PackageBranchSelector({
   className?: string;
   cwd: string;
 }): JSX.Element {
+  const [id] = useState<string>(uuid());
   const { addToaster } = useContext(ToasterListContext);
 
   const [branches, setBranches] = useState<
@@ -75,7 +77,7 @@ function PackageBranchSelector({
       <Form.LeftLabeledField
         label={
           <div>
-            <label>Git branch</label>
+            <label htmlFor={id}>Git branch</label>
             <LinkButton
               onClick={handleRefreshBranches}
               title="update branch list"
@@ -86,6 +88,7 @@ function PackageBranchSelector({
         }
         field={
           <Form.Select
+            id={id}
             value={currenBranch}
             placeholder={loading ? 'Loading...' : 'Select branch...'}
             searchable

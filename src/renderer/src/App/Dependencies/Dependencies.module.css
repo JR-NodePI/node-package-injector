@@ -5,3 +5,14 @@
   justify-content: flex-end;
   width: auto;
 }
+.dependencies .title {
+  font-size: 20px;
+  font-weight: 400;
+  background-color: var(--ft-tertiary-default-color);
+  margin-left: calc(var(--ft-container-padding-left) * -1);
+  padding-left: var(--ft-container-padding-left);
+  margin-right: calc(var(--ft-container-padding-right) * -1);
+  padding-right: var(--ft-container-padding-right);
+  padding-top: 2px;
+  padding-bottom: 2px;
+}

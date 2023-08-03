@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import DependencyPackage from '@renderer/models/DependencyPackage';
+import { PackageScript } from '@renderer/models/PackageScriptsTypes';
 import TargetPackage from '@renderer/models/TargetPackage';
 import NPMService from '@renderer/services/NPMService';
 import PathService from '@renderer/services/PathService';
@@ -121,11 +122,15 @@ function Dependencies({
     changeDependencyProp(dependency, 'performGitPull', Boolean(checked));
   };
 
-  const handleScriptChange = (
+  const handleScriptsChange = (
     dependency: DependencyPackage,
-    script?: string
+    scripts: PackageScript[]
   ): void => {
-    changeDependencyProp(dependency, 'script', script);
+    changeDependencyProp(
+      dependency,
+      'scripts',
+      scripts.filter(({ scriptName }) => Boolean(scriptName.trim()))
+    );
   };
 
   if (!activeTargetPackage?.isValidPackage) {
@@ -134,7 +139,7 @@ function Dependencies({
 
   return (
     <div className={c(styles.dependencies)}>
-      <h2>Dependencies</h2>
+      <h2 className={c(styles.title)}>Dependencies</h2>
       {(dependencies ?? []).map(
         dependency =>
           (dependency.cwd ?? '').length > 2 && (
@@ -147,7 +152,7 @@ function Dependencies({
               onGitPullChange={handleGitPullChange}
               onPathChange={handlePathChange}
               onModeChange={handleModeChange}
-              onScriptChange={handleScriptChange}
+              onScriptsChange={handleScriptsChange}
             />
           )
       )}

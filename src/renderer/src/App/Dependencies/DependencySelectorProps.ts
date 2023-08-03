@@ -1,5 +1,6 @@
 import { type DependencyMode } from '@renderer/models/DependencyConstants';
 import type DependencyPackage from '@renderer/models/DependencyPackage';
+import { PackageScript } from '@renderer/models/PackageScriptsTypes';
 
 export type DependencySelectorProps = {
   disabled?: boolean;
@@ -16,5 +17,8 @@ export type DependencySelectorProps = {
     dependency: DependencyPackage,
     mode: (typeof DependencyMode)[keyof typeof DependencyMode]
   ) => void;
-  onScriptChange?: (dependency: DependencyPackage, script?: string) => void;
+  onScriptsChange: (
+    dependency: DependencyPackage,
+    scripts: PackageScript[]
+  ) => void;
 };

@@ -6,7 +6,7 @@ import { Form } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
 import { type PackageScript } from '../../models/PackageScriptsTypes';
-import { PackageScriptRenderer } from './PackageScriptRenderer';
+import { PackageScriptRenderer } from './components/PackageScriptRenderer';
 
 import styles from './PackageScripts.module.css';
 
@@ -36,6 +36,38 @@ export default function PackageScripts({
       setScriptOptions(options);
     })();
   }, [targetPackage.cwd]);
+
+  // try to determine the install and pack script
+  useEffect(() => {
+    const thereIsNoScripts = targetPackage.scripts.every(
+      ({ scriptName }) => !scriptName
+    );
+
+    if (thereIsNoScripts) {
+      const installScript = scriptOptions.find(
+        ({ value }) =>
+          / install/gi.test(value.scriptValue) &&
+          !/prepare/gi.test(value.scriptName)
+      );
+
+      if (installScript) {
+        setSelectedScrips([installScript.value]);
+      }
+
+      const packScript = scriptOptions.find(
+        ({ value }) =>
+          / pack /gi.test(value.scriptValue) ||
+          / pack$/gi.test(value.scriptValue)
+      );
+
+      if (packScript) {
+        setSelectedScrips([
+          ...(!installScript ? [{ scriptName: '', scriptValue: '' }] : []),
+          packScript.value,
+        ]);
+      }
+    }
+  }, [scriptOptions, targetPackage.scripts]);
 
   const [selectedScrips, setSelectedScrips] = useState<PackageScript[]>(
     targetPackage.scripts
@@ -70,12 +102,17 @@ export default function PackageScripts({
   };
 
   const handleScriptChange = (
-    modifiedScript: PackageScript,
-    modifiedScriptIndex: number
+    modifiedScriptIndex: number,
+    modifiedScript?: PackageScript
   ): void => {
     setSelectedScrips(
       selectedScrips.map((script, index) =>
-        index === modifiedScriptIndex ? modifiedScript : script
+        index === modifiedScriptIndex
+          ? modifiedScript ?? {
+              scriptName: '',
+              scriptValue: '',
+            }
+          : script
       )
     );
   };

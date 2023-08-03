@@ -12,7 +12,7 @@
 .mode_scripts .scripts_value {
   flex: 1 1 100%;
   position: relative;
-  padding: 0 8px;
+  padding: 0;
   background-color: var(--ft-color-grey-3);
   border-radius: var(--ft-form-item-border-radius);
   font-size: 12px;
@@ -26,7 +26,8 @@
 
 .mode_scripts .scripts_value > * {
   position: absolute;
-  width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: calc(100% - 16px);
+  margin: 0 8px;
 }
