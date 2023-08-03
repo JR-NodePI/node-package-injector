@@ -1,8 +1,4 @@
 import type DependencyPackage from '@renderer/models/DependencyPackage';
-import {
-  PackageInstallMode,
-  PackageInstallModeValue,
-} from '@renderer/models/PackageInstallMode';
 
 import PathService from './PathService';
 import TerminalService, { TerminalResponse } from './TerminalService';
@@ -89,27 +85,6 @@ export default class NPMService {
     });
 
     return await Promise.all(promises);
-  }
-
-  public static async install(
-    cwd: string,
-    mode: PackageInstallModeValue
-  ): Promise<TerminalResponse> {
-    if (mode === PackageInstallMode.YARN) {
-      return await TerminalService.executeCommand({
-        command: 'yarn',
-        args: ['install', '--pure-lock'],
-        cwd,
-        traceOnTime: true,
-      });
-    }
-
-    return await TerminalService.executeCommand({
-      command: 'npm',
-      args: ['install', '--pure-lockfile'],
-      cwd,
-      traceOnTime: true,
-    });
   }
 
   public static async checkYarn(cwd: string): Promise<boolean> {

@@ -1,6 +1,5 @@
 import { type DependencyMode } from '@renderer/models/DependencyConstants';
 import type DependencyPackage from '@renderer/models/DependencyPackage';
-import { type PackageInstallModeValue } from '@renderer/models/PackageInstallMode';
 
 export type DependencySelectorProps = {
   disabled?: boolean;
@@ -16,10 +15,6 @@ export type DependencySelectorProps = {
   onModeChange: (
     dependency: DependencyPackage,
     mode: (typeof DependencyMode)[keyof typeof DependencyMode]
-  ) => void;
-  onInstallChange: (
-    dependency: DependencyPackage,
-    mode?: PackageInstallModeValue
   ) => void;
   onScriptChange?: (dependency: DependencyPackage, script?: string) => void;
 };

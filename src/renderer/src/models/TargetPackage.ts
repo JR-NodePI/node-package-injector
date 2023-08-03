@@ -1,6 +1,5 @@
+import { type PackageScript } from '@renderer/models/PackageScriptsTypes';
 import { v4 as uuid } from 'uuid';
-
-import { type PackageInstallModeValue } from './PackageInstallMode';
 
 export default class TargetPackage {
   public id = uuid();
@@ -8,7 +7,7 @@ export default class TargetPackage {
   public cwd?: string;
   public isValidPackage = false;
   public performGitPull = false;
-  public installMode?: PackageInstallModeValue;
+  public scripts: PackageScript[] = [];
 
   public clone(): TargetPackage {
     const clone = new TargetPackage();
@@ -18,7 +17,7 @@ export default class TargetPackage {
     clone.cwd = this.cwd;
     clone.isValidPackage = this.isValidPackage;
     clone.performGitPull = this.performGitPull;
-    clone.installMode = this.installMode;
+    clone.scripts = this.scripts;
 
     return clone;
   }
