@@ -1,7 +1,6 @@
 import { useState } from 'react';
 
 import DependencyPackage from '@renderer/models/DependencyPackage';
-import { type PackageInstallModeValue } from '@renderer/models/PackageInstallMode';
 import TargetPackage from '@renderer/models/TargetPackage';
 import NPMService from '@renderer/services/NPMService';
 import PathService from '@renderer/services/PathService';
@@ -122,13 +121,6 @@ function Dependencies({
     changeDependencyProp(dependency, 'performGitPull', Boolean(checked));
   };
 
-  const handleInstallChange = (
-    dependency: DependencyPackage,
-    installMode?: PackageInstallModeValue
-  ): void => {
-    changeDependencyProp(dependency, 'installMode', installMode);
-  };
-
   const handleScriptChange = (
     dependency: DependencyPackage,
     script?: string
@@ -155,7 +147,6 @@ function Dependencies({
               onGitPullChange={handleGitPullChange}
               onPathChange={handlePathChange}
               onModeChange={handleModeChange}
-              onInstallChange={handleInstallChange}
               onScriptChange={handleScriptChange}
             />
           )

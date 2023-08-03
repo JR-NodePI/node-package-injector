@@ -26,14 +26,6 @@ export class ProcessService {
       }
     }
 
-    // package yarn install
-    if (targetPackage.installMode) {
-      const output = await NPMService.install(swd, targetPackage.installMode);
-      if (output.error) {
-        return [{ ...output, title: 'Package install' }];
-      }
-    }
-
     const dependenciesResponses = await Promise.all(
       dependencies.map(ProcessService.runDependency)
     );
@@ -54,14 +46,6 @@ export class ProcessService {
       const output = await GitService.pull(depCwd);
       if (output.error) {
         return { ...output, title: `Dependency "${depName}" git pull` };
-      }
-    }
-
-    // dependency node install
-    if (dependency.installMode) {
-      const output = await NPMService.install(depCwd, dependency.installMode);
-      if (output.error) {
-        return { ...output, title: `Dependency "${depName}" install` };
       }
     }
 

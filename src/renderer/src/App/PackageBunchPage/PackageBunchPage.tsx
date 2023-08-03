@@ -1,5 +1,5 @@
 import DependencyPackage from '@renderer/models/DependencyPackage';
-import { type PackageInstallModeValue } from '@renderer/models/PackageInstallMode';
+import { PackageScript } from '@renderer/models/PackageScriptsTypes';
 import TargetPackage from '@renderer/models/TargetPackage';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
@@ -25,7 +25,7 @@ export default function PackageBunchPage(): JSX.Element {
 
     if (!isValidPackage) {
       targetPackage.performGitPull = false;
-      targetPackage.installMode = undefined;
+      targetPackage.scripts = [];
     }
     targetPackage.cwd = cwd;
     targetPackage.isValidPackage = isValidPackage;
@@ -41,10 +41,10 @@ export default function PackageBunchPage(): JSX.Element {
     }
   };
 
-  const handleInstallChange = (mode?: PackageInstallModeValue): void => {
+  const handleScriptsChange = (scripts: PackageScript[]): void => {
     const targetPackage = activeTargetPackage?.clone();
     if (targetPackage) {
-      targetPackage.installMode = mode;
+      targetPackage.scripts = scripts;
       setActiveTargetPackage?.(targetPackage);
     }
   };
@@ -76,7 +76,7 @@ export default function PackageBunchPage(): JSX.Element {
         targetPackage={activeTargetPackage}
         onPathChange={handlePathChange}
         onGitPullChange={handleGitPullChange}
-        onInstallChange={handleInstallChange}
+        onScriptsChange={handleScriptsChange}
       />
       <Dependencies
         excludedDirectories={excludedDirectories}

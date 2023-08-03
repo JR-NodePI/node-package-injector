@@ -8,8 +8,8 @@ import { c } from 'fratch-ui/helpers/classNameHelpers';
 import useDeepCompareEffect from 'use-deep-compare-effect';
 
 import LinkButton from '../../components/linkButton/LinkButton';
+import PackageScripts from '../PackageScripts/PackageScripts';
 import PackageBranchSelector from './PackageBranchSelector';
-import PackageInstallCheck from './PackageInstallCheck';
 import { type PackageSelectorProps } from './PackageSelectorProps';
 import useEffectCWD from './useEffectCWD';
 
@@ -21,8 +21,8 @@ function PackageSelector({
   disabled,
   excludedDirectories,
   onGitPullChange,
-  onInstallChange,
   onPathChange,
+  onScriptsChange,
   targetPackage,
 }: PackageSelectorProps): JSX.Element {
   const triggerElementRef = useRef<HTMLInputElement>(null);
@@ -137,27 +137,29 @@ function PackageSelector({
         }
       />
       {targetPackage?.isValidPackage && (
-        <div className={c(styles.options)}>
-          <PackageBranchSelector
-            disabled={isDisabled}
-            className={c(styles.branch)}
-            cwd={cwd}
-          />
-          <Form.InputCheck
-            disabled={disabled}
-            checked={targetPackage.performGitPull}
-            label="git pull"
-            onChange={(event): void => {
-              onGitPullChange && onGitPullChange(event.target.checked ?? false);
-            }}
-          />
-          <PackageInstallCheck
-            disabled={disabled}
+        <>
+          <div className={c(styles.options)}>
+            <PackageBranchSelector
+              disabled={isDisabled}
+              className={c(styles.branch)}
+              cwd={cwd}
+            />
+            <Form.InputCheck
+              disabled={disabled}
+              checked={targetPackage.performGitPull}
+              label="git pull"
+              onChange={(event): void => {
+                onGitPullChange &&
+                  onGitPullChange(event.target.checked ?? false);
+              }}
+            />
+            {additionalOptionComponent}
+          </div>
+          <PackageScripts
+            onChange={onScriptsChange}
             targetPackage={targetPackage}
-            onInstallChange={onInstallChange}
           />
-          {additionalOptionComponent}
-        </div>
+        </>
       )}
       {additionalComponent}
     </div>

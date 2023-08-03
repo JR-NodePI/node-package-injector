@@ -18,7 +18,6 @@ export default function DependencySelector({
   onGitPullChange,
   onPathChange,
   onModeChange,
-  onInstallChange,
   onScriptChange,
 }: DependencySelectorProps): JSX.Element {
   const handlePathChange = (cwd: string, isValidPackage): void => {
@@ -52,9 +51,6 @@ export default function DependencySelector({
         onPathChange={handlePathChange}
         onGitPullChange={(checked): void => {
           onGitPullChange(dependency, checked);
-        }}
-        onInstallChange={(checked): void => {
-          onInstallChange(dependency, checked);
         }}
       />
       {onClickRemove && (

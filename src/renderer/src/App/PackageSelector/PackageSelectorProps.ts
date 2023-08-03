@@ -1,4 +1,4 @@
-import { type PackageInstallModeValue } from '@renderer/models/PackageInstallMode';
+import { PackageScript } from '@renderer/models/PackageScriptsTypes';
 import type TargetPackage from '@renderer/models/TargetPackage';
 
 export type PackageSelectorProps = {
@@ -7,7 +7,7 @@ export type PackageSelectorProps = {
   disabled?: boolean;
   excludedDirectories?: string[];
   onGitPullChange?: (checked?: boolean) => void;
-  onInstallChange?: (mode?: PackageInstallModeValue) => void;
   onPathChange?: (cwd: string, isValidPackage: boolean) => void;
+  onScriptsChange?: (scripts: PackageScript[]) => void;
   targetPackage?: TargetPackage;
 };
