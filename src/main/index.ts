@@ -1,16 +1,55 @@
 import { electronApp, is, optimizer } from '@electron-toolkit/utils';
 import { app, BrowserWindow, ipcMain, Menu, shell } from 'electron';
+import fs from 'fs';
 import { join } from 'path';
 
 import icon from '../../build/icons/png/1024x1024.png?asset';
 import { createAppMenu, getMenuItemsTemplate } from './menu';
 
+const INIT_STATUS_PATH = join(__dirname, '../init_status.json');
+
+const INI_WINDOW_WIDTH = 1024;
+const INI_WINDOW_HEIGHT = 824;
+const MIN_WINDOW_WIDTH = INI_WINDOW_WIDTH / 2;
+const MIN_WINDOW_HEIGHT = INI_WINDOW_HEIGHT / 2;
+
 function createWindow(): void {
+  const initStatus = fs.readFileSync(INIT_STATUS_PATH, {
+    encoding: 'utf8',
+    flag: 'a+',
+  });
+  let initWindowBounds: Pick<Electron.Rectangle, 'width' | 'height'>;
+
+  try {
+    const initStatusJson = JSON.parse(initStatus);
+    const windowBounds = initStatusJson?.bounds;
+
+    if (!windowBounds) {
+      throw new Error('initWindowBounds is null');
+    } else if (
+      windowBounds.width < MIN_WINDOW_WIDTH ||
+      windowBounds.height < MIN_WINDOW_HEIGHT
+    ) {
+      throw new Error('initWindowBounds is too small');
+    } else {
+      initWindowBounds = {
+        width: windowBounds.width,
+        height: windowBounds.height,
+      };
+    }
+  } catch {
+    initWindowBounds = {
+      width: INI_WINDOW_WIDTH,
+      height: INI_WINDOW_HEIGHT,
+    };
+  }
+
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 1024,
-    height: 824,
-    titleBarStyle: 'hidden',
+    ...initWindowBounds,
+    minWidth: 200,
+    minHeight: 200,
+    titleBarStyle: process.platform === 'linux' ? 'default' : 'hidden',
     titleBarOverlay: {
       color: '#5858f0',
       symbolColor: '#e6fffc',
@@ -24,11 +63,17 @@ function createWindow(): void {
       preload: join(__dirname, '../preload/index.js'),
       contextIsolation: false,
       sandbox: false,
+      devTools: is.dev,
     },
   });
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show();
+  });
+
+  mainWindow.on('close', function () {
+    const lastStatus = { bounds: mainWindow.getBounds() };
+    fs.writeFileSync(INIT_STATUS_PATH, JSON.stringify(lastStatus), 'utf8');
   });
 
   mainWindow.webContents.setWindowOpenHandler(details => {
@@ -50,7 +95,7 @@ function createWindow(): void {
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(async () => {
   // Set app user model id for windows
-  electronApp.setAppUserModelId('com.electron');
+  electronApp.setAppUserModelId('github.com/JorgeRojo/fratch-ui');
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
