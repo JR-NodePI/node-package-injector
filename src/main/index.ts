@@ -8,10 +8,8 @@ import { createAppMenu, getMenuItemsTemplate } from './menu';
 
 const INIT_STATUS_PATH = join(__dirname, '../init_status.json');
 
-const INI_WINDOW_WIDTH = 1024;
-const INI_WINDOW_HEIGHT = 824;
-const MIN_WINDOW_WIDTH = INI_WINDOW_WIDTH / 2;
-const MIN_WINDOW_HEIGHT = INI_WINDOW_HEIGHT / 2;
+const INI_WINDOW_WIDTH = 800;
+const INI_WINDOW_HEIGHT = 600;
 
 function createWindow(): void {
   const initStatus = fs.readFileSync(INIT_STATUS_PATH, {
@@ -27,8 +25,8 @@ function createWindow(): void {
     if (!windowBounds) {
       throw new Error('initWindowBounds is null');
     } else if (
-      windowBounds.width < MIN_WINDOW_WIDTH ||
-      windowBounds.height < MIN_WINDOW_HEIGHT
+      windowBounds.width < INI_WINDOW_WIDTH ||
+      windowBounds.height < INI_WINDOW_HEIGHT
     ) {
       throw new Error('initWindowBounds is too small');
     } else {
@@ -47,8 +45,8 @@ function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     ...initWindowBounds,
-    minWidth: 200,
-    minHeight: 200,
+    minWidth: INI_WINDOW_WIDTH,
+    minHeight: INI_WINDOW_HEIGHT,
     titleBarStyle: process.platform === 'linux' ? 'default' : 'hidden',
     titleBarOverlay: {
       color: '#5858f0',
