@@ -75,14 +75,23 @@ function PackageSelector({
     }
   }, cwd);
 
+  const [mustFocusOnDirectoriesLoaded, setMustFocusOnDirectoriesLoaded] =
+    useState<boolean>(false);
+  useEffectCWD(() => {
+    if (mustFocusOnDirectoriesLoaded) {
+      setMustFocusOnDirectoriesLoaded(false);
+      setTimeout(() => {
+        triggerElementRef.current?.focus();
+      }, 100);
+    }
+  }, cwd);
+
   const handlePathChange = (value?: string): void => {
     if (value) {
       const newPathDirectories = [...pathDirectories, value];
+      setMustFocusOnDirectoriesLoaded(true);
       setPathDirectories(newPathDirectories);
     }
-    setTimeout(() => {
-      triggerElementRef.current?.focus();
-    }, 200);
   };
 
   const isDirBackEnabled =
