@@ -39,11 +39,7 @@ export default function PackageScripts({
 
   // try to determine the install and pack script
   useEffect(() => {
-    const thereIsNoScripts = targetPackage.scripts.every(
-      ({ scriptName }) => !scriptName
-    );
-
-    if (thereIsNoScripts) {
+    if (targetPackage.scripts.length === 0) {
       const installScript = scriptOptions.find(
         ({ value }) =>
           / install/gi.test(value.scriptValue) &&
