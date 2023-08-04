@@ -1,8 +1,8 @@
 import { ToasterProvider } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
-import GlobalDataProvider from './App/GlobalDataProvider/GlobalDataProvider';
-import Main from './App/Main';
+import GlobalDataProvider from './appComponents/GlobalDataProvider/GlobalDataProvider';
+import Main from './appComponents/Main';
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
 import Layout from './components/Layout/Layout';
 
