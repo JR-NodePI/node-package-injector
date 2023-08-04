@@ -1,50 +1,20 @@
 import { electronApp, is, optimizer } from '@electron-toolkit/utils';
 import { app, BrowserWindow, ipcMain, Menu, shell } from 'electron';
-import fs from 'fs';
 import { join } from 'path';
 
 import icon from '../../build/icons/png/1024x1024.png?asset';
 import { createAppMenu, getMenuItemsTemplate } from './menu';
-
-const INIT_STATUS_PATH = join(__dirname, '../init_status.json');
-
-const INI_WINDOW_WIDTH = 800;
-const INI_WINDOW_HEIGHT = 600;
+import {
+  INI_WINDOW_HEIGHT,
+  INI_WINDOW_WIDTH,
+  loadWindowRect,
+  saveWindowRect,
+} from './windowRect';
 
 function createWindow(): void {
-  const initStatus = fs.readFileSync(INIT_STATUS_PATH, {
-    encoding: 'utf8',
-    flag: 'a+',
-  });
-  let initWindowBounds: Pick<Electron.Rectangle, 'width' | 'height'>;
-
-  try {
-    const initStatusJson = JSON.parse(initStatus);
-    const windowBounds = initStatusJson?.bounds;
-
-    if (!windowBounds) {
-      throw new Error('initWindowBounds is null');
-    } else if (
-      windowBounds.width < INI_WINDOW_WIDTH ||
-      windowBounds.height < INI_WINDOW_HEIGHT
-    ) {
-      throw new Error('initWindowBounds is too small');
-    } else {
-      initWindowBounds = {
-        width: windowBounds.width,
-        height: windowBounds.height,
-      };
-    }
-  } catch {
-    initWindowBounds = {
-      width: INI_WINDOW_WIDTH,
-      height: INI_WINDOW_HEIGHT,
-    };
-  }
-
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    ...initWindowBounds,
+    ...loadWindowRect(),
     minWidth: INI_WINDOW_WIDTH,
     minHeight: INI_WINDOW_HEIGHT,
     titleBarStyle: process.platform === 'linux' ? 'default' : 'hidden',
@@ -70,8 +40,7 @@ function createWindow(): void {
   });
 
   mainWindow.on('close', function () {
-    const lastStatus = { bounds: mainWindow.getBounds() };
-    fs.writeFileSync(INIT_STATUS_PATH, JSON.stringify(lastStatus), 'utf8');
+    saveWindowRect(mainWindow);
   });
 
   mainWindow.webContents.setWindowOpenHandler(details => {
@@ -102,13 +71,15 @@ app.whenReady().then(async () => {
     optimizer.watchWindowShortcuts(window);
   });
 
-  createAppMenu();
-  createWindow();
-
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
+  });
+
+  app.on('ready', function () {
+    createAppMenu();
+    createWindow();
   });
 });
 
