@@ -1,7 +1,6 @@
 import DependencyPackage from '@renderer/models/DependencyPackage';
 import TargetPackage from '@renderer/models/TargetPackage';
 import GitService from '@renderer/services/GitService';
-import NPMService from '@renderer/services/NPMService';
 import PathService from '@renderer/services/PathService';
 import { TerminalResponse } from '@renderer/services/TerminalService';
 
@@ -26,6 +25,8 @@ export class ProcessService {
       }
     }
 
+    //TODO: execute scripts
+
     const dependenciesResponses = await Promise.all(
       dependencies.map(ProcessService.runDependency)
     );
@@ -49,16 +50,7 @@ export class ProcessService {
       }
     }
 
-    // execute script package
-    if (dependency.script) {
-      const output = await NPMService.runScript(depCwd, dependency.script);
-      if (output.error) {
-        return {
-          ...output,
-          title: `Dependency "${depName}" run ${dependency.script}`,
-        };
-      }
-    }
+    //TODO: execute scripts
 
     //TODO: if a npm package exists, try to inject in targetPackage
 

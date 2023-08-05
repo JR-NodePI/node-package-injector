@@ -25,8 +25,8 @@ export default function PackageBunchPage(): JSX.Element {
 
     if (!isValidPackage) {
       targetPackage.performGitPull = false;
-      targetPackage.scripts = [];
     }
+    targetPackage.scripts = [];
     targetPackage.cwd = cwd;
     targetPackage.isValidPackage = isValidPackage;
 
