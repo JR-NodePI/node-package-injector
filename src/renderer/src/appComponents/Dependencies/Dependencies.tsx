@@ -76,7 +76,6 @@ function Dependencies({
           newDependency.performGitPull = false;
           newDependency.mode = DependencyMode.BUILD;
         }
-
         newDependency.scripts = [];
         newDependency.cwd = cwd;
         newDependency.isValidPackage = isValidPackage;
