@@ -1,4 +1,4 @@
-import { memo, useRef, useState } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 
 import GitService from '@renderer/services/GitService';
 import NPMService from '@renderer/services/NPMService';
@@ -58,7 +58,7 @@ function PackageSelector({
     }
   }, cwd);
 
-  useEffectCWD(() => {
+  useEffect(() => {
     if (cwd.length > 2) {
       (async (): Promise<void> => {
         const newDirectories = (
@@ -73,7 +73,7 @@ function PackageSelector({
         setDirectories(newDirectories);
       })();
     }
-  }, cwd);
+  }, [cwd, excludedDirectories]);
 
   const [mustFocusOnDirectoriesLoaded, setMustFocusOnDirectoriesLoaded] =
     useState<boolean>(false);

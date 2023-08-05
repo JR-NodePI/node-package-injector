@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { DependencyMode } from '@renderer/models/DependencyConstants';
 import DependencyPackage from '@renderer/models/DependencyPackage';
 import { PackageScript } from '@renderer/models/PackageScriptsTypes';
 import TargetPackage from '@renderer/models/TargetPackage';
@@ -71,6 +72,12 @@ function Dependencies({
           ? dependency.clone()
           : new DependencyPackage();
 
+        if (!isValidPackage) {
+          newDependency.performGitPull = false;
+          newDependency.mode = DependencyMode.BUILD;
+        }
+
+        newDependency.scripts = [];
         newDependency.cwd = cwd;
         newDependency.isValidPackage = isValidPackage;
         newDependency.id = dependency.id;
@@ -141,13 +148,13 @@ function Dependencies({
     <div className={c(styles.dependencies)}>
       <h2 className={c(styles.title)}>Dependencies</h2>
       {(dependencies ?? []).map(
-        dependency =>
+        (dependency, index) =>
           (dependency.cwd ?? '').length > 2 && (
             <DependencySelector
+              key={index}
               disabled={loading}
               dependency={dependency}
               excludedDirectories={excludedDirectories}
-              key={dependency.id}
               onClickRemove={handleRemoveDependency}
               onGitPullChange={handleGitPullChange}
               onPathChange={handlePathChange}
