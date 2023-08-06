@@ -10,6 +10,7 @@ import styles from './PackageScriptSelector.module.css';
 
 type PackageScriptSelector = {
   label: string;
+  title: string;
   selectedScript: PackageScript;
   scriptOptions: SelectOption<PackageScript>[];
   onChange: (script?: PackageScript) => void;
@@ -18,6 +19,7 @@ type PackageScriptSelector = {
 
 export default function PackageScriptSelector({
   label,
+  title,
   selectedScript,
   scriptOptions,
   onChange,
@@ -29,37 +31,19 @@ export default function PackageScriptSelector({
     let options = [...scriptOptions];
 
     const mustAddSelected = scriptOptions.every(
-      option => option.value.scriptName !== selectedScript.scriptName
+      option =>
+        selectedScript.scriptName &&
+        option.value.scriptName !== selectedScript.scriptName
     );
 
     if (mustAddSelected) {
       options = [
         { value: selectedScript, label: selectedScript.scriptName },
         ...options,
-      ];
+      ].sort((a, b) => a.label.localeCompare(b.label));
     }
 
-    return [
-      ...options
-        .filter(({ value }) => value.scriptName)
-        .sort((a, b) => a.label.localeCompare(b.label)),
-      {
-        label: 'npm install',
-        labelElement: <i>🔗 npm install</i>,
-        value: {
-          scriptName: 'npm install --pure-lockfile',
-          scriptValue: 'npm install --pure-lockfile',
-        },
-      },
-      {
-        label: 'yarn install',
-        labelElement: <i>🔗 yarn install</i>,
-        value: {
-          scriptName: 'yarn install --pure-lock',
-          scriptValue: 'yarn install --pure-lock',
-        },
-      },
-    ];
+    return options;
   }, [scriptOptions, selectedScript]);
 
   const handleOnChange = (selectedScript?: PackageScript): void => {
@@ -70,7 +54,11 @@ export default function PackageScriptSelector({
   return (
     <div className={c(styles.mode_scripts)}>
       <Form.LeftLabeledField
-        label={<label htmlFor={id}>{label}</label>}
+        label={
+          <label htmlFor={id} title={title}>
+            {label}
+          </label>
+        }
         field={
           <Form.Select
             id={id}

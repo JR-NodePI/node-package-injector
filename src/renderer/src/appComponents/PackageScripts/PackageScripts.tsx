@@ -10,6 +10,12 @@ import { PackageScriptRenderer } from './components/PackageScriptRenderer';
 
 import styles from './PackageScripts.module.css';
 
+const getScriptsHash = (scripts: PackageScript[]): string =>
+  scripts
+    .map(({ scriptName }) => scriptName)
+    .filter(scriptName => Boolean(scriptName))
+    .join('-');
+
 export default function PackageScripts({
   targetPackage,
   onChange,
@@ -20,6 +26,21 @@ export default function PackageScripts({
   const [scriptOptions, setScriptOptions] = useState<
     Form.SelectProps.SelectOption<PackageScript>[]
   >([]);
+
+  const [selectedScrips, setSelectedScrips] = useState<PackageScript[]>(
+    targetPackage.scripts.length
+      ? targetPackage.scripts
+      : [{ scriptName: '', scriptValue: '' }]
+  );
+
+  // handle onChange when there is a change
+  useEffect(() => {
+    const initialHash = getScriptsHash(targetPackage.scripts);
+    const selectedHash = getScriptsHash(selectedScrips);
+    if (initialHash !== selectedHash) {
+      onChange?.(selectedScrips);
+    }
+  }, [selectedScrips, targetPackage.scripts, onChange]);
 
   // load package scripts
   useEffect(() => {
@@ -33,67 +54,69 @@ export default function PackageScripts({
           label: scriptName,
         })
       );
-      setScriptOptions(options);
+
+      setScriptOptions(
+        [
+          ...options,
+          {
+            label: 'npm install --pure-lockfile',
+            labelElement: <>🔗 npm install</>,
+            value: {
+              scriptName: 'npm install --pure-lockfile',
+              scriptValue: 'npm install --pure-lockfile',
+            },
+          },
+          {
+            label: 'yarn install --pure-lock',
+            labelElement: <>🔗 yarn install</>,
+            value: {
+              scriptName: 'yarn install --pure-lock',
+              scriptValue: 'yarn install --pure-lock',
+            },
+          },
+        ].sort((a, b) => a.label.localeCompare(b.label))
+      );
     })();
   }, [targetPackage.cwd]);
 
   // try to determine the install and pack script
   useEffect(() => {
     if (targetPackage.scripts.length === 0) {
-      const installScript = scriptOptions.find(
-        ({ value }) =>
-          / install/gi.test(value.scriptValue) &&
-          !/prepare/gi.test(value.scriptName)
-      );
-
-      if (installScript) {
-        setSelectedScrips([installScript.value]);
-      }
-
-      const packScript = scriptOptions.find(
-        ({ value }) =>
-          / pack /gi.test(value.scriptValue) ||
-          / pack$/gi.test(value.scriptValue)
-      );
-
-      if (packScript) {
-        setSelectedScrips([
-          ...(!installScript ? [{ scriptName: '', scriptValue: '' }] : []),
-          packScript.value,
-        ]);
-      }
+      //       const installScript = scriptOptions.find(
+      //         ({ value }) =>
+      //           / install/gi.test(value.scriptValue) &&
+      //           !/prepare/gi.test(value.scriptName)
+      //       );
+      //
+      //       if (installScript) {
+      //         setSelectedScrips([installScript.value]);
+      //       }
+      //
+      //       const packScript = scriptOptions.find(
+      //         ({ value }) =>
+      //           / pack /gi.test(value.scriptValue) ||
+      //           / pack$/gi.test(value.scriptValue)
+      //       );
+      //
+      //       if (packScript) {
+      //         setSelectedScrips([
+      //           ...(!installScript ? [{ scriptName: '', scriptValue: '' }] : []),
+      //           packScript.value,
+      //         ]);
+      //       }
     }
   }, [scriptOptions, targetPackage.scripts]);
-
-  const [selectedScrips, setSelectedScrips] = useState<PackageScript[]>(
-    targetPackage.scripts
-  );
-
-  useEffect(() => {
-    if (!selectedScrips.length) {
-      setSelectedScrips([{ scriptName: '', scriptValue: '' }]);
-    }
-  }, [selectedScrips]);
-
-  useEffect(() => {
-    const initialHash = targetPackage.scripts
-      .map(({ scriptName }) => scriptName)
-      .join('-');
-    const selectedHash = selectedScrips
-      .map(({ scriptName }) => scriptName)
-      .join('-');
-    if (initialHash !== selectedHash) {
-      onChange?.(selectedScrips);
-    }
-  }, [selectedScrips, targetPackage.scripts, onChange]);
 
   const handleAddScript = (): void => {
     setSelectedScrips([...selectedScrips, { scriptName: '', scriptValue: '' }]);
   };
 
   const handleRemoveScript = (indexToRemove: number): void => {
+    const newScripts = selectedScrips.filter(
+      (_script, index) => index !== indexToRemove
+    );
     setSelectedScrips(
-      selectedScrips.filter((_script, index) => index !== indexToRemove)
+      newScripts.length > 0 ? newScripts : [{ scriptName: '', scriptValue: '' }]
     );
   };
 
@@ -113,24 +136,30 @@ export default function PackageScripts({
     );
   };
 
-  const noSelectedScriptOptions = scriptOptions.filter(({ label }) =>
-    selectedScrips.every(({ scriptName }) => scriptName !== label)
+  const noSelectedScriptOptions = scriptOptions.filter(({ value }) =>
+    selectedScrips.every(({ scriptName }) => scriptName !== value.scriptName)
   );
 
   return (
     <div className={c(styles.package_scripts)}>
-      {selectedScrips.map((script, index) => (
-        <PackageScriptRenderer
-          index={index}
-          key={index}
-          onAdd={handleAddScript}
-          onChange={handleScriptChange}
-          onRemove={handleRemoveScript}
-          script={script}
-          scriptOptions={noSelectedScriptOptions}
-          showAddButton={index === selectedScrips.length - 1}
-        />
-      ))}
+      {selectedScrips.map((script, index) => {
+        const showAddButton =
+          index === selectedScrips.length - 1 &&
+          scriptOptions.length > selectedScrips.length;
+
+        return (
+          <PackageScriptRenderer
+            index={index}
+            key={index}
+            onAdd={handleAddScript}
+            onChange={handleScriptChange}
+            onRemove={handleRemoveScript}
+            script={script}
+            scriptOptions={noSelectedScriptOptions}
+            showAddButton={showAddButton}
+          />
+        );
+      })}
     </div>
   );
 }
