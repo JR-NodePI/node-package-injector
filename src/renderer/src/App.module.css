@@ -1,3 +1,5 @@
 .toaster_list {
-  top: 47px !important;
+  top: var(--ft-header-height) !important;
+  max-height: calc(100vh - var(--ft-header-height)) !important;
+  pointer-events: all !important;
 }
