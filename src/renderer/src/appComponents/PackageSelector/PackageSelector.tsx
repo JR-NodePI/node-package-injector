@@ -47,8 +47,8 @@ function PackageSelector({
   const [isValidating, setIsValidating] = useState<boolean>(true);
   useEffectCWD(() => {
     if (cwd.length > 2) {
+      setIsValidating(true);
       (async (): Promise<void> => {
-        setIsValidating(true);
         const isValidPackage = await NPMService.checkPackageJSON(cwd);
         const isValidGit = await GitService.checkGit(cwd);
         const isValid = isValidPackage && isValidGit;
@@ -148,7 +148,7 @@ function PackageSelector({
           />
         }
       />
-      {targetPackage?.isValidPackage && (
+      {!isValidating && targetPackage?.isValidPackage && (
         <>
           <div className={c(styles.options)}>
             <PackageBranchSelector

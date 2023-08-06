@@ -1,4 +1,4 @@
-import { memo, useContext, useState } from 'react';
+import { memo, useCallback, useContext, useEffect, useState } from 'react';
 
 import GitService from '@renderer/services/GitService';
 import { Form } from 'fratch-ui';
@@ -7,7 +7,6 @@ import { c } from 'fratch-ui/helpers/classNameHelpers';
 import { v4 as uuid } from 'uuid';
 
 import LinkButton from '../../components/linkButton/LinkButton';
-import useEffectCWD from './useEffectCWD';
 
 function PackageBranchSelector({
   disabled,
@@ -25,37 +24,40 @@ function PackageBranchSelector({
     Form.SelectProps.SelectOption<string>[]
   >([]);
   const [currenBranch, setCurrenBranch] = useState<string>();
-  const [loading, setLoading] = useState<boolean>(true);
 
-  const loadBranches = async (): Promise<void> => {
+  const loadBranches = useCallback(async (): Promise<void> => {
     const branch = await GitService.getCurrentBranch(cwd);
     setCurrenBranch(branch);
     const data = await GitService.getBranches(cwd);
     setBranches(data.map(branch => ({ label: branch, value: branch })));
-  };
+  }, [cwd]);
 
-  useEffectCWD(() => {
-    (async (): Promise<void> => {
-      if (cwd.length > 2) {
-        setLoading(true);
+  const [mustLoadBranches, setMustLoadBranches] = useState<boolean>(false);
+  useEffect(() => {
+    setMustLoadBranches(true);
+  }, [cwd]);
+
+  useEffect(() => {
+    if (mustLoadBranches && cwd.length > 2) {
+      setMustLoadBranches(false);
+      (async (): Promise<void> => {
         await loadBranches();
-        setLoading(false);
-      }
-    })();
-  }, cwd);
+      })();
+    }
+  }, [cwd, loadBranches, mustLoadBranches]);
 
   const handleRefreshBranches = async (): Promise<void> => {
-    if (cwd.length > 2 && !disabled) {
-      setLoading(true);
+    if (cwd.length > 2) {
+      setMustLoadBranches(true);
       await GitService.fetch(cwd);
       await loadBranches();
-      setLoading(false);
+      setMustLoadBranches(false);
     }
   };
 
   const handleOnChange = async (value?: string): Promise<void> => {
     if (value) {
-      setLoading(true);
+      setMustLoadBranches(true);
       const { error } = await GitService.checkout(cwd, value as string);
 
       if (error != null && addToaster != null) {
@@ -68,7 +70,7 @@ function PackageBranchSelector({
       }
 
       await loadBranches();
-      setLoading(false);
+      setMustLoadBranches(false);
     }
   };
 
@@ -90,11 +92,11 @@ function PackageBranchSelector({
           <Form.Select
             id={id}
             value={currenBranch}
-            placeholder={loading ? 'Loading...' : 'Select branch...'}
+            placeholder={mustLoadBranches ? 'Loading...' : 'Select branch...'}
             searchable
             options={branches}
             onChange={handleOnChange}
-            disabled={disabled || loading}
+            disabled={disabled || mustLoadBranches}
           />
         }
       />
