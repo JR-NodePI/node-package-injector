@@ -98,10 +98,10 @@ export default class TerminalRepository {
 
         const mustDisplay =
           traceOnTime ||
-          ExecuteCommandOutputType.STDERR_ERROR ||
-          ExecuteCommandOutputType.ERROR ||
-          ExecuteCommandOutputType.CLOSE ||
-          ExecuteCommandOutputType.EXIT;
+          output.type === ExecuteCommandOutputType.STDERR_ERROR ||
+          output.type === ExecuteCommandOutputType.ERROR ||
+          output.type === ExecuteCommandOutputType.CLOSE ||
+          output.type === ExecuteCommandOutputType.EXIT;
 
         if (mustDisplay) {
           displayLogs(outputStack, traceOnTime);
