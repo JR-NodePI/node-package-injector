@@ -5,6 +5,7 @@ import {
   OutputBadIcons,
   OutputColor,
   OutputGoodIcons,
+  OutputNeutralIcons,
   OutputTypeToColor,
 } from './TerminalConstants';
 import {
@@ -45,30 +46,23 @@ const consoleError = (
 
 const displayLogs = (
   outputStack: ExecuteCommandOutput[],
-  traceOnTime?: boolean
+  {
+    neutralIcon,
+    goodIcon,
+    badIcon,
+  }: { neutralIcon?: string; goodIcon?: string; badIcon?: string }
 ): void => {
-  const hasErrors = outputStack.some(
-    ({ type }) =>
-      type === ExecuteCommandOutputType.ERROR ||
-      type === ExecuteCommandOutputType.STDERR_ERROR
-  );
-  const randIcon = traceOnTime
-    ? undefined
-    : hasErrors
-    ? OutputBadIcons[Math.floor(Math.random() * OutputBadIcons.length)]
-    : OutputGoodIcons[Math.floor(Math.random() * OutputGoodIcons.length)];
-
   outputStack.forEach(({ type, data }) => {
     switch (type) {
       case ExecuteCommandOutputType.CLOSE:
       case ExecuteCommandOutputType.EXIT:
       case ExecuteCommandOutputType.INIT:
       case ExecuteCommandOutputType.STDOUT:
-        consoleLog(type, randIcon, data);
+        consoleLog(type, neutralIcon ?? goodIcon, data);
         break;
       case ExecuteCommandOutputType.ERROR:
       case ExecuteCommandOutputType.STDERR_ERROR:
-        consoleError(type, randIcon, data);
+        consoleError(type, neutralIcon ?? badIcon, data);
         break;
       default:
         break;
@@ -90,9 +84,23 @@ export default class TerminalRepository {
         reject(new Error('cwd is required'));
       }
 
+      const icons = {
+        neutralIcon: traceOnTime
+          ? OutputNeutralIcons[
+              Math.floor(Math.random() * OutputNeutralIcons.length)
+            ]
+          : undefined,
+        goodIcon: traceOnTime
+          ? undefined
+          : OutputGoodIcons[Math.floor(Math.random() * OutputGoodIcons.length)],
+        badIcon: traceOnTime
+          ? undefined
+          : OutputBadIcons[Math.floor(Math.random() * OutputGoodIcons.length)],
+      };
       const commandTrace = `${cwd} ${command} ${args.join(' ')}`;
       const outputs: ExecuteCommandOutput[] = [];
       let outputStack: ExecuteCommandOutput[] = [];
+
       const enqueueOutput = (output: ExecuteCommandOutput): void => {
         outputStack.push(output);
 
@@ -104,7 +112,7 @@ export default class TerminalRepository {
           output.type === ExecuteCommandOutputType.EXIT;
 
         if (mustDisplay) {
-          displayLogs(outputStack, traceOnTime);
+          displayLogs(outputStack, icons);
         }
 
         if (traceOnTime) {

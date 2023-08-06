@@ -39,6 +39,7 @@ export const OutputGoodIcons = [
   '😍',
   '😎',
   '😘',
+  '🚀',
 ];
 export const OutputBadIcons = [
   '👹',
@@ -56,4 +57,16 @@ export const OutputBadIcons = [
   '😤',
   '😥',
   '😨',
+];
+export const OutputNeutralIcons = [
+  '👀',
+  '👊',
+  '👋',
+  '👶',
+  '💦',
+  '🔥',
+  '🙈',
+  '🙉',
+  '🙊',
+  '🛀',
 ];
