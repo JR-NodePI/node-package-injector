@@ -73,10 +73,11 @@ export default function PackageBunchPage(): JSX.Element {
         </span>
       </h1>
       <PackageSelector
-        targetPackage={activeTargetPackage}
-        onPathChange={handlePathChange}
+        excludedDirectories={excludedDirectories}
         onGitPullChange={handleGitPullChange}
+        onPathChange={handlePathChange}
         onScriptsChange={handleScriptsChange}
+        targetPackage={activeTargetPackage}
       />
       <Dependencies
         excludedDirectories={excludedDirectories}

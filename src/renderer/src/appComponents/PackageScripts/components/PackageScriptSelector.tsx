@@ -40,10 +40,10 @@ export default function PackageScriptSelector({
       options = [
         { value: selectedScript, label: selectedScript.scriptName },
         ...options,
-      ].sort((a, b) => a.label.localeCompare(b.label));
+      ];
     }
 
-    return options;
+    return options.sort((a, b) => a.label.localeCompare(b.label));
   }, [scriptOptions, selectedScript]);
 
   const handleOnChange = (selectedScript?: PackageScript): void => {
