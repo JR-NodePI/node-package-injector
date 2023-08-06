@@ -29,19 +29,21 @@ export default function Process(): JSX.Element {
         setIsRunning(false);
 
         const hasErrors = output.some(({ error }) => !!error);
-        output.forEach(({ title, content, error }) => {
+        output.forEach(({ title, content, error }, index) => {
           const type = error
             ? ToasterType.ERROR
             : hasErrors
             ? ToasterType.INFO
             : ToasterType.SUCCESS;
-          const duration = type !== ToasterType.ERROR ? 3000 : 15000;
+          const isError = type === ToasterType.ERROR;
+          const duration = isError ? 15000 : 3000;
           addToaster({
             title,
             message: content || error || '',
             type,
             nlToBr: true,
-            duration,
+            duration: duration + index * 200,
+            stoppable: isError,
           });
         });
       }
