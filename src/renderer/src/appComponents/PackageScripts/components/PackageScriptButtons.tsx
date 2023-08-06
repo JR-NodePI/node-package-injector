@@ -23,7 +23,7 @@ export default function PackageScriptButtons({
       />
       {showAddButton && (
         <Button
-          type="secondary"
+          type="tertiary"
           onClick={onAdd}
           Icon={IconPlus}
           size="smaller"
