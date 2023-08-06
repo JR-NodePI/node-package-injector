@@ -21,19 +21,20 @@ export class ProcessService {
     }
 
     const cwd = targetPackage.cwd ?? '';
+    const pkgName = PathService.getPathDirectories(cwd).pop();
 
     // package git pull
     if (targetPackage.performGitPull) {
       const output = await GitService.pull(cwd);
       if (output.error) {
-        return [{ ...output, title: 'Package git pull' }];
+        return [{ ...output, title: `Target: "${pkgName}" git pull` }];
       }
     }
 
     const scriptsResponses = await promiseAllSequentially(
       targetPackage.scripts
         .filter(script => Boolean(script.scriptName.trim()))
-        .map(script => ProcessService.runScript(script, cwd))
+        .map(script => ProcessService.runScript(script, cwd, pkgName))
     );
 
     const dependenciesResponses = await promiseAllSequentially(
@@ -41,15 +42,16 @@ export class ProcessService {
     );
 
     return [
-      { title: 'Package success' },
       ...scriptsResponses,
-      ...dependenciesResponses,
+      ...dependenciesResponses.flat(),
+      { title: `Target: "${pkgName}" success` },
     ];
   }
 
   private static async runScript(
     script: PackageScript,
-    cwd: string
+    cwd: string,
+    pkgName?: string
   ): Promise<TerminalResponse & { title: string }> {
     let commandOptions = {
       command: 'npm',
@@ -73,15 +75,18 @@ export class ProcessService {
     const output = await TerminalService.executeCommand(commandOptions);
 
     if (output.error) {
-      return { ...output, title: `Script "${script.scriptName}" error` };
+      return {
+        ...output,
+        title: `Script: "${pkgName}" ${script.scriptName}`,
+      };
     }
 
-    return { title: `Script "${script.scriptName}" success` };
+    return { title: `Script: "${pkgName}" ${script.scriptName}` };
   }
 
   private static async runDependency(
     dependency: DependencyPackage
-  ): Promise<TerminalResponse & { title: string }> {
+  ): Promise<ProcessServiceResponse[]> {
     const depCwd = dependency.cwd ?? '';
     const depName = PathService.getPathDirectories(depCwd).pop();
 
@@ -91,14 +96,18 @@ export class ProcessService {
     if (dependency.performGitPull) {
       const output = await GitService.pull(depCwd);
       if (output.error) {
-        return { ...output, title: `Dependency "${depName}" git pull` };
+        return [{ ...output, title: `Dependency: "${depName}" git pull` }];
       }
     }
 
-    //TODO: execute scripts
+    const scriptsResponses = await promiseAllSequentially(
+      dependency.scripts
+        .filter(script => Boolean(script.scriptName.trim()))
+        .map(script => ProcessService.runScript(script, depCwd, depName))
+    );
 
-    //TODO: if a npm package exists, try to inject in targetPackage
+    //TODO: if an npm builded package exists, try to inject in targetPackage
 
-    return { title: `Dependency "${depName}" success` };
+    return [...scriptsResponses, { title: `Dependency: "${depName}" success` }];
   }
 }
