@@ -41,6 +41,7 @@ export default class NPMService {
       command: 'bash',
       args: [PathService.getExtraResourcesScriptPath('check_node.sh')],
       cwd: window.api.path.join(window.api.extraResourcesPath),
+      skipWSL: true,
     });
 
     try {
@@ -120,20 +121,13 @@ export default class NPMService {
     cwd: string,
     script: string
   ): Promise<TerminalResponse> {
-    const isYarn = await NPMService.checkYarn(cwd);
-
-    if (isYarn) {
-      return await TerminalService.executeCommand({
-        command: 'yarn',
-        args: [script],
-        cwd,
-        traceOnTime: true,
-      });
-    }
-
     return await TerminalService.executeCommand({
-      command: 'npm',
-      args: ['run', script],
+      command: 'bash',
+      args: [
+        PathService.getExtraResourcesScriptPath('npm_run_script.sh'),
+        `--npm_command`,
+        `${JSON.stringify(script)}`,
+      ],
       cwd,
       traceOnTime: true,
     });

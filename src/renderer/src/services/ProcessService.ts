@@ -9,6 +9,8 @@ import TerminalService, {
   TerminalResponse,
 } from '@renderer/services/TerminalService';
 
+import NPMService from './NPMService';
+
 type ProcessServiceResponse = TerminalResponse & { title: string };
 
 export class ProcessService {
@@ -53,26 +55,17 @@ export class ProcessService {
     cwd: string,
     pkgName?: string
   ): Promise<TerminalResponse & { title: string }> {
-    let commandOptions = {
-      command: 'npm',
-      args: ['run', script.scriptName],
-      cwd,
-      traceOnTime: true,
-    };
+    const isYarn = await NPMService.checkYarn(cwd);
+
+    let npmScript = isYarn
+      ? `yarn ${script.scriptName}`
+      : `npm run ${script.scriptName}`;
 
     if (ADDITIONAL_PACKAGE_SCRIPTS[script.scriptName] != null) {
-      const addScript = ADDITIONAL_PACKAGE_SCRIPTS[script.scriptName];
-      const commandParts = addScript.scriptValue.split(' ');
-      const command = commandParts.shift() ?? '';
-      commandOptions = {
-        command,
-        args: commandParts,
-        cwd,
-        traceOnTime: true,
-      };
+      npmScript = ADDITIONAL_PACKAGE_SCRIPTS[script.scriptName].scriptValue;
     }
 
-    const output = await TerminalService.executeCommand(commandOptions);
+    const output = await NPMService.runScript(cwd, npmScript);
 
     if (output.error) {
       return {

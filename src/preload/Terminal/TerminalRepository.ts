@@ -14,7 +14,9 @@ import {
 } from './TerminalTypes';
 
 const cleanOutput = (output: string): string =>
-  output.replace(/[^a-z0-9-\n\s\r\t{}()"',:_\\/\\*+.@]/gi, '').trim();
+  output
+    .replace(/[^a-z0-9-\n\s\r\t{}()"',:_\\/\\*+.|>=@áéíóúÁÉÍÓÚñçü]/gi, '')
+    .trim();
 
 const getConsoleInitColorizedFlag = (
   type: ExecuteCommandOutput['type'],
