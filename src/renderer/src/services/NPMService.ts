@@ -55,9 +55,8 @@ export default class NPMService {
     return {};
   }
 
-  public static async checkNodeNpmYarn(): Promise<boolean> {
-    const data = await NPMService.getNodeVersions();
-    return data?.node != null && data?.npm != null && data?.yarn != null;
+  public static async getNodeNpmYarn(): Promise<Record<string, string>> {
+    return await NPMService.getNodeVersions();
   }
 
   public static async checkPackageJSON(cwd: string): Promise<boolean> {

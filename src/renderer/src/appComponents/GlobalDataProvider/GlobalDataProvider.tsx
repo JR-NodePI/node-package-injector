@@ -19,7 +19,8 @@ export default function GlobalDataProvider({
 }: {
   children: React.ReactNode;
 }): JSX.Element {
-  const { isValidTerminal, isValidTerminalLoading } = useLoadTerminal();
+  const { isValidTerminal, isValidTerminalLoading, nodeData } =
+    useLoadTerminal();
 
   const [isWSLActive, setIsWSLActive, isWSLActiveLoading] =
     usePersistedState<boolean>('isWSLActive', false);
@@ -87,6 +88,7 @@ export default function GlobalDataProvider({
       setActiveTargetPackage,
       setIsWSLActive,
       setPackageBunch,
+      nodeData,
     };
   }, [
     isValidTerminal,
@@ -99,6 +101,7 @@ export default function GlobalDataProvider({
     setActiveTargetPackage,
     setIsWSLActive,
     setPackageBunch,
+    nodeData,
   ]);
 
   return (
