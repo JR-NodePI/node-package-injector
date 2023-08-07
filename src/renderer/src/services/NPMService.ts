@@ -119,7 +119,8 @@ export default class NPMService {
 
   public static async runScript(
     cwd: string,
-    script: string
+    script: string,
+    abortController?: AbortController
   ): Promise<TerminalResponse> {
     return await TerminalService.executeCommand({
       command: 'bash',
@@ -130,6 +131,7 @@ export default class NPMService {
       ],
       cwd,
       traceOnTime: true,
+      abortController,
     });
   }
 }

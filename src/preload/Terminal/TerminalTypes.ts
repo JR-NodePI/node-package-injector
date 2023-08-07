@@ -11,4 +11,5 @@ export type ExecuteCommandOptions = {
   args?: string[];
   skipWSL?: boolean;
   traceOnTime?: boolean;
+  abortController?: AbortController;
 };

@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 
 import { Button, Icons, Modal, Spinner, ToasterListContext } from 'fratch-ui';
 import { ToasterType } from 'fratch-ui/components/Toaster/ToasterConstants';
@@ -17,44 +17,67 @@ export default function Process(): JSX.Element {
   const [isRunning, setIsRunning] = useState(false);
   const [isSyncing] = useState(false); //TODO: get from process
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [abortController, setAbortController] = useState<AbortController>();
 
   useDeepCompareEffect(() => {
-    (async (): Promise<void> => {
-      if (isRunning) {
-        const output = await ProcessService.run(
-          activeTargetPackage,
-          activeDependencies
-        );
+    const mustRun =
+      abortController?.signal != null && !abortController.signal.aborted;
 
-        setIsRunning(false);
+    const run = async (): Promise<void> => {
+      const output = await ProcessService.run(
+        activeTargetPackage,
+        activeDependencies,
+        abortController
+      );
 
-        const hasErrors = output.some(({ error }) => !!error);
-        output.forEach(({ title, content, error }, index) => {
-          const type = error
-            ? ToasterType.ERROR
-            : hasErrors
-            ? ToasterType.INFO
-            : ToasterType.SUCCESS;
-          const isError = type === ToasterType.ERROR;
-          const duration = isError ? 15000 : 3000;
-          addToaster({
-            title,
-            message: content || error || '',
-            type,
-            nlToBr: true,
-            duration: duration + index * 200,
-            stoppable: isError,
-          });
+      setIsRunning(false);
+
+      const hasErrors = output.some(({ error }) => !!error);
+      output.forEach(({ title, content, error }, index) => {
+        const type = error
+          ? ToasterType.ERROR
+          : hasErrors
+          ? ToasterType.INFO
+          : ToasterType.SUCCESS;
+        const isError = type === ToasterType.ERROR;
+        const duration = isError ? 15000 : 3000;
+        addToaster({
+          title,
+          message: content || error || '',
+          type,
+          nlToBr: true,
+          duration: duration + index * 200,
+          stoppable: isError,
         });
+      });
+    };
+
+    if (mustRun) {
+      run();
+    }
+
+    return (): void => {
+      if (mustRun) {
+        abortController.abort();
       }
-    })();
-  }, [isRunning, addToaster, activeTargetPackage, activeDependencies]);
+    };
+  }, [
+    isRunning,
+    addToaster,
+    activeTargetPackage,
+    activeDependencies,
+    abortController?.signal,
+  ]);
 
   const handleRunClick = (): void => {
+    setAbortController(new AbortController());
     setIsRunning(true);
   };
 
   const handleStopClick = (): void => {
+    if (abortController?.signal != null) {
+      abortController.abort();
+    }
     setIsRunning(false);
   };
 
@@ -66,7 +89,7 @@ export default function Process(): JSX.Element {
     activeTargetPackage?.isValidPackage &&
     activeDependencies?.every(d => d.isValidPackage);
 
-  const showStopButton = isSyncing;
+  const showStopButton = isRunning || isSyncing;
 
   return (
     <>

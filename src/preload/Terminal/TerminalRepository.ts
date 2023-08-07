@@ -2,10 +2,8 @@ import { spawn } from 'child_process';
 
 import {
   ExecuteCommandOutputType,
-  OutputBadIcons,
   OutputColor,
-  OutputGoodIcons,
-  OutputNeutralIcons,
+  OutputIcons,
   OutputTypeToColor,
 } from './TerminalConstants';
 import {
@@ -24,7 +22,7 @@ const getConsoleInitColorizedFlag = (
 ): string[] => {
   const typeColor = OutputTypeToColor[type];
   return [
-    `%c> terminal${icon ? ` ${icon}` : ''} %c${type}`,
+    `%c>${icon ? ` ${icon}` : ''} %c${type}`,
     `color:${OutputColor}`,
     `color:${typeColor}`,
   ];
@@ -48,11 +46,7 @@ const consoleError = (
 
 const displayLogs = (
   outputStack: ExecuteCommandOutput[],
-  {
-    neutralIcon,
-    goodIcon,
-    badIcon,
-  }: { neutralIcon?: string; goodIcon?: string; badIcon?: string }
+  icon?: string
 ): void => {
   outputStack.forEach(({ type, data }) => {
     switch (type) {
@@ -60,11 +54,11 @@ const displayLogs = (
       case ExecuteCommandOutputType.EXIT:
       case ExecuteCommandOutputType.INIT:
       case ExecuteCommandOutputType.STDOUT:
-        consoleLog(type, neutralIcon ?? goodIcon, data);
+        consoleLog(type, icon, data);
         break;
       case ExecuteCommandOutputType.ERROR:
       case ExecuteCommandOutputType.STDERR_ERROR:
-        consoleError(type, neutralIcon ?? badIcon, data);
+        consoleError(type, icon, data);
         break;
       default:
         break;
@@ -80,25 +74,15 @@ export default class TerminalRepository {
     args = [],
     cwd,
     traceOnTime,
+    abortController,
   }: ExecuteCommandOptions): Promise<ExecuteCommandOutput[]> {
     return new Promise((resolve, reject) => {
       if (!cwd) {
         reject(new Error('cwd is required'));
       }
 
-      const icons = {
-        neutralIcon: traceOnTime
-          ? OutputNeutralIcons[
-              Math.floor(Math.random() * OutputNeutralIcons.length)
-            ]
-          : undefined,
-        goodIcon: traceOnTime
-          ? undefined
-          : OutputGoodIcons[Math.floor(Math.random() * OutputGoodIcons.length)],
-        badIcon: traceOnTime
-          ? undefined
-          : OutputBadIcons[Math.floor(Math.random() * OutputGoodIcons.length)],
-      };
+      const icon = OutputIcons[Math.floor(Math.random() * OutputIcons.length)];
+
       const commandTrace = `${cwd} ${command} ${args.join(' ')}`;
       const outputs: ExecuteCommandOutput[] = [];
       let outputStack: ExecuteCommandOutput[] = [];
@@ -114,7 +98,7 @@ export default class TerminalRepository {
           output.type === ExecuteCommandOutputType.EXIT;
 
         if (mustDisplay) {
-          displayLogs(outputStack, icons);
+          displayLogs(outputStack, icon);
         }
 
         if (traceOnTime) {
@@ -135,6 +119,7 @@ export default class TerminalRepository {
         cwd,
         env: process.env,
         shell: soShell,
+        signal: abortController?.signal,
       });
 
       cmd.stdout.on('data', data => {
@@ -165,6 +150,7 @@ export default class TerminalRepository {
           };
           enqueueOutput(output);
           reject(error);
+          abortController?.abort();
         } else {
           const output = {
             type: ExecuteCommandOutputType.STDERR_WARN,
@@ -182,6 +168,7 @@ export default class TerminalRepository {
         };
         enqueueOutput(output);
         reject(error);
+        abortController?.abort();
       });
 
       cmd.on('close', code => {

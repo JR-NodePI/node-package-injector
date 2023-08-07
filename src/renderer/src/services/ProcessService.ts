@@ -5,9 +5,7 @@ import { PackageScript } from '@renderer/models/PackageScriptsTypes';
 import TargetPackage from '@renderer/models/TargetPackage';
 import GitService from '@renderer/services/GitService';
 import PathService from '@renderer/services/PathService';
-import TerminalService, {
-  TerminalResponse,
-} from '@renderer/services/TerminalService';
+import { type TerminalResponse } from '@renderer/services/TerminalService';
 
 import NPMService from './NPMService';
 
@@ -16,9 +14,11 @@ type ProcessServiceResponse = TerminalResponse & { title: string };
 export class ProcessService {
   public static async run(
     targetPackage: TargetPackage,
-    dependencies: DependencyPackage[]
+    dependencies: DependencyPackage[],
+    abortController?: AbortController //TODO. Implement abortController to TerminalRepository
   ): Promise<ProcessServiceResponse[]> {
     if (targetPackage.cwd == null) {
+      abortController?.abort();
       return [{ error: 'Package cwd is null', title: 'Invalid package' }];
     }
 
@@ -36,11 +36,17 @@ export class ProcessService {
     const scriptsResponses = await promiseAllSequentially(
       targetPackage.scripts
         .filter(script => Boolean(script.scriptName.trim()))
-        .map(script => ProcessService.runScript(script, cwd, pkgName))
+        .map(
+          script => () =>
+            ProcessService.runScript(script, cwd, pkgName, abortController)
+        )
     );
 
     const dependenciesResponses = await promiseAllSequentially(
-      dependencies.map(ProcessService.runDependency)
+      dependencies.map(
+        dependency => () =>
+          ProcessService.runDependency(dependency, abortController)
+      )
     );
 
     return [
@@ -53,8 +59,9 @@ export class ProcessService {
   private static async runScript(
     script: PackageScript,
     cwd: string,
-    pkgName?: string
-  ): Promise<TerminalResponse & { title: string }> {
+    pkgName?: string,
+    abortController?: AbortController
+  ): Promise<ProcessServiceResponse> {
     const isYarn = await NPMService.checkYarn(cwd);
 
     let npmScript = isYarn
@@ -65,7 +72,7 @@ export class ProcessService {
       npmScript = ADDITIONAL_PACKAGE_SCRIPTS[script.scriptName].scriptValue;
     }
 
-    const output = await NPMService.runScript(cwd, npmScript);
+    const output = await NPMService.runScript(cwd, npmScript, abortController);
 
     if (output.error) {
       return {
@@ -78,7 +85,8 @@ export class ProcessService {
   }
 
   private static async runDependency(
-    dependency: DependencyPackage
+    dependency: DependencyPackage,
+    abortController?: AbortController
   ): Promise<ProcessServiceResponse[]> {
     const depCwd = dependency.cwd ?? '';
     const depName = PathService.getPathDirectories(depCwd).pop();
@@ -95,8 +103,11 @@ export class ProcessService {
 
     const scriptsResponses = await promiseAllSequentially(
       dependency.scripts
-        .filter(script => Boolean(script.scriptName.trim()))
-        .map(script => ProcessService.runScript(script, depCwd, depName))
+        .filter((script): boolean => Boolean(script.scriptName.trim()))
+        .map(
+          script => () =>
+            ProcessService.runScript(script, depCwd, depName, abortController)
+        )
     );
 
     //TODO: if an npm builded package exists, try to inject in targetPackage
