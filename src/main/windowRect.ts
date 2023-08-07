@@ -1,10 +1,11 @@
 import { type BrowserWindow } from 'electron';
 import fs from 'fs';
+import os from 'os';
 import { join } from 'path';
 
 type InitWindowBounds = Pick<Electron.Rectangle, 'width' | 'height'>;
 
-const INIT_STATUS_PATH = join(__dirname, '../window_rect.json');
+const INIT_STATUS_PATH = join(os.tmpdir(), '../window_rect.json');
 
 export const INI_WINDOW_WIDTH = 800;
 export const INI_WINDOW_HEIGHT = 600;
