@@ -12,15 +12,15 @@ export const OutputColor = '#5858f0';
 
 export const OutputTypeToColor = {
   [ExecuteCommandOutputType.STDOUT]: '#007390',
-  [ExecuteCommandOutputType.STDERR_WARN]: '#ffa600',
-  [ExecuteCommandOutputType.STDERR_ERROR]: '#d70065',
-  [ExecuteCommandOutputType.CLOSE]: '#6da800',
-  [ExecuteCommandOutputType.EXIT]: '#6da800',
-  [ExecuteCommandOutputType.ERROR]: '#d70065',
+  [ExecuteCommandOutputType.STDERR_WARN]: '#ab6f00',
+  [ExecuteCommandOutputType.STDERR_ERROR]: '#c90248',
+  [ExecuteCommandOutputType.CLOSE]: '#0047cc',
+  [ExecuteCommandOutputType.EXIT]: '#0047cc',
+  [ExecuteCommandOutputType.ERROR]: '#c90248',
   [ExecuteCommandOutputType.INIT]: '#3ba93b',
 } as const;
 
-export const OutputGoodIcons = [
+export const OutputIcons = [
   '✌',
   '👏',
   '👑',
@@ -40,33 +40,22 @@ export const OutputGoodIcons = [
   '😎',
   '😘',
   '🚀',
-];
-export const OutputBadIcons = [
   '👹',
-  '👺',
   '👻',
-  '👿',
-  '💀',
   '💥',
   '💩',
   '💨',
-  '😠',
-  '😡',
-  '😢',
-  '😣',
   '😤',
-  '😥',
   '😨',
-];
-export const OutputNeutralIcons = [
-  '👀',
   '👊',
   '👋',
-  '👶',
   '💦',
   '🔥',
-  '🙈',
-  '🙉',
-  '🙊',
-  '🛀',
+  '🖖',
+  '🎯',
+  '🤡',
+  '🍆',
+  '🍑',
+  '⛺',
+  '🛎️',
 ];
