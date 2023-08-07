@@ -91,7 +91,7 @@ function Dependencies({
 
   const handleRemoveDependency = (dependency: DependencyPackage): void => {
     const newDependencies = (dependencies ?? []).filter(
-      (d: DependencyPackage) => d !== dependency
+      ({ id }: DependencyPackage) => id !== dependency.id
     );
 
     setDependenciesWithNPM(newDependencies);
@@ -147,10 +147,10 @@ function Dependencies({
     <div className={c(styles.dependencies)}>
       <h2 className={c(styles.title)}>Dependencies</h2>
       {(dependencies ?? []).map(
-        (dependency, index) =>
+        dependency =>
           (dependency.cwd ?? '').length > 2 && (
             <DependencySelector
-              key={index}
+              key={dependency.id}
               disabled={loading}
               dependency={dependency}
               excludedDirectories={excludedDirectories}

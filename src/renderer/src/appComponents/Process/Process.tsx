@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useState } from 'react';
 
 import { Button, Icons, Modal, Spinner, ToasterListContext } from 'fratch-ui';
 import { ToasterType } from 'fratch-ui/components/Toaster/ToasterConstants';
