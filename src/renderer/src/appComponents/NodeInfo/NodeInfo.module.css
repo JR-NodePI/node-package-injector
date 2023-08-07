@@ -1,5 +1,4 @@
 .node_info {
-  position: absolute;
   right: var(--ft-container-padding-right);
   top: var(--ft-header-height);
   list-style: none;
@@ -7,19 +6,18 @@
   padding: 0;
   display: flex;
   font-size: 10px;
-  height: 20px;
   gap: 2px;
   justify-content: center;
+  border-top: solid 1px var(--ft-color-grey-2);
 }
-
 .node_info li {
   border-radius: var(--ft-form-item-border-radius);
   background-color: var(--ft-primary-default-color);
   color: var(--ft-primary-active-bg-color);
-  padding: 0 12px;
-  line-height: 20px;
   display: flex;
   gap: 6px;
   justify-content: center;
   opacity: 0.7;
+  margin-top: 8px;
+  padding: 4px 8px !important;
 }
