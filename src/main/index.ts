@@ -77,10 +77,8 @@ app.whenReady().then(async () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
 
-  app.on('ready', function () {
-    createAppMenu();
-    createWindow();
-  });
+  createAppMenu();
+  createWindow();
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common
