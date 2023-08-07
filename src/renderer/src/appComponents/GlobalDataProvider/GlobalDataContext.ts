@@ -16,6 +16,7 @@ export type GlobalDataProps = {
   setActiveDependencies?: (dependencies: DependencyPackage[]) => void;
   setActiveTargetPackage?: (targetPackage: TargetPackage) => void;
   setPackageBunch?: React.Dispatch<React.SetStateAction<PackageBunch[]>>;
+  nodeData: Record<string, string>;
 };
 const GlobalDataContext = React.createContext<GlobalDataProps>({
   activeDependencies: [],
@@ -24,6 +25,7 @@ const GlobalDataContext = React.createContext<GlobalDataProps>({
   isValidTerminal: false,
   loading: true,
   packageBunches: [],
+  nodeData: {},
 });
 
 export default GlobalDataContext;

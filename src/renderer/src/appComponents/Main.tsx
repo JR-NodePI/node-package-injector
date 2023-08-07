@@ -6,6 +6,7 @@ import { c } from 'fratch-ui/helpers/classNameHelpers';
 import GlobalError from '../components/GlobalError/GlobalError';
 import useGlobalData from './GlobalDataProvider/useGlobalData';
 import MainSettings from './MainSettings/MainSettings';
+import NodeInfo from './NodeInfo/NodeInfo';
 import PackageBunchPage from './PackageBunchPage/PackageBunchPage';
 import PackagesTabsMenu from './PackagesTabsMenu/PackagesTabsMenu';
 
@@ -28,6 +29,7 @@ function Main(): JSX.Element {
 
   return (
     <>
+      <NodeInfo />
       <MainSettings className={c(styles.main_settings)} />
       <PackagesTabsMenu />
       <PackageBunchPage key={activePackageBunch?.id} />
