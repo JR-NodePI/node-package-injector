@@ -126,7 +126,6 @@ export default class NPMService {
       command: 'bash',
       args: [
         PathService.getExtraResourcesScriptPath('npm_run_script.sh'),
-        `--npm_command`,
         `${JSON.stringify(script)}`,
       ],
       cwd,
