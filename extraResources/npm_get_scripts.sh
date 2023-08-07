@@ -1,6 +1,5 @@
 #!/bin/bash
 
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+. "$(dirname "$0")/enable_node.sh"
 
 npm pkg get scripts
