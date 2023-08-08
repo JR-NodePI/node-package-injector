@@ -11,7 +11,7 @@ import NPMService from './NPMService';
 
 type ProcessServiceResponse = TerminalResponse & { title: string };
 
-export class ProcessService {
+export class RunProcessService {
   public static async run(
     targetPackage: TargetPackage,
     dependencies: DependencyPackage[],
@@ -38,14 +38,14 @@ export class ProcessService {
         .filter(script => Boolean(script.scriptName.trim()))
         .map(
           script => () =>
-            ProcessService.runScript(script, cwd, pkgName, abortController)
+            RunProcessService.runScript(script, cwd, pkgName, abortController)
         )
     );
 
     const dependenciesResponses = await promiseAllSequentially(
       dependencies.map(
         dependency => () =>
-          ProcessService.runDependency(dependency, abortController)
+          RunProcessService.runDependency(dependency, abortController)
       )
     );
 
@@ -106,7 +106,12 @@ export class ProcessService {
         .filter((script): boolean => Boolean(script.scriptName.trim()))
         .map(
           script => () =>
-            ProcessService.runScript(script, depCwd, depName, abortController)
+            RunProcessService.runScript(
+              script,
+              depCwd,
+              depName,
+              abortController
+            )
         )
     );
 

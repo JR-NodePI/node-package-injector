@@ -4,7 +4,7 @@ import useGlobalData from '@renderer/appComponents/GlobalDataProvider/useGlobalD
 import { Header } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
-import Process from '../../appComponents/RunProcess/RunProcess';
+import RunProcess from '../../appComponents/RunProcess/RunProcess';
 import logo from '../../assets/logo.png';
 import Footer from '../Footer/Footer';
 
@@ -28,7 +28,7 @@ export default function Layout({
       <Header iconPosition={headerIconPosition} title={title} iconSrc={logo} />
       <section className={c(styles.content)}>{children}</section>
       <Footer>
-        <Process />
+        <RunProcess />
       </Footer>
     </section>
   );

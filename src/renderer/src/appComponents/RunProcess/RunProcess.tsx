@@ -5,12 +5,12 @@ import { ToasterType } from 'fratch-ui/components/Toaster/ToasterConstants';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 import useDeepCompareEffect from 'use-deep-compare-effect';
 
-import { ProcessService } from '../../services/ProcessService';
+import { RunProcessService } from '../../services/RunProcessService';
 import useGlobalData from '../GlobalDataProvider/useGlobalData';
 
 import styles from './RunProcess.module.css';
 
-export default function Process(): JSX.Element {
+export default function RunProcess(): JSX.Element {
   const { addToaster } = useContext(ToasterListContext);
   const { activeTargetPackage, activeDependencies } = useGlobalData();
 
@@ -24,7 +24,7 @@ export default function Process(): JSX.Element {
       abortController?.signal != null && !abortController.signal.aborted;
 
     const run = async (): Promise<void> => {
-      const output = await ProcessService.run(
+      const output = await RunProcessService.run(
         activeTargetPackage,
         activeDependencies,
         abortController
