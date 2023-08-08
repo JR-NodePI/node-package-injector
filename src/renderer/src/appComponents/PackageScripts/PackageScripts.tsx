@@ -98,30 +98,37 @@ export default function PackageScripts({
 
   // try to determine the install and pack script
   useEffect(() => {
-    if (selectedScrips.length === 0 && scriptOptions.length > 0) {
-      const installScript = scriptOptions.find(
-        ({ value }) =>
-          / install/gi.test(value.scriptValue) &&
-          !/prepare/gi.test(value.scriptName)
-      );
+    (async (): Promise<void> => {
+      if (selectedScrips.length === 0 && scriptOptions.length > 0) {
+        const installScript = scriptOptions.find(
+          ({ value }) =>
+            / install/gi.test(value.scriptValue) &&
+            !/prepare/gi.test(value.scriptName)
+        );
 
-      if (installScript) {
-        setSelectedScrips([installScript.value]);
+        const scripts: PackageScript[] = [];
+
+        if (installScript) {
+          scripts.push(installScript.value);
+        } else {
+          scripts.push({ scriptName: '', scriptValue: '' });
+        }
+
+        const packScript = scriptOptions.find(
+          ({ value }) =>
+            / pack /gi.test(value.scriptValue) ||
+            / pack$/gi.test(value.scriptValue)
+        );
+
+        if (packScript) {
+          scripts.push(packScript.value);
+        }
+
+        if (scripts.length > 0) {
+          await setSelectedScrips(scripts);
+        }
       }
-
-      const packScript = scriptOptions.find(
-        ({ value }) =>
-          / pack /gi.test(value.scriptValue) ||
-          / pack$/gi.test(value.scriptValue)
-      );
-
-      if (packScript) {
-        setSelectedScrips([
-          ...(!installScript ? [{ scriptName: '', scriptValue: '' }] : []),
-          packScript.value,
-        ]);
-      }
-    }
+    })();
   }, [scriptOptions, selectedScrips]);
 
   const handleAddScript = (): void => {
