@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import {
   TABS_MAXIMUM_ADDABLE,
@@ -14,6 +14,7 @@ import {
   type TabsMenuProps,
 } from 'fratch-ui/components/TabsMenu/TabsMenuProps';
 import getRandomColor from 'fratch-ui/helpers/getRandomColor';
+import useDeepCompareEffect from 'use-deep-compare-effect';
 
 import useGlobalData from '../GlobalDataProvider/useGlobalData';
 
@@ -42,38 +43,28 @@ const getDefaultPackageBunch = async (
 export default function useTabsFromPackageBunches(): Props {
   const { isWSLActive, packageBunches, setPackageBunch } = useGlobalData();
 
-  const newTabTemplate = useMemo<Props['newTabTemplate']>(() => {
-    const excludedColors = packageBunches.map(bunch => bunch.color);
-    return {
-      label: getTabTitle(packageBunches.length + 1),
-      color: getRandomColor(excludedColors),
-    };
-  }, [packageBunches]);
-
-  const [tabs, setTabs] = useState<Tab[]>(
-    packageBunches.map(bunch => ({
-      label: bunch.name,
-      active: bunch.active,
-      color: bunch.color,
-    }))
-  );
-
   // fill with one bunch and one tab if the list of bunches is empty
   useEffect(() => {
     if (!packageBunches.length) {
       (async (): Promise<void> => {
         const newBunch = await getDefaultPackageBunch(isWSLActive);
         setPackageBunch?.([newBunch]);
-
-        const tab = {
-          label: newBunch.name,
-          active: newBunch.active,
-          color: newBunch.color,
-        };
-        setTabs([tab]);
       })();
     }
   }, [isWSLActive, packageBunches, setPackageBunch]);
+
+  const [tabs, setTabs] = useState<Tab[]>([]);
+
+  const newTabs = packageBunches.map(bunch => ({
+    label: bunch.name,
+    active: bunch.active,
+    color: bunch.color,
+  }));
+
+  // set tabs when packageBunches change
+  useDeepCompareEffect(() => {
+    setTabs(newTabs);
+  }, [newTabs]);
 
   const onTabRemove = ({ index }: TabEvent): void => {
     setPackageBunch?.(packageBunches.filter((_bunch, i) => i !== index));
@@ -112,6 +103,12 @@ export default function useTabsFromPackageBunches(): Props {
         return clone;
       }),
     ]);
+  };
+
+  const excludedColors = newTabs.map(tab => tab.color);
+  const newTabTemplate = {
+    label: getTabTitle(newTabs.length + 1),
+    color: getRandomColor(excludedColors),
   };
 
   return {

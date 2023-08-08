@@ -2,45 +2,16 @@ import { ChangeEvent, useContext, useRef } from 'react';
 
 import useGlobalData from '@renderer/appComponents/GlobalDataProvider/useGlobalData';
 import PackageBunch from '@renderer/models/PackageBunch';
-import TargetPackage from '@renderer/models/TargetPackage';
 import { Button, ToasterListContext } from 'fratch-ui';
 import { IconExport, IconImport } from 'fratch-ui/components/Icons/Icons';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
+import {
+  downloadTextFile,
+  parsePackageFromText,
+} from './ExportImportConfigHelpers';
+
 import styles from './ExportImportConfig.module.css';
-
-function downloadTextFile(text, name): void {
-  const a = document.createElement('a');
-  const type = name.split('.').pop();
-  a.href = URL.createObjectURL(
-    new Blob([text], { type: `text/${type === 'txt' ? 'plain' : type}` })
-  );
-  a.download = name;
-  a.click();
-}
-
-function parseTextFile(text: string): PackageBunch {
-  const newBunch = new PackageBunch();
-  newBunch.targetPackage = new TargetPackage();
-
-  const data = JSON.parse(text ?? '{}');
-
-  newBunch.name = data.name;
-  newBunch.color = data.color;
-
-  if (data.targetPackage && data.targetPackage.cwd) {
-    newBunch.targetPackage = data.targetPackage;
-  }
-
-  if (
-    Array.isArray(data.dependencies) &&
-    data.dependencies.every(({ cwd }) => cwd)
-  ) {
-    newBunch.dependencies = data.dependencies;
-  }
-
-  return newBunch;
-}
 
 export default function ExportImportConfig(): JSX.Element {
   const {
@@ -74,29 +45,34 @@ export default function ExportImportConfig(): JSX.Element {
 
     setIsGlobalLoading?.(true);
 
+    let importedBunch: PackageBunch | undefined;
+
     try {
-      const newBunch = parseTextFile(event.target.result as string);
-      newBunch.active = true;
-
-      if (newBunch.name != null) {
-        const newBunches = [
-          ...(packageBunches ?? []).map(bunch => {
-            const clone = bunch.clone();
-            clone.active = false;
-            return clone;
-          }),
-          newBunch,
-        ];
-
-        await setPackageBunch?.(newBunches);
-
-        setTimeout(() => {
-          window.electron.ipcRenderer.send('reload');
-        }, 500);
+      importedBunch = parsePackageFromText(event.target.result as string);
+      if (!importedBunch) {
+        throw new Error('Invalid file');
       }
     } catch (error) {
-      addToaster({ type: 'error', message: (error as Error).message });
+      addToaster({
+        type: 'error',
+        message: (error as Error).message,
+        duration: 2900,
+      });
     }
+
+    if (importedBunch) {
+      importedBunch.active = true;
+      await setPackageBunch?.([
+        ...(packageBunches ?? []).map(bunch => {
+          const clone = bunch.clone();
+          clone.active = false;
+          return clone;
+        }),
+        importedBunch,
+      ]);
+    }
+
+    setIsGlobalLoading?.(false);
   };
 
   const { name, id } = activePackageBunch;
