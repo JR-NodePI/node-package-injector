@@ -5,7 +5,7 @@
     "src/renderer/src/**/*",
     "src/renderer/src/**/*.tsx",
     "src/preload/*.d.ts"
-, "src/preload/types.ts"  ],
+, "src/preload/types.ts", "src/renderer/src/appComponents/PackagesTabsMenu"  ],
   "compilerOptions": {
     "composite": true,
     "jsx": "react-jsx",

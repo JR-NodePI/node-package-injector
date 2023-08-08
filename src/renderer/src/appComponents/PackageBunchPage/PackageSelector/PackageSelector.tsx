@@ -8,9 +8,9 @@ import { c } from 'fratch-ui/helpers/classNameHelpers';
 import useDeepCompareEffect from 'use-deep-compare-effect';
 import { v4 as uuid } from 'uuid';
 
-import LinkButton from '../../components/linkButton/LinkButton';
-import PackageScripts from '../PackageScripts/PackageScripts';
+import LinkButton from '../../../components/linkButton/LinkButton';
 import PackageBranchSelector from './PackageBranchSelector';
+import PackageScripts from './PackageScripts/PackageScripts';
 import { type PackageSelectorProps } from './PackageSelectorProps';
 import useEffectCWD from './useEffectCWD';
 

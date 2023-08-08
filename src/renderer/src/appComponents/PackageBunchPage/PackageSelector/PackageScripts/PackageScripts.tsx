@@ -4,7 +4,7 @@ import type TargetPackage from '@renderer/models/TargetPackage';
 import NPMService from '@renderer/services/NPMService';
 import { Form } from 'fratch-ui';
 
-import { type PackageScript } from '../../models/PackageScriptsTypes';
+import { type PackageScript } from '../../../../models/PackageScriptsTypes';
 import { PackageScriptRenderer } from './components/PackageScriptRenderer';
 import {
   ADDITIONAL_PACKAGE_SCRIPTS,

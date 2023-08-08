@@ -4,7 +4,7 @@ import useGlobalData from '@renderer/appComponents/GlobalDataProvider/useGlobalD
 import { Header } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
-import Process from '../../appComponents/Process/Process';
+import Process from '../../appComponents/RunProcess/RunProcess';
 import logo from '../../assets/logo.png';
 import Footer from '../Footer/Footer';
 

@@ -6,7 +6,7 @@ import ToasterListContext from 'fratch-ui/components/Toaster/ToasterListContext'
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 import { v4 as uuid } from 'uuid';
 
-import LinkButton from '../../components/linkButton/LinkButton';
+import LinkButton from '../../../components/linkButton/LinkButton';
 
 function PackageBranchSelector({
   disabled,
