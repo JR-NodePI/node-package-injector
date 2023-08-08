@@ -51,19 +51,20 @@ const parseModel = <T>(data: T, templateValue?: T): T => {
   return data;
 };
 
+type usePersistedStateProps<T> = [T, (newData: T) => Promise<void>, boolean];
+
 export default function usePersistedState<T>(
   key: string,
   defaultValue: T,
   templateValue?: T
-): [T, React.Dispatch<React.SetStateAction<T>>, boolean] {
+): usePersistedStateProps<T> {
   const [loading, setLoading] = useState<boolean>(true);
   const [data, setData] = useState<T>(defaultValue);
 
-  useEffect(() => {
-    (async (): Promise<void> => {
-      await PersistService.setItem<T>(key, data);
-    })();
-  }, [key, data]);
+  const setDataAndPersist = (newData: T): Promise<void> => {
+    setData(newData);
+    return PersistService.setItem<T>(key, newData);
+  };
 
   useEffect(() => {
     (async (): Promise<void> => {
@@ -76,5 +77,5 @@ export default function usePersistedState<T>(
     })();
   }, [key, templateValue]);
 
-  return [data, setData, loading];
+  return [data, setDataAndPersist, loading];
 }

@@ -1,6 +1,6 @@
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
-import useGlobalData from '../GlobalDataProvider/useGlobalData';
+import useGlobalData from '../../GlobalDataProvider/useGlobalData';
 
 import styles from './NodeInfo.module.css';
 

@@ -1,9 +1,8 @@
 import { useRef, useState } from 'react';
 
+import useGlobalData from '@renderer/appComponents/GlobalDataProvider/useGlobalData';
 import { Form, Modal, ModalProps } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
-
-import useGlobalData from '../GlobalDataProvider/useGlobalData';
 
 export default function WSLActivator({
   className,
