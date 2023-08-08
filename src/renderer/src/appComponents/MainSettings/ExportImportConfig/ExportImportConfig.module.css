@@ -1,10 +1,11 @@
 .export_import {
   display: flex;
   gap: 16px;
-  margin: 16px 0;
+  margin: 12px 0;
 }
 .export_import > * {
   position: relative;
+  flex: 1 1 100%;
 }
 .export_import input[type='file'] {
   position: absolute;
