@@ -3,7 +3,12 @@ import fs from 'fs';
 import os from 'os';
 import { join } from 'path';
 
-type InitWindowBounds = Pick<Electron.Rectangle, 'width' | 'height'>;
+type InitWindowBounds = {
+  width: number;
+  height: number;
+  x?: number;
+  y?: number;
+};
 
 const INIT_STATUS_PATH = join(os.tmpdir(), '../window_rect.json');
 
@@ -31,6 +36,8 @@ export function loadWindowRect(): InitWindowBounds {
       return {
         width: windowBounds.width,
         height: windowBounds.height,
+        x: windowBounds.x,
+        y: windowBounds.y,
       };
     }
   } catch {
