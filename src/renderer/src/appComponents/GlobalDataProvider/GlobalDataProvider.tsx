@@ -5,20 +5,10 @@ import PackageBunch from '@renderer/models/PackageBunch';
 import TargetPackage from '@renderer/models/TargetPackage';
 import { debounce } from 'lodash';
 
+import { packageBunchesTemplateValue } from './GlobalDataConstants';
 import GlobalDataContext, { GlobalDataProps } from './GlobalDataContext';
 import useLoadTerminal from './useCheckInitials';
 import usePersistedState from './usePersistedState';
-
-const packageBunchTemplateValue = new PackageBunch();
-packageBunchTemplateValue.targetPackage = new TargetPackage();
-packageBunchTemplateValue.targetPackage.scripts = [
-  { scriptName: '', scriptValue: '' },
-];
-packageBunchTemplateValue.dependencies = [new DependencyPackage()];
-packageBunchTemplateValue.dependencies[0].scripts = [
-  { scriptName: '', scriptValue: '' },
-];
-const packageBunchesTemplateValue = [packageBunchTemplateValue];
 
 export default function GlobalDataProvider({
   children,
