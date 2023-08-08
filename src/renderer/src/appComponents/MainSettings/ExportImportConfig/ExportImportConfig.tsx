@@ -3,7 +3,12 @@ import { ChangeEvent, useContext, useRef } from 'react';
 import useGlobalData from '@renderer/appComponents/GlobalDataProvider/useGlobalData';
 import PackageBunch from '@renderer/models/PackageBunch';
 import { Button, ToasterListContext } from 'fratch-ui';
-import { IconExport, IconImport } from 'fratch-ui/components/Icons/Icons';
+import {
+  IconDownload,
+  IconExport,
+  IconImport,
+  IconUpload,
+} from 'fratch-ui/components/Icons/Icons';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
 import {
@@ -82,12 +87,24 @@ export default function ExportImportConfig(): JSX.Element {
     <div className={c(styles.export_import)}>
       <label title="Import configuration form json file">
         <input type="file" ref={refInputFile} onChange={handleFileChange} />
-        <Button onClick={handleImport} stretch size="small" Icon={IconImport}>
+        <Button
+          onClick={handleImport}
+          stretch
+          size="small"
+          type="tertiary"
+          Icon={IconDownload}
+        >
           Import
         </Button>
       </label>
       <label title="Export current package configuration">
-        <Button onClick={handleExport} size="small" stretch Icon={IconExport}>
+        <Button
+          onClick={handleExport}
+          size="small"
+          type="tertiary"
+          stretch
+          Icon={IconUpload}
+        >
           Export
         </Button>
       </label>
