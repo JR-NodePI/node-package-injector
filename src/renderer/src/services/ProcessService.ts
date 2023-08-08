@@ -1,4 +1,4 @@
-import { ADDITIONAL_PACKAGE_SCRIPTS } from '@renderer/appComponents/PackageScripts/PackageScriptsConstants';
+import { ADDITIONAL_PACKAGE_SCRIPTS } from '@renderer/appComponents/PackageBunchPage/PackageSelector/PackageScripts/PackageScriptsConstants';
 import { promiseAllSequentially } from '@renderer/helpers/promisesHelpers';
 import DependencyPackage from '@renderer/models/DependencyPackage';
 import { PackageScript } from '@renderer/models/PackageScriptsTypes';

@@ -8,7 +8,7 @@ import useDeepCompareEffect from 'use-deep-compare-effect';
 import { ProcessService } from '../../services/ProcessService';
 import useGlobalData from '../GlobalDataProvider/useGlobalData';
 
-import styles from './Process.module.css';
+import styles from './RunProcess.module.css';
 
 export default function Process(): JSX.Element {
   const { addToaster } = useContext(ToasterListContext);

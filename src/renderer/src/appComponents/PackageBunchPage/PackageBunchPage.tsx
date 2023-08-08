@@ -3,9 +3,9 @@ import { PackageScript } from '@renderer/models/PackageScriptsTypes';
 import TargetPackage from '@renderer/models/TargetPackage';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
-import Dependencies from '../Dependencies/Dependencies';
 import useGlobalData from '../GlobalDataProvider/useGlobalData';
-import PackageSelector from '../PackageSelector/PackageSelector';
+import Dependencies from './Dependencies/Dependencies';
+import PackageSelector from './PackageSelector/PackageSelector';
 
 import styles from './PackageBunchPage.module.css';
 
