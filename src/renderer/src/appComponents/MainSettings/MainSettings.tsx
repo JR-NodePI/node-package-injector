@@ -2,9 +2,10 @@ import TerminalService from '@renderer/services/TerminalService';
 import { SettingsMenu } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
-import NodeInfo from '../NodeInfo/NodeInfo';
-import OpenDevTools from '../OpenDevTools/OpenDevTools';
-import WSLActivator from '../WSLActivator/WSLActivator';
+import ExportImportConfig from './ExportImportConfig/ExportImportConfig';
+import NodeInfo from './NodeInfo/NodeInfo';
+import OpenDevTools from './OpenDevTools/OpenDevTools';
+import WSLActivator from './WSLActivator/WSLActivator';
 
 export default function MainSettings({
   className,
@@ -17,6 +18,8 @@ export default function MainSettings({
   if (TerminalService.isWSLAvailable) {
     settingsItems.push(<WSLActivator />);
   }
+
+  settingsItems.push(<ExportImportConfig />);
 
   settingsItems.push(<NodeInfo />);
 

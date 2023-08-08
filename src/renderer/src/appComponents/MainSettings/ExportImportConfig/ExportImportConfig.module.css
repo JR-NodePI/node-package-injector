@@ -1,0 +1,14 @@
+.export_import {
+  display: flex;
+  gap: 16px;
+  margin: 16px 0;
+}
+.export_import > * {
+  position: relative;
+}
+.export_import input[type='file'] {
+  position: absolute;
+  z-index: 1;
+  width: 100%;
+  opacity: 0;
+}

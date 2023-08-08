@@ -5,18 +5,19 @@ import PackageBunch from '@renderer/models/PackageBunch';
 import TargetPackage from '@renderer/models/TargetPackage';
 
 export type GlobalDataProps = {
-  isWSLActive?: boolean;
   activeDependencies: DependencyPackage[];
-  activeTargetPackage: TargetPackage;
   activePackageBunch: PackageBunch;
+  activeTargetPackage: TargetPackage;
   isValidTerminal: boolean;
+  isWSLActive?: boolean;
   loading?: boolean;
-  packageBunches: PackageBunch[];
-  setIsWSLActive?: React.Dispatch<React.SetStateAction<boolean>>;
-  setActiveDependencies?: (dependencies: DependencyPackage[]) => void;
-  setActiveTargetPackage?: (targetPackage: TargetPackage) => void;
-  setPackageBunch?: React.Dispatch<React.SetStateAction<PackageBunch[]>>;
   nodeData: Record<string, string>;
+  packageBunches: PackageBunch[];
+  setActiveDependencies?: (dependencies: DependencyPackage[]) => Promise<void>;
+  setActiveTargetPackage?: (targetPackage: TargetPackage) => Promise<void>;
+  setIsGlobalLoading?: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsWSLActive?: (newData: boolean) => Promise<void>;
+  setPackageBunch?: (newData: PackageBunch[]) => Promise<void>;
 };
 const GlobalDataContext = React.createContext<GlobalDataProps>({
   activeDependencies: [],

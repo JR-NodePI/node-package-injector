@@ -11,7 +11,13 @@ import usePersistedState from './usePersistedState';
 
 const packageBunchTemplateValue = new PackageBunch();
 packageBunchTemplateValue.targetPackage = new TargetPackage();
+packageBunchTemplateValue.targetPackage.scripts = [
+  { scriptName: '', scriptValue: '' },
+];
 packageBunchTemplateValue.dependencies = [new DependencyPackage()];
+packageBunchTemplateValue.dependencies[0].scripts = [
+  { scriptName: '', scriptValue: '' },
+];
 const packageBunchesTemplateValue = [packageBunchTemplateValue];
 
 export default function GlobalDataProvider({
@@ -19,7 +25,7 @@ export default function GlobalDataProvider({
 }: {
   children: React.ReactNode;
 }): JSX.Element {
-  const { isValidTerminal, isValidTerminalLoading, nodeData } =
+  const { isGlobalLoading, isValidTerminal, nodeData, setIsGlobalLoading } =
     useLoadTerminal();
 
   const [isWSLActive, setIsWSLActive, isWSLActiveLoading] =
@@ -74,34 +80,36 @@ export default function GlobalDataProvider({
       activePackageBunch?.targetPackage ?? new TargetPackage();
 
     const loading =
-      isValidTerminalLoading || packageBunchesLoading || isWSLActiveLoading;
+      isGlobalLoading || packageBunchesLoading || isWSLActiveLoading;
 
     return {
       activeDependencies,
-      activeTargetPackage,
       activePackageBunch,
+      activeTargetPackage,
       isValidTerminal,
       isWSLActive,
       loading,
+      nodeData,
       packageBunches,
       setActiveDependencies,
       setActiveTargetPackage,
+      setIsGlobalLoading,
       setIsWSLActive,
       setPackageBunch,
-      nodeData,
     };
   }, [
+    isGlobalLoading,
     isValidTerminal,
-    isValidTerminalLoading,
     isWSLActive,
     isWSLActiveLoading,
-    packageBunchesLoading,
+    nodeData,
     packageBunches,
+    packageBunchesLoading,
     setActiveDependencies,
     setActiveTargetPackage,
+    setIsGlobalLoading,
     setIsWSLActive,
     setPackageBunch,
-    nodeData,
   ]);
 
   return (
