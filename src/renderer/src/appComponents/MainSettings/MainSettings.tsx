@@ -2,7 +2,7 @@ import TerminalService from '@renderer/services/TerminalService';
 import { SettingsMenu } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
-import ExportImportConfig from './ExportImportConfig/ExportImportConfig';
+import ConfigSharing from './ConfigSharing/ConfigSharing';
 import NodeInfo from './NodeInfo/NodeInfo';
 import OpenDevTools from './OpenDevTools/OpenDevTools';
 import WSLActivator from './WSLActivator/WSLActivator';
@@ -19,7 +19,7 @@ export default function MainSettings({
     settingsItems.push(<WSLActivator />);
   }
 
-  settingsItems.push(<ExportImportConfig />);
+  settingsItems.push(<ConfigSharing />);
 
   settingsItems.push(<NodeInfo />);
 
