@@ -1,0 +1,9 @@
+.config_sharing {
+  display: flex;
+  gap: 16px;
+  margin: 12px 0;
+}
+.config_sharing > * {
+  position: relative;
+  flex: 1 1 100%;
+}

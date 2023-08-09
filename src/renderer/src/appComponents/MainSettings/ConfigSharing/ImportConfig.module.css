@@ -1,0 +1,10 @@
+.import_config {
+  position: relative;
+}
+.import_config input[type='file'] {
+  position: absolute;
+  z-index: 1;
+  width: 100%;
+  opacity: 0;
+  pointer-events: none;
+}
