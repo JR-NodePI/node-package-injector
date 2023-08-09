@@ -56,7 +56,7 @@ export default class GitService {
       .split('\n')
       .map(line => (isValidBranch(line) ? getLocalBranch(line) : ''))
       .filter(value => value)
-      .sort();
+      .toSorted();
     return value;
   }
 

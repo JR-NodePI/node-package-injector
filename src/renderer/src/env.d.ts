@@ -8,3 +8,7 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+interface Array<T> {
+  toSorted(compareFn?: (a: T, b: T) => number): T[];
+}
