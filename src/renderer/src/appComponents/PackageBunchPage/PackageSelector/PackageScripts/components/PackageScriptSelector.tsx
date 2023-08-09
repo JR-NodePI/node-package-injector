@@ -43,7 +43,7 @@ export default function PackageScriptSelector({
       ];
     }
 
-    return options.sort((a, b) => a.label.localeCompare(b.label));
+    return options.toSorted((a, b) => a.label.localeCompare(b.label));
   }, [scriptOptions, selectedScript]);
 
   const handleOnChange = (selectedScript?: PackageScript): void => {
