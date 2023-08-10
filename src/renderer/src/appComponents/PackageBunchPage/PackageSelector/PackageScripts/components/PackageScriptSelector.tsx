@@ -4,7 +4,6 @@ import { type PackageScript } from '@renderer/models/PackageScript';
 import { Form } from 'fratch-ui';
 import { SelectOption } from 'fratch-ui/components/Form/Select/SelectProps';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
-import { v4 as uuid } from 'uuid';
 
 import styles from './PackageScriptSelector.module.css';
 
@@ -25,7 +24,7 @@ export default function PackageScriptSelector({
   onChange,
   additionalComponent,
 }: PackageScriptSelector): JSX.Element {
-  const [id] = useState<string>(uuid());
+  const [id] = useState<string>(crypto.randomUUID());
 
   const finalOptions = useMemo(() => {
     let options = [...scriptOptions];

@@ -1,22 +1,21 @@
-import { memo, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 import GitService from '@renderer/services/GitService';
 import NPMService from '@renderer/services/NPMService';
 import PathService from '@renderer/services/PathService';
 import { Form } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
-import { v4 as uuid } from 'uuid';
 
-import LinkButton from '../../../components/linkButton/LinkButton';
-import PackageBranchSelector from './PackageBranchSelector';
+import BranchSelector from './BranchSelector';
 import PackageScripts from './PackageScripts/PackageScripts';
+import PackageSelectorLabel from './PackageSelectorLabel';
 import { type PackageSelectorProps } from './PackageSelectorProps';
 import { useDirectorySelectOptions } from './useDirectorySelectOptions';
 import useEffectCWD from './useEffectCWD';
 
 import styles from './PackageSelector.module.css';
 
-function PackageSelector({
+export default function PackageSelector({
   additionalComponent,
   disabled,
   onGitPullChange,
@@ -24,7 +23,7 @@ function PackageSelector({
   onScriptsChange,
   targetPackage,
 }: PackageSelectorProps): JSX.Element {
-  const [id] = useState<string>(uuid());
+  const [id] = useState<string>(crypto.randomUUID());
 
   const triggerElementRef = useRef<HTMLInputElement>(null);
   const refMustFocusOnDirectoriesLoaded = useRef<boolean>(false);
@@ -35,17 +34,29 @@ function PackageSelector({
   const cwd = PathService.getPath(pathDirectories);
 
   const [isValidatingPackage, setIsValidatingPackage] = useState<boolean>(true);
+  const [gitBranch, setGitBranch] = useState<string>();
+
   useEffectCWD(() => {
+    const abortController = new AbortController();
+
     if (cwd.length > 2) {
       setIsValidatingPackage(true);
+
       (async (): Promise<void> => {
         const isValidPackage = await NPMService.checkPackageJSON(cwd);
-        const isValidGit = await GitService.checkGit(cwd);
-        const isValid = isValidPackage && isValidGit;
-        onPathChange?.(cwd, isValid);
+        const branch = await GitService.getCurrentBranch(cwd, abortController);
+        const isValid = isValidPackage && branch.length > 0;
+        if (!abortController.signal.aborted) {
+          setGitBranch(branch);
+          onPathChange?.(cwd, isValid);
+        }
         setIsValidatingPackage(false);
       })();
     }
+
+    return (): void => {
+      abortController.abort();
+    };
   }, cwd);
 
   const directoryOptions = useDirectorySelectOptions({
@@ -91,20 +102,13 @@ function PackageSelector({
     <div className={c(styles.package)}>
       <Form.LeftLabeledField
         label={
-          <>
-            <label htmlFor={id}>
-              {rootPath}
-              <b>{lastDirectory}</b>
-            </label>
-            {isDirBackEnabled && (
-              <LinkButton
-                title="go back to previous"
-                onClick={handleOnClickBack}
-              >
-                ../
-              </LinkButton>
-            )}
-          </>
+          <PackageSelectorLabel
+            id={id}
+            rootPath={rootPath}
+            lastDirectory={lastDirectory}
+            isDirBackEnabled={isDirBackEnabled}
+            handleOnClickBack={handleOnClickBack}
+          />
         }
         field={
           <Form.Select
@@ -122,7 +126,8 @@ function PackageSelector({
       {!isValidatingPackage && targetPackage?.isValidPackage && (
         <>
           <div className={c(styles.options)}>
-            <PackageBranchSelector
+            <BranchSelector
+              currentBranch={gitBranch}
               disabled={isDisabled}
               className={c(styles.branch)}
               cwd={cwd}
@@ -147,5 +152,3 @@ function PackageSelector({
     </div>
   );
 }
-
-export default memo(PackageSelector);

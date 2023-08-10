@@ -72,19 +72,15 @@ export default class NPMService {
     return true;
   }
 
-  public static async getDependenciesWithRelatedIds(
+  public static async getDependenciesRelations(
     dependencies: DependencyPackage[]
-  ): Promise<DependencyPackage[]> {
+  ): Promise<Record<string, string[]>> {
     const promises = dependencies.map(async depConf => {
       const npmDepNames = await NPMService.getDependenciesNames(depConf.cwd);
-
-      const newDependency = depConf.clone();
-      newDependency.relatedDependencyConfigIds =
-        NPMService.getDependencyIdsByNames(dependencies, npmDepNames);
-      return newDependency;
+      return NPMService.getDependencyIdsByNames(dependencies, npmDepNames);
     });
-
-    return await Promise.all(promises);
+    const entries = await Promise.all(promises);
+    return Object.fromEntries(entries);
   }
 
   public static async checkYarn(cwd: string): Promise<boolean> {

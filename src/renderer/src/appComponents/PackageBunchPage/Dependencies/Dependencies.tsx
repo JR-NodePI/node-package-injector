@@ -1,10 +1,7 @@
-import { useState } from 'react';
-
+import useGlobalData from '@renderer/appComponents/GlobalDataProvider/useGlobalData';
 import { DependencyMode } from '@renderer/models/DependencyConstants';
 import DependencyPackage from '@renderer/models/DependencyPackage';
 import { PackageScript } from '@renderer/models/PackageScript';
-import TargetPackage from '@renderer/models/TargetPackage';
-import NPMService from '@renderer/services/NPMService';
 import PathService from '@renderer/services/PathService';
 import { Button, Icons } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
@@ -25,26 +22,9 @@ const getUpdatedDependencyLits = (
     return dependency;
   });
 
-function Dependencies({
-  dependencies,
-  onDependenciesChange,
-  activeTargetPackage,
-}: {
-  dependencies?: DependencyPackage[];
-  onDependenciesChange?: (dependencies: DependencyPackage[]) => void;
-  activeTargetPackage?: TargetPackage;
-}): JSX.Element {
-  const [loading, setLoading] = useState(false);
-
-  const setDependencies = async (
-    dependencies: DependencyPackage[]
-  ): Promise<void> => {
-    setLoading(true);
-    onDependenciesChange?.(
-      await NPMService.getDependenciesWithRelatedIds(dependencies)
-    );
-    setLoading(false);
-  };
+function Dependencies(): JSX.Element {
+  const { activeTargetPackage, activeDependencies, setActiveDependencies } =
+    useGlobalData();
 
   const handleAddDependency = (): void => {
     if (
@@ -53,7 +33,7 @@ function Dependencies({
     ) {
       const dependency = new DependencyPackage();
       dependency.cwd = PathService.getPreviousPath(activeTargetPackage.cwd);
-      setDependencies([...(dependencies ?? []), dependency]);
+      setActiveDependencies?.([...(activeDependencies ?? []), dependency]);
     }
   };
 
@@ -63,35 +43,27 @@ function Dependencies({
     isValidPackage: boolean
   ): void => {
     const newDependencies = getUpdatedDependencyLits(
-      dependencies,
+      activeDependencies,
       dependency,
       () => {
-        const newDependency = isValidPackage
-          ? dependency.clone()
-          : new DependencyPackage();
-
         if (!isValidPackage) {
-          newDependency.performGitPull = false;
-          newDependency.mode = DependencyMode.BUILD;
+          dependency.performGitPull = false;
+          dependency.mode = DependencyMode.BUILD;
         }
-        newDependency.scripts = [];
-        newDependency.cwd = cwd;
-        newDependency.isValidPackage = isValidPackage;
-        newDependency.id = dependency.id;
-        newDependency.relatedDependencyConfigIds = undefined;
+        dependency.scripts = [];
+        dependency.cwd = cwd;
+        dependency.isValidPackage = isValidPackage;
 
-        return newDependency;
+        return dependency;
       }
     );
 
-    setDependencies(newDependencies);
+    setActiveDependencies?.(newDependencies);
   };
 
   const handleRemoveDependency = (dependency: DependencyPackage): void => {
-    setDependencies(
-      (dependencies ?? []).filter(
-        ({ id }: DependencyPackage) => id !== dependency.id
-      )
+    setActiveDependencies?.(
+      (activeDependencies ?? []).filter(({ id }) => id !== dependency.id)
     );
   };
 
@@ -101,15 +73,14 @@ function Dependencies({
     value: unknown
   ): void => {
     const newDependencies = getUpdatedDependencyLits(
-      dependencies,
+      activeDependencies,
       dependency,
       () => {
-        const clone = dependency.clone();
-        clone[key] = value;
-        return clone;
+        dependency[key] = value;
+        return dependency;
       }
     );
-    onDependenciesChange?.(newDependencies);
+    setActiveDependencies?.(newDependencies);
   };
 
   const handleModeChange = (
@@ -144,24 +115,19 @@ function Dependencies({
   return (
     <div className={c(styles.dependencies)}>
       <h2 className={c(styles.title)}>Dependencies</h2>
-      {(dependencies ?? []).map(
-        dependency =>
-          (dependency.cwd ?? '').length > 2 && (
-            <DependencySelector
-              key={dependency.id}
-              disabled={loading}
-              dependency={dependency}
-              onClickRemove={handleRemoveDependency}
-              onGitPullChange={handleGitPullChange}
-              onPathChange={handlePathChange}
-              onModeChange={handleModeChange}
-              onScriptsChange={handleScriptsChange}
-            />
-          )
-      )}
+      {(activeDependencies ?? []).map(dependency => (
+        <DependencySelector
+          key={dependency.id}
+          dependency={dependency}
+          onClickRemove={handleRemoveDependency}
+          onGitPullChange={handleGitPullChange}
+          onPathChange={handlePathChange}
+          onModeChange={handleModeChange}
+          onScriptsChange={handleScriptsChange}
+        />
+      ))}
       <div className={c(styles.buttons)}>
         <Button
-          disabled={loading}
           size="small"
           type="tertiary"
           label="Add new dependency"

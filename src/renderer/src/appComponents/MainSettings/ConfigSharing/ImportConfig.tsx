@@ -5,14 +5,13 @@ import PackageBunch from '@renderer/models/PackageBunch';
 import { Button, ToasterListContext } from 'fratch-ui';
 import { IconDownload } from 'fratch-ui/components/Icons/Icons';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
-import { v4 as uuid } from 'uuid';
 
 import { getPackageBunchFromText } from './ConfigSharingHelpers';
 
 import styles from './ImportConfig.module.css';
 
 export default function ImportConfig(): JSX.Element {
-  const { packageBunches, setIsGlobalLoading, setPackageBunch } =
+  const { packageBunches, setIsGlobalLoading, setPackageBunches } =
     useGlobalData();
   const refInputFile = useRef<HTMLInputElement>(null);
   const { addToaster } = useContext(ToasterListContext);
@@ -52,14 +51,13 @@ export default function ImportConfig(): JSX.Element {
     }
 
     if (importedBunch != null) {
-      importedBunch.id = uuid();
+      importedBunch.resetId();
       importedBunch.active = true;
 
-      await setPackageBunch?.([
+      await setPackageBunches?.([
         ...(packageBunches ?? []).map(bunch => {
-          const clone = bunch.clone();
-          clone.active = false;
-          return clone;
+          bunch.active = false;
+          return bunch;
         }),
         importedBunch,
       ]);

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { parseModel } from '@renderer/models/ModelHelpers';
+import { parseModel } from '@renderer/helpers/parseHelpers';
 import PersistService from '@renderer/services/PersistService';
 
 type usePersistedStateProps<T> = [T, (newData: T) => Promise<void>, boolean];

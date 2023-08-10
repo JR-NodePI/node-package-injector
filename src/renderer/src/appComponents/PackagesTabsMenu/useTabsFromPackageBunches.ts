@@ -41,17 +41,17 @@ const getDefaultPackageBunch = async (
 };
 
 export default function useTabsFromPackageBunches(): Props {
-  const { isWSLActive, packageBunches, setPackageBunch } = useGlobalData();
+  const { isWSLActive, packageBunches, setPackageBunches } = useGlobalData();
 
   // fill with one bunch and one tab if the list of bunches is empty
   useEffect(() => {
     if (!packageBunches.length) {
       (async (): Promise<void> => {
         const newBunch = await getDefaultPackageBunch(isWSLActive);
-        setPackageBunch?.([newBunch]);
+        setPackageBunches?.([newBunch]);
       })();
     }
-  }, [isWSLActive, packageBunches, setPackageBunch]);
+  }, [isWSLActive, packageBunches, setPackageBunches]);
 
   const [tabs, setTabs] = useState<Tab[]>([]);
 
@@ -67,7 +67,7 @@ export default function useTabsFromPackageBunches(): Props {
   }, [newTabs]);
 
   const onTabRemove = ({ index }: TabEvent): void => {
-    setPackageBunch?.(packageBunches.filter((_bunch, i) => i !== index));
+    setPackageBunches?.(packageBunches.filter((_bunch, i) => i !== index));
   };
 
   const onTabAdd = ({ label, color }: TabEvent): void => {
@@ -79,14 +79,13 @@ export default function useTabsFromPackageBunches(): Props {
 
       const newBunches = [
         ...(packageBunches ?? []).map(bunch => {
-          const clone = bunch.clone();
-          clone.active = false;
-          return clone;
+          bunch.active = false;
+          return bunch;
         }),
         newBunch,
       ];
 
-      setPackageBunch?.(newBunches);
+      setPackageBunches?.(newBunches);
     })();
   };
 
@@ -94,13 +93,12 @@ export default function useTabsFromPackageBunches(): Props {
     if (newTabs.length !== packageBunches.length) {
       return;
     }
-    setPackageBunch?.([
+    setPackageBunches?.([
       ...packageBunches.map((bunch, index) => {
         const tab = newTabs[index];
-        const clone = bunch.clone();
-        clone.active = tab.active ?? false;
-        clone.name = tab.label;
-        return clone;
+        bunch.active = tab.active ?? false;
+        bunch.name = tab.label;
+        return bunch;
       }),
     ]);
   };
