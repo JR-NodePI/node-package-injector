@@ -13,11 +13,9 @@
   gap: 16px;
   z-index: 99999;
   justify-content: space-between;
-  background-color: Blue;
-
   background: linear-gradient(
     0deg,
-    rgba(255, 255, 255, 1) 60%,
+    var(--ft-color-background) 60%,
     rgba(255, 255, 255, 0) 100%
   );
 }
