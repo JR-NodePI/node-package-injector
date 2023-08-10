@@ -1,5 +1,5 @@
 import DependencyPackage from '@renderer/models/DependencyPackage';
-import { PackageScript } from '@renderer/models/PackageScriptsTypes';
+import { PackageScript } from '@renderer/models/PackageScript';
 import TargetPackage from '@renderer/models/TargetPackage';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
@@ -55,11 +55,6 @@ export default function PackageBunchPage(): JSX.Element {
     setActiveDependencies?.(dependencies);
   };
 
-  const excludedDirectories = [
-    activeTargetPackage?.cwd ?? '',
-    ...(activeDependencies?.map(d => d.cwd ?? '').filter(Boolean) ?? []),
-  ];
-
   return (
     <>
       <h1 className={c(styles.title)}>
@@ -73,14 +68,12 @@ export default function PackageBunchPage(): JSX.Element {
         </span>
       </h1>
       <PackageSelector
-        excludedDirectories={excludedDirectories}
         onGitPullChange={handleGitPullChange}
         onPathChange={handlePathChange}
         onScriptsChange={handleScriptsChange}
         targetPackage={activeTargetPackage}
       />
       <Dependencies
-        excludedDirectories={excludedDirectories}
         dependencies={activeDependencies}
         onDependenciesChange={handleDependenciesChange}
         activeTargetPackage={activeTargetPackage}

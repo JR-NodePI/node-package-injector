@@ -1,17 +1,17 @@
-import { memo, useEffect, useRef, useState } from 'react';
+import { memo, useRef, useState } from 'react';
 
 import GitService from '@renderer/services/GitService';
 import NPMService from '@renderer/services/NPMService';
 import PathService from '@renderer/services/PathService';
 import { Form } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
-import useDeepCompareEffect from 'use-deep-compare-effect';
 import { v4 as uuid } from 'uuid';
 
 import LinkButton from '../../../components/linkButton/LinkButton';
 import PackageBranchSelector from './PackageBranchSelector';
 import PackageScripts from './PackageScripts/PackageScripts';
 import { type PackageSelectorProps } from './PackageSelectorProps';
+import { useDirectorySelectOptions } from './useDirectorySelectOptions';
 import useEffectCWD from './useEffectCWD';
 
 import styles from './PackageSelector.module.css';
@@ -19,7 +19,6 @@ import styles from './PackageSelector.module.css';
 function PackageSelector({
   additionalComponent,
   disabled,
-  excludedDirectories,
   onGitPullChange,
   onPathChange,
   onScriptsChange,
@@ -27,70 +26,39 @@ function PackageSelector({
 }: PackageSelectorProps): JSX.Element {
   const [id] = useState<string>(uuid());
   const triggerElementRef = useRef<HTMLInputElement>(null);
-  const [statePathDirectories, setPathDirectories] = useState<string[]>();
-  const pathDirectories = statePathDirectories ?? [];
-  const [directories, setDirectories] = useState<
-    Form.SelectProps.SelectOption<string>[]
-  >([]);
-
-  useDeepCompareEffect(() => {
-    if ((targetPackage?.cwd ?? '').length > 2 && statePathDirectories == null) {
-      const newPathDirectories = PathService.getPathDirectories(
-        targetPackage?.cwd
-      );
-      setPathDirectories(newPathDirectories);
-    }
-  }, [targetPackage?.cwd, pathDirectories, statePathDirectories]);
-
+  const refMustFocusOnDirectoriesLoaded = useRef<boolean>(false);
+  const [pathDirectories, setPathDirectories] = useState<string[]>(
+    PathService.getPathDirectories(targetPackage?.cwd)
+  );
   const cwd = PathService.getPath(pathDirectories);
 
-  const [isValidating, setIsValidating] = useState<boolean>(true);
+  const [isValidatingPackage, setIsValidatingPackage] = useState<boolean>(true);
   useEffectCWD(() => {
     if (cwd.length > 2) {
-      setIsValidating(true);
+      setIsValidatingPackage(true);
       (async (): Promise<void> => {
         const isValidPackage = await NPMService.checkPackageJSON(cwd);
         const isValidGit = await GitService.checkGit(cwd);
         const isValid = isValidPackage && isValidGit;
-        setIsValidating(false);
         onPathChange?.(cwd, isValid);
+        setIsValidatingPackage(false);
       })();
     }
   }, cwd);
 
-  useEffect(() => {
-    if (cwd.length > 2) {
-      (async (): Promise<void> => {
-        const newDirectories = (
-          await window.api.fs.readdir(cwd, { withFileTypes: true })
-        )
-          .filter(dirent => dirent.isDirectory() && dirent.name[0] !== '.')
-          .filter(dirent => {
-            const path = window.api.path.join(cwd, dirent.name, '/');
-            return (excludedDirectories ?? []).includes(path) === false;
-          })
-          .map(dirent => ({ label: dirent.name, value: dirent.name }));
-        setDirectories(newDirectories);
-      })();
-    }
-  }, [cwd, excludedDirectories]);
-
-  const [mustFocusOnDirectoriesLoaded, setMustFocusOnDirectoriesLoaded] =
-    useState<boolean>(false);
-  useEffectCWD(() => {
-    if (mustFocusOnDirectoriesLoaded) {
-      setMustFocusOnDirectoriesLoaded(false);
-      setTimeout(() => {
+  const directoryOptions = useDirectorySelectOptions({
+    cwd,
+    onDirectoriesLoad: (): void => {
+      if (refMustFocusOnDirectoriesLoaded.current) {
         triggerElementRef.current?.focus();
-      }, 100);
-    }
-  }, cwd);
+      }
+    },
+  });
 
   const handlePathChange = (value?: string): void => {
     if (value) {
-      const newPathDirectories = [...pathDirectories, value];
-      setMustFocusOnDirectoriesLoaded(true);
-      setPathDirectories(newPathDirectories);
+      setPathDirectories([...pathDirectories, value]);
+      refMustFocusOnDirectoriesLoaded.current = true;
     }
   };
 
@@ -114,7 +82,7 @@ function PackageSelector({
   const lastDirectory =
     pathDirectories.length > 1 ? pathDirectories.slice(-1)[0] : '';
 
-  const isDisabled = disabled || isValidating;
+  const isDisabled = disabled || isValidatingPackage;
 
   return (
     <div className={c(styles.package)}>
@@ -141,14 +109,14 @@ function PackageSelector({
             disabled={isDisabled}
             key={cwd}
             onChange={handlePathChange}
-            options={directories}
+            options={directoryOptions}
             placeholder="Select directory..."
             searchable
             triggerElementRef={triggerElementRef}
           />
         }
       />
-      {!isValidating && targetPackage?.isValidPackage && (
+      {!isValidatingPackage && targetPackage?.isValidPackage && (
         <>
           <div className={c(styles.options)}>
             <PackageBranchSelector

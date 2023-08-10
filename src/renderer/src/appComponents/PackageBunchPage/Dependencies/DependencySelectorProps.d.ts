@@ -1,11 +1,10 @@
 import { type DependencyMode } from '@renderer/models/DependencyConstants';
 import type DependencyPackage from '@renderer/models/DependencyPackage';
-import { PackageScript } from '@renderer/models/PackageScriptsTypes';
+import { PackageScript } from '@renderer/models/PackageScript';
 
 export type DependencySelectorProps = {
   disabled?: boolean;
   dependency: DependencyPackage;
-  excludedDirectories: string[];
   onClickRemove?: (dependency: DependencyPackage) => void;
   onGitPullChange: (dependency: DependencyPackage, checked?: boolean) => void;
   onPathChange: (

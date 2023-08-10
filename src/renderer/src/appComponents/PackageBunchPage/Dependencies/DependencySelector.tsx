@@ -4,14 +4,13 @@ import { c } from 'fratch-ui/helpers/classNameHelpers';
 
 import PackageSelector from '../PackageSelector/PackageSelector';
 import DependencyModeCheck from './DependencyModeCheck';
-import { type DependencySelectorProps } from './DependencySelectorProps';
+import type { DependencySelectorProps } from './DependencySelectorProps';
 
 import styles from './DependencySelector.module.css';
 
 export default function DependencySelector({
   disabled,
   dependency,
-  excludedDirectories,
   onClickRemove,
   onGitPullChange,
   onPathChange,
@@ -41,7 +40,6 @@ export default function DependencySelector({
           />
         }
         disabled={disabled}
-        excludedDirectories={excludedDirectories}
         targetPackage={dependency}
         onPathChange={handlePathChange}
         onGitPullChange={handleGitPullChange}

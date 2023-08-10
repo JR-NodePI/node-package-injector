@@ -1,5 +1,6 @@
-import { type PackageScript } from '@renderer/models/PackageScriptsTypes';
 import { v4 as uuid } from 'uuid';
+
+import type { PackageScript } from './PackageScript';
 
 export default class TargetPackage {
   public id = uuid();
