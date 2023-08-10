@@ -4,60 +4,72 @@ import GitService from '@renderer/services/GitService';
 import { Form } from 'fratch-ui';
 import ToasterListContext from 'fratch-ui/components/Toaster/ToasterListContext';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
-import { v4 as uuid } from 'uuid';
 
 import LinkButton from '../../../components/linkButton/LinkButton';
 
-function PackageBranchSelector({
-  disabled,
-  cwd,
-  className,
-}: {
+type BranchSelectOption = Form.SelectProps.SelectOption<string>;
+type BranchSelectorProps = {
+  currentBranch?: string;
   disabled?: boolean;
   className?: string;
   cwd: string;
-}): JSX.Element {
-  const [id] = useState<string>(uuid());
+};
+
+const isValidDirectory = (cwd: string): boolean => !/\.$/.test(cwd);
+
+function BranchSelector({
+  disabled,
+  cwd,
+  className,
+  currentBranch,
+}: BranchSelectorProps): JSX.Element {
+  const [id] = useState<string>(crypto.randomUUID());
   const { addToaster } = useContext(ToasterListContext);
 
-  const [branches, setBranches] = useState<
-    Form.SelectProps.SelectOption<string>[]
-  >([]);
-  const [currenBranch, setCurrenBranch] = useState<string>();
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [branches, setBranches] = useState<BranchSelectOption[]>([]);
 
-  const loadBranches = useCallback(async (): Promise<void> => {
-    const branch = await GitService.getCurrentBranch(cwd);
-    setCurrenBranch(branch);
-    const data = await GitService.getBranches(cwd);
-    setBranches(data.map(branch => ({ label: branch, value: branch })));
-  }, [cwd]);
-
-  const [mustLoadBranches, setMustLoadBranches] = useState<boolean>(false);
-  useEffect(() => {
-    setMustLoadBranches(true);
-  }, [cwd]);
+  const loadBranches = useCallback(
+    async (abortController?: AbortController): Promise<void> => {
+      const data = await GitService.getBranches(cwd, abortController);
+      const newBranches = data.map(branch => ({
+        label: branch,
+        value: branch,
+      }));
+      setBranches(newBranches);
+    },
+    [cwd]
+  );
 
   useEffect(() => {
-    if (mustLoadBranches && cwd.length > 2) {
-      setMustLoadBranches(false);
+    const abortController = new AbortController();
+
+    if (isValidDirectory(cwd) && currentBranch != null) {
+      setIsLoading(true);
       (async (): Promise<void> => {
-        await loadBranches();
+        await loadBranches(abortController);
+        setIsLoading(false);
       })();
     }
-  }, [cwd, loadBranches, mustLoadBranches]);
+
+    return () => {
+      abortController.abort();
+    };
+  }, [cwd, currentBranch, loadBranches]);
 
   const handleRefreshBranches = async (): Promise<void> => {
-    if (cwd.length > 2) {
-      setMustLoadBranches(true);
+    if (isValidDirectory(cwd)) {
+      setIsLoading(true);
       await GitService.fetch(cwd);
       await loadBranches();
-      setMustLoadBranches(false);
+      setIsLoading(false);
     }
   };
 
   const handleOnChange = async (value?: string): Promise<void> => {
     if (value) {
-      setMustLoadBranches(true);
+      setIsLoading(true);
+
       const { error } = await GitService.checkout(cwd, value as string);
 
       if (error != null && addToaster != null) {
@@ -70,7 +82,8 @@ function PackageBranchSelector({
       }
 
       await loadBranches();
-      setMustLoadBranches(false);
+
+      setIsLoading(false);
     }
   };
 
@@ -91,12 +104,12 @@ function PackageBranchSelector({
         field={
           <Form.Select
             id={id}
-            value={currenBranch}
-            placeholder={mustLoadBranches ? 'Loading...' : 'Select branch...'}
+            value={currentBranch}
+            placeholder={isLoading ? 'Loading...' : 'Select branch...'}
             searchable
             options={branches}
             onChange={handleOnChange}
-            disabled={disabled || mustLoadBranches}
+            disabled={disabled || isLoading}
           />
         }
       />
@@ -104,4 +117,4 @@ function PackageBranchSelector({
   );
 }
 
-export default memo(PackageBranchSelector);
+export default memo(BranchSelector);

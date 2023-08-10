@@ -1,28 +1,19 @@
 import { CSSProperties } from 'react';
 
-import { v4 as uuid } from 'uuid';
-
 import type DependencyPackage from './DependencyPackage';
 import TargetPackage from './TargetPackage';
 
 export default class PackageBunch {
-  public id = uuid();
+  private _id = crypto.randomUUID();
+
+  public readonly id = this._id;
   public name?: string;
   public color?: CSSProperties['color'];
   public active = false;
   public targetPackage: TargetPackage = new TargetPackage();
   public dependencies: DependencyPackage[] = [];
 
-  public clone(): PackageBunch {
-    const clone = new PackageBunch();
-
-    clone.id = this.id;
-    clone.name = this.name;
-    clone.color = this.color;
-    clone.active = this.active;
-    clone.targetPackage = this.targetPackage;
-    clone.dependencies = this.dependencies;
-
-    return clone;
+  public resetId(): void {
+    this._id = crypto.randomUUID();
   }
 }

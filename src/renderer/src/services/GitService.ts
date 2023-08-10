@@ -36,21 +36,29 @@ export default class GitService {
     });
   }
 
-  static async getCurrentBranch(cwd: string): Promise<string> {
+  static async getCurrentBranch(
+    cwd: string,
+    abortController?: AbortController
+  ): Promise<string> {
     const { content } = await TerminalService.executeCommand({
       command: 'git',
       args: ['branch', '--show-current'],
       cwd,
+      abortController,
     });
     const value = (content ?? '').trim();
     return value;
   }
 
-  static async getBranches(cwd: string): Promise<string[]> {
+  static async getBranches(
+    cwd: string,
+    abortController?: AbortController
+  ): Promise<string[]> {
     const { content } = await TerminalService.executeCommand({
       command: 'git',
       args: ['branch', '-l', '-a'],
       cwd,
+      abortController,
     });
     const value = (content ?? '')
       .split('\n')
@@ -60,9 +68,12 @@ export default class GitService {
     return value;
   }
 
-  static async checkGit(cwd: string): Promise<boolean> {
+  static async checkGit(
+    cwd: string,
+    abortController?: AbortController
+  ): Promise<boolean> {
     try {
-      const branch = await GitService.getCurrentBranch(cwd);
+      const branch = await GitService.getCurrentBranch(cwd, abortController);
       return Boolean(branch);
     } catch (error) {
       // eslint-disable-next-line no-console

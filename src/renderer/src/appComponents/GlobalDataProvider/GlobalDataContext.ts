@@ -17,7 +17,7 @@ export type GlobalDataProps = {
   setActiveTargetPackage?: (targetPackage: TargetPackage) => Promise<void>;
   setIsGlobalLoading?: React.Dispatch<React.SetStateAction<boolean>>;
   setIsWSLActive?: (newData: boolean) => Promise<void>;
-  setPackageBunch?: (newData: PackageBunch[]) => Promise<void>;
+  setPackageBunches?: (newData: PackageBunch[]) => Promise<void>;
 };
 const GlobalDataContext = React.createContext<GlobalDataProps>({
   activeDependencies: [],

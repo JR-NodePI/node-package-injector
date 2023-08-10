@@ -12,7 +12,9 @@ const getDirectorySelectOptions = async (
   cwd: string,
   excludedDirectories?: string[]
 ): Promise<DirectorySelectOption[]> => {
-  const directories = await window.api.fs.readdir(cwd, { withFileTypes: true });
+  const directories = await window.api.fs.readdir(cwd, {
+    withFileTypes: true,
+  });
   const filteredDirectories = directories
     .filter(dirent => dirent.isDirectory() && dirent.name[0] !== '.')
     .filter(dirent => {
@@ -35,10 +37,21 @@ export function useDirectorySelectOptions({
   const excludedDirectories = useExcludedDirectories();
 
   useDeepCompareEffect(() => {
-    getDirectorySelectOptions(cwd, excludedDirectories).then(options => {
-      setDirectoryOptions(options);
-      setTimeout(onDirectoriesLoad, 100);
-    });
+    const abortController = new AbortController();
+
+    (async (): Promise<void> => {
+      const options = await getDirectorySelectOptions(cwd, excludedDirectories);
+      const timerId = setTimeout(onDirectoriesLoad, 100);
+      if (!abortController.signal.aborted) {
+        setDirectoryOptions(options);
+      } else {
+        clearTimeout(timerId);
+      }
+    })();
+
+    return () => {
+      abortController.abort();
+    };
   }, [cwd, excludedDirectories]);
 
   return directoryOptions;

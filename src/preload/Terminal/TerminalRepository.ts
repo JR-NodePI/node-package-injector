@@ -101,7 +101,7 @@ export default class TerminalRepository {
           displayLogs(outputStack, icon);
         }
 
-        if (traceOnTime) {
+        if (mustDisplay) {
           outputStack = [];
         }
       };
@@ -150,7 +150,6 @@ export default class TerminalRepository {
           };
           enqueueOutput(output);
           reject(error);
-          abortController?.abort();
         } else {
           const output = {
             type: ExecuteCommandOutputType.STDERR_WARN,
@@ -168,7 +167,6 @@ export default class TerminalRepository {
         };
         enqueueOutput(output);
         reject(error);
-        abortController?.abort();
       });
 
       cmd.on('close', code => {

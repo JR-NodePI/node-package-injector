@@ -92,6 +92,7 @@ export class RunProcessService {
     const depName = PathService.getPathDirectories(depCwd).pop();
 
     //TODO: execute each child-dependency before and, if it has npm package, try to inject in this one.
+    //TODO: use NPMService.getDependenciesWithRelatedIds
 
     // dependency git pull
     if (dependency.performGitPull) {

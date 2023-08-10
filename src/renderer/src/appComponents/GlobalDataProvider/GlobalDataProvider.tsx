@@ -21,7 +21,7 @@ export default function GlobalDataProvider({
   const [isWSLActive, setIsWSLActive, isWSLActiveLoading] =
     usePersistedState<boolean>('isWSLActive', false);
 
-  const [packageBunches, setPackageBunch, packageBunchesLoading] =
+  const [packageBunches, setPackageBunches, packageBunchesLoading] =
     usePersistedState<PackageBunch[]>(
       'packageBunches',
       [],
@@ -38,10 +38,10 @@ export default function GlobalDataProvider({
           }
           return bunch;
         });
-        setPackageBunch(newBunches);
+        setPackageBunches(newBunches);
       }
     },
-    [packageBunches, setPackageBunch]
+    [packageBunches, setPackageBunches]
   );
 
   const _setActiveTargetPackage = useCallback(
@@ -85,7 +85,7 @@ export default function GlobalDataProvider({
       setActiveTargetPackage,
       setIsGlobalLoading,
       setIsWSLActive,
-      setPackageBunch,
+      setPackageBunches,
     };
   }, [
     isGlobalLoading,
@@ -99,7 +99,7 @@ export default function GlobalDataProvider({
     setActiveTargetPackage,
     setIsGlobalLoading,
     setIsWSLActive,
-    setPackageBunch,
+    setPackageBunches,
   ]);
 
   return (
