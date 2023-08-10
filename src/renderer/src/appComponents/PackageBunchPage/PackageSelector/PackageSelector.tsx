@@ -25,8 +25,10 @@ function PackageSelector({
   targetPackage,
 }: PackageSelectorProps): JSX.Element {
   const [id] = useState<string>(uuid());
+
   const triggerElementRef = useRef<HTMLInputElement>(null);
   const refMustFocusOnDirectoriesLoaded = useRef<boolean>(false);
+
   const [pathDirectories, setPathDirectories] = useState<string[]>(
     PathService.getPathDirectories(targetPackage?.cwd)
   );
@@ -51,6 +53,7 @@ function PackageSelector({
     onDirectoriesLoad: (): void => {
       if (refMustFocusOnDirectoriesLoaded.current) {
         triggerElementRef.current?.focus();
+        refMustFocusOnDirectoriesLoaded.current = false;
       }
     },
   });
