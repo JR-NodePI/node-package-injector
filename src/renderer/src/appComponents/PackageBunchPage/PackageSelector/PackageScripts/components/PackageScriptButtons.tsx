@@ -2,7 +2,7 @@ import { Button } from 'fratch-ui';
 import { IconClose, IconPlus } from 'fratch-ui/components/Icons/Icons';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
-import { type PackageScriptButtonsProps } from './PackageScriptRendererProps';
+import type { PackageScriptButtonsProps } from './PackageScriptRendererProps';
 
 import styles from './PackageScriptRenderer.module.css';
 

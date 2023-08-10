@@ -1,4 +1,4 @@
-import { PackageScript } from '@renderer/models/PackageScriptsTypes';
+import { PackageScript } from '@renderer/models/PackageScript';
 
 import PackageScriptButtons from './PackageScriptButtons';
 import { type PackageScriptRendererProps } from './PackageScriptRendererProps';

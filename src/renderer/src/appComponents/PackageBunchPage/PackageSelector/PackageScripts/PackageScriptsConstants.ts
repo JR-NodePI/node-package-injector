@@ -1,4 +1,4 @@
-import { PackageScript } from '@renderer/models/PackageScriptsTypes';
+import { PackageScript } from '@renderer/models/PackageScript';
 
 export const ADDITIONAL_PACKAGE_SCRIPTS_NAMES = {
   NPM_INSTALL: '🔗 npm install',

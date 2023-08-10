@@ -72,7 +72,7 @@ export default class NPMService {
     return true;
   }
 
-  public static async getDependenciesWithRelatedDependencyIds(
+  public static async getDependenciesWithRelatedIds(
     dependencies: DependencyPackage[]
   ): Promise<DependencyPackage[]> {
     const promises = dependencies.map(async depConf => {

@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import { DependencyMode } from '@renderer/models/DependencyConstants';
 import DependencyPackage from '@renderer/models/DependencyPackage';
-import { PackageScript } from '@renderer/models/PackageScriptsTypes';
+import { PackageScript } from '@renderer/models/PackageScript';
 import TargetPackage from '@renderer/models/TargetPackage';
 import NPMService from '@renderer/services/NPMService';
 import PathService from '@renderer/services/PathService';
@@ -26,24 +26,22 @@ const getUpdatedDependencyLits = (
   });
 
 function Dependencies({
-  excludedDirectories,
   dependencies,
   onDependenciesChange,
   activeTargetPackage,
 }: {
-  excludedDirectories: string[];
   dependencies?: DependencyPackage[];
   onDependenciesChange?: (dependencies: DependencyPackage[]) => void;
   activeTargetPackage?: TargetPackage;
 }): JSX.Element {
   const [loading, setLoading] = useState(false);
 
-  const setDependenciesWithNPM = async (
-    newDependencies: DependencyPackage[]
+  const setDependencies = async (
+    dependencies: DependencyPackage[]
   ): Promise<void> => {
     setLoading(true);
     onDependenciesChange?.(
-      await NPMService.getDependenciesWithRelatedDependencyIds(newDependencies)
+      await NPMService.getDependenciesWithRelatedIds(dependencies)
     );
     setLoading(false);
   };
@@ -55,7 +53,7 @@ function Dependencies({
     ) {
       const dependency = new DependencyPackage();
       dependency.cwd = PathService.getPreviousPath(activeTargetPackage.cwd);
-      setDependenciesWithNPM([...(dependencies ?? []), dependency]);
+      setDependencies([...(dependencies ?? []), dependency]);
     }
   };
 
@@ -86,15 +84,15 @@ function Dependencies({
       }
     );
 
-    setDependenciesWithNPM(newDependencies);
+    setDependencies(newDependencies);
   };
 
   const handleRemoveDependency = (dependency: DependencyPackage): void => {
-    const newDependencies = (dependencies ?? []).filter(
-      ({ id }: DependencyPackage) => id !== dependency.id
+    setDependencies(
+      (dependencies ?? []).filter(
+        ({ id }: DependencyPackage) => id !== dependency.id
+      )
     );
-
-    setDependenciesWithNPM(newDependencies);
   };
 
   const changeDependencyProp = (
@@ -153,7 +151,6 @@ function Dependencies({
               key={dependency.id}
               disabled={loading}
               dependency={dependency}
-              excludedDirectories={excludedDirectories}
               onClickRemove={handleRemoveDependency}
               onGitPullChange={handleGitPullChange}
               onPathChange={handlePathChange}
