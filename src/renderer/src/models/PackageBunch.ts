@@ -6,7 +6,9 @@ import TargetPackage from './TargetPackage';
 export default class PackageBunch {
   private _id = crypto.randomUUID();
 
-  public readonly id = this._id;
+  public get id(): string {
+    return this._id;
+  }
   public name?: string;
   public color?: CSSProperties['color'];
   public active = false;
