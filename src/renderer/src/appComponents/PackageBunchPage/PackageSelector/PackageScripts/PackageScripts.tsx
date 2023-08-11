@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import type TargetPackage from '@renderer/models/TargetPackage';
-import NPMService from '@renderer/services/NPMService';
+import NodeService from '@renderer/services/NodeService';
 import { Form } from 'fratch-ui';
 
 import { type PackageScript } from '../../../../models/PackageScript';
@@ -29,10 +29,11 @@ export default function PackageScripts({
   >([]);
 
   const [isYarn, setIsYarn] = useState<boolean>();
-
+  const [isPnpm, setIsPnpm] = useState<boolean>();
   useEffect(() => {
     (async (): Promise<void> => {
-      setIsYarn(await NPMService.checkYarn(targetPackage.cwd ?? ''));
+      setIsPnpm(await NodeService.checkPnpm(targetPackage.cwd ?? ''));
+      setIsYarn(await NodeService.checkYarn(targetPackage.cwd ?? ''));
     })();
   }, [targetPackage.cwd]);
 
@@ -52,7 +53,7 @@ export default function PackageScripts({
   // load package scripts
   useEffect(() => {
     (async (): Promise<void> => {
-      const scripts = await NPMService.getPackageScripts(
+      const scripts = await NodeService.getPackageScripts(
         targetPackage.cwd ?? ''
       );
 
@@ -69,12 +70,13 @@ export default function PackageScripts({
 
   //add additional install script
   useEffect(() => {
-    if (scriptOptions.length === 0 || isYarn == null) {
+    if (scriptOptions.length === 0 || (isYarn == null && isPnpm == null)) {
       return;
     }
 
     const hasAdditionalInstallScript = scriptOptions.some(
       ({ label }) =>
+        label === ADDITIONAL_PACKAGE_SCRIPTS_NAMES.PNPM_INSTALL ||
         label === ADDITIONAL_PACKAGE_SCRIPTS_NAMES.YARN_INSTALL ||
         label === ADDITIONAL_PACKAGE_SCRIPTS_NAMES.NPM_INSTALL
     );
@@ -83,7 +85,9 @@ export default function PackageScripts({
       return;
     }
 
-    const scriptName = isYarn
+    const scriptName = isPnpm
+      ? ADDITIONAL_PACKAGE_SCRIPTS_NAMES.PNPM_INSTALL
+      : isYarn
       ? ADDITIONAL_PACKAGE_SCRIPTS_NAMES.YARN_INSTALL
       : ADDITIONAL_PACKAGE_SCRIPTS_NAMES.NPM_INSTALL;
 
@@ -94,7 +98,7 @@ export default function PackageScripts({
       },
       ...scriptOptions,
     ]);
-  }, [scriptOptions, selectedScrips, isYarn]);
+  }, [scriptOptions, selectedScrips, isYarn, isPnpm]);
 
   // try to determine the install and pack script
   useEffect(() => {

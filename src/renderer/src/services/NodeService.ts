@@ -3,7 +3,7 @@ import type DependencyPackage from '@renderer/models/DependencyPackage';
 import PathService from './PathService';
 import TerminalService, { TerminalResponse } from './TerminalService';
 
-export default class NPMService {
+export default class NodeService {
   private static async getDependenciesNames(cwd?: string): Promise<string[]> {
     try {
       const fileContent = await window.api.fs.readFile(
@@ -36,7 +36,7 @@ export default class NPMService {
       .map(({ id: uuid }) => uuid);
   }
 
-  private static async getNodeVersions(): Promise<Record<string, string>> {
+  public static async getNodeVersions(): Promise<Record<string, string>> {
     const output = await TerminalService.executeCommand({
       command: 'bash',
       args: [PathService.getExtraResourcesScriptPath('check_node.sh')],
@@ -53,10 +53,6 @@ export default class NPMService {
     }
 
     return {};
-  }
-
-  public static async getNodeNpmYarn(): Promise<Record<string, string>> {
-    return await NPMService.getNodeVersions();
   }
 
   public static async checkPackageJSON(cwd: string): Promise<boolean> {
@@ -76,8 +72,8 @@ export default class NPMService {
     dependencies: DependencyPackage[]
   ): Promise<Record<string, string[]>> {
     const promises = dependencies.map(async depConf => {
-      const npmDepNames = await NPMService.getDependenciesNames(depConf.cwd);
-      return NPMService.getDependencyIdsByNames(dependencies, npmDepNames);
+      const npmDepNames = await NodeService.getDependenciesNames(depConf.cwd);
+      return NodeService.getDependencyIdsByNames(dependencies, npmDepNames);
     });
     const entries = await Promise.all(promises);
     return Object.fromEntries(entries);
@@ -87,6 +83,19 @@ export default class NPMService {
     try {
       await window.api.fs.access(
         window.api.path.join(cwd, 'yarn.lock'),
+        window.api.fs.constants.F_OK
+      );
+    } catch (error) {
+      return false;
+    }
+
+    return true;
+  }
+
+  public static async checkPnpm(cwd: string): Promise<boolean> {
+    try {
+      await window.api.fs.access(
+        window.api.path.join(cwd, 'pnpm-lock.yaml'),
         window.api.fs.constants.F_OK
       );
     } catch (error) {
