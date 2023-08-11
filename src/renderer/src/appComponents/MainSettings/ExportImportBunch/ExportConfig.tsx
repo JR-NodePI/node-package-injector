@@ -2,7 +2,7 @@ import useGlobalData from '@renderer/appComponents/GlobalDataProvider/useGlobalD
 import { Button } from 'fratch-ui';
 import { IconUpload } from 'fratch-ui/components/Icons/Icons';
 
-import { downloadTextFile } from './ConfigSharingHelpers';
+import { downloadTextFile } from './ExportImportBunchHelpers';
 
 export default function ExportConfig(): JSX.Element {
   const { activePackageBunch } = useGlobalData();

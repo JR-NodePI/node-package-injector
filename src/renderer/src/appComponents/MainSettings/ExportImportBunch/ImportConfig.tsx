@@ -5,8 +5,9 @@ import PackageBunch from '@renderer/models/PackageBunch';
 import { Button, ToasterListContext } from 'fratch-ui';
 import { IconDownload } from 'fratch-ui/components/Icons/Icons';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
+import getRandomColor from 'fratch-ui/helpers/getRandomColor';
 
-import { getPackageBunchFromText } from './ConfigSharingHelpers';
+import { getPackageBunchFromText } from './ExportImportBunchHelpers';
 
 import styles from './ImportConfig.module.css';
 
@@ -53,6 +54,16 @@ export default function ImportConfig(): JSX.Element {
     if (importedBunch != null) {
       importedBunch.resetId();
       importedBunch.active = true;
+      importedBunch.targetPackage.resetId();
+      importedBunch.color = getRandomColor(
+        packageBunches?.map(bunch => bunch.color) ?? []
+      );
+      importedBunch.dependencies = importedBunch.dependencies.map(
+        dependency => {
+          dependency.resetId();
+          return dependency;
+        }
+      );
 
       await setPackageBunches?.([
         ...(packageBunches ?? []).map(bunch => {
