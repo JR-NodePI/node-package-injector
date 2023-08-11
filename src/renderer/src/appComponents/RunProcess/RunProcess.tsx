@@ -93,14 +93,7 @@ export default function RunProcess(): JSX.Element {
 
   return (
     <>
-      {isRunning && (
-        <Spinner
-          cover
-          inverted={isSyncing}
-          type={processType}
-          label={processMsg}
-        />
-      )}
+      {isRunning && <Spinner cover inverted={isSyncing} label={processMsg} />}
       {showRunButton && (
         <Button
           Icon={Icons.IconPlay}

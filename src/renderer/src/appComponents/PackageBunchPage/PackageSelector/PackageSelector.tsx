@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 
 import GitService from '@renderer/services/GitService';
-import NPMService from '@renderer/services/NPMService';
+import NodeService from '@renderer/services/NodeService';
 import PathService from '@renderer/services/PathService';
 import { Form } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
@@ -43,7 +43,7 @@ export default function PackageSelector({
       setIsValidatingPackage(true);
 
       (async (): Promise<void> => {
-        const isValidPackage = await NPMService.checkPackageJSON(cwd);
+        const isValidPackage = await NodeService.checkPackageJSON(cwd);
         const branch = await GitService.getCurrentBranch(cwd, abortController);
         const isValid = isValidPackage && branch.length > 0;
         if (!abortController.signal.aborted) {

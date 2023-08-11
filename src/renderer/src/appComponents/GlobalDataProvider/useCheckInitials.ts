@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import NPMService from '@renderer/services/NPMService';
+import NodeService from '@renderer/services/NodeService';
 import TerminalService from '@renderer/services/TerminalService';
 
 const useCheckInitials = (): {
@@ -16,7 +16,7 @@ const useCheckInitials = (): {
   useEffect(() => {
     (async (): Promise<void> => {
       const hasTerminal = await TerminalService.init(window.api.os.homedir());
-      const nodeData = await NPMService.getNodeNpmYarn();
+      const nodeData = await NodeService.getNodeVersions();
 
       const isValidNode =
         hasTerminal && nodeData?.node != null && nodeData?.npm != null;

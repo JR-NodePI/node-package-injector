@@ -4,11 +4,15 @@
 
 NODE_VERSION=$(node -v)
 NPM_VERSION=$(npm -v)
-YAR_VERSION=$(yarn -v)
+YARN_VERSION=$(yarn -v)
+PNPM_VERSION=$(pnpm -v)
+NVM_VERSION=$(nvm -v)
 
 echo "{
   \"cwd\": \"$(pwd)\",
   \"node\": \"$NODE_VERSION\",
   \"npm\":  \"$NPM_VERSION\",
-  \"yarn\":  \"$YAR_VERSION\"
+  \"yarn\":  \"$YARN_VERSION\",
+  \"pnpm\":  \"$PNPM_VERSION\",
+  \"nvm\":  \"$NVM_VERSION\"
 }"

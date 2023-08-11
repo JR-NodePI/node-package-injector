@@ -7,7 +7,7 @@ import GitService from '@renderer/services/GitService';
 import PathService from '@renderer/services/PathService';
 import { type TerminalResponse } from '@renderer/services/TerminalService';
 
-import NPMService from './NPMService';
+import NodeService from './NodeService';
 
 type ProcessServiceResponse = TerminalResponse & { title: string };
 
@@ -62,7 +62,7 @@ export class RunProcessService {
     pkgName?: string,
     abortController?: AbortController
   ): Promise<ProcessServiceResponse> {
-    const isYarn = await NPMService.checkYarn(cwd);
+    const isYarn = await NodeService.checkYarn(cwd);
 
     let npmScript = isYarn
       ? `yarn ${script.scriptName}`
@@ -72,7 +72,7 @@ export class RunProcessService {
       npmScript = ADDITIONAL_PACKAGE_SCRIPTS[script.scriptName].scriptValue;
     }
 
-    const output = await NPMService.runScript(cwd, npmScript, abortController);
+    const output = await NodeService.runScript(cwd, npmScript, abortController);
 
     if (output.error) {
       return {
