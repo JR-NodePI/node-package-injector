@@ -1,5 +1,5 @@
 import TerminalService from '@renderer/services/TerminalService';
-import { SettingsMenu } from 'fratch-ui';
+import { ColorSchemeSwitcher, SettingsMenu } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
 import ExportImportBunch from './ExportImportBunch/ExportImportBunch';
@@ -13,6 +13,9 @@ export default function MainSettings({
   className?: string;
 }): JSX.Element {
   const settingsItems: JSX.Element[] = [];
+
+  settingsItems.push(<ColorSchemeSwitcher />);
+
   settingsItems.push(<OpenDevTools />);
 
   if (TerminalService.isWSLAvailable) {
