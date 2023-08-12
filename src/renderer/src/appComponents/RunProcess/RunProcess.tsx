@@ -81,7 +81,6 @@ export default function RunProcess(): JSX.Element {
     setIsRunning(false);
   };
 
-  const processType = isSyncing ? 'secondary' : 'tertiary';
   const processMsg = isSyncing ? 'Syncing...' : 'Building...';
 
   const showRunButton =

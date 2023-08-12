@@ -1,10 +1,11 @@
-import "./App.css";
+import Button from 'fratch-ui/components/Button/Button';
+import Spinner from 'fratch-ui/components/Spinner/Spinner';
 
-import logo from "./assets/logo.svg";
-import Button from "fratch-ui/components/Button/Button";
-import Spinner from "fratch-ui/components/Spinner/Spinner";
+import logo from './assets/logo.svg';
 
-function App() {
+import './App.css';
+
+function App(): JSX.Element {
   return (
     <div>
       <img src={logo} className="logo" alt="NodePI" />
