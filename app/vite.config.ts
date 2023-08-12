@@ -1,13 +1,13 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react-swc";
-import { resolve } from "node:path";
+import react from '@vitejs/plugin-react-swc';
+import { resolve } from 'node:path';
+import { defineConfig } from 'vite';
 
-const indexHtml = resolve(__dirname, "index.html");
+const indexHtml = resolve(__dirname, 'index.html');
 const port = Number(process.env.DEV_PORT) || undefined;
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: "./",
+  base: './',
   plugins: [react()],
   server: {
     port,

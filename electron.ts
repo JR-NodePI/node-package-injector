@@ -18,7 +18,7 @@ const createWindow = (): void => {
   }
 };
 
-function createAppMenu() {
+function createAppMenu(): void {
   const menuTemplate: MenuItemConstructorOptions[] = [
     {
       label: 'NodePI',
