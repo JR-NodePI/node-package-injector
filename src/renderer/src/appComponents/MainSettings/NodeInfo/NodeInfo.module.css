@@ -11,7 +11,7 @@
   top: var(--ft-header-height);
   width: 300px;
   flex-wrap: wrap;
-  padding: 16px 0 8px 0;
+  padding: 16px 0 4px 0;
 }
 .node_info li {
   background-color: var(--ft-primary-default-color);
