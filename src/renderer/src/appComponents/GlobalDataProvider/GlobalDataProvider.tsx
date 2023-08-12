@@ -33,8 +33,8 @@ export default function GlobalDataProvider({
       const bunchIndex = packageBunches.findIndex(bunch => bunch.active);
       if (bunchIndex >= 0) {
         const newBunches = packageBunches.map((bunch, index) => {
-          if (index === bunchIndex) {
-            bunch[key] = data;
+          if (index === bunchIndex && key in bunch && key !== 'id') {
+            (bunch[key] as unknown) = data;
           }
           return bunch;
         });
