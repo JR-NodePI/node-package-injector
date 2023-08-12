@@ -21,7 +21,7 @@ function createWindow(): void {
     titleBarOverlay: {
       color: '#5858f0',
       symbolColor: '#e6fffc',
-      height: 35,
+      height: 30,
     },
     frame: false,
     autoHideMenuBar: process.platform === 'darwin',
