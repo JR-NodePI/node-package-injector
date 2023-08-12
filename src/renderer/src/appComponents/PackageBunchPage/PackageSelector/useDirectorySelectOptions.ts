@@ -7,6 +7,7 @@ import type {
   DirectorySelectOption,
   useDirectorySelectOptionsProps,
 } from './PackageSelectorProps';
+import useEffectCWD from './useEffectCWD';
 
 const getDirectorySelectOptions = async (
   cwd: string,
@@ -36,7 +37,7 @@ export function useDirectorySelectOptions({
 
   const excludedDirectories = useExcludedDirectories();
 
-  useDeepCompareEffect(() => {
+  useEffectCWD(() => {
     const abortController = new AbortController();
 
     (async (): Promise<void> => {
@@ -52,7 +53,7 @@ export function useDirectorySelectOptions({
     return () => {
       abortController.abort();
     };
-  }, [cwd, excludedDirectories]);
+  }, cwd);
 
   return directoryOptions;
 }

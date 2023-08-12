@@ -12,4 +12,5 @@ export type ExecuteCommandOptions = {
   skipWSL?: boolean;
   traceOnTime?: boolean;
   abortController?: AbortController;
+  ignoreStderrErrors?: boolean;
 };

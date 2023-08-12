@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import GitService from '@renderer/services/GitService';
 import NodeService from '@renderer/services/NodeService';
@@ -24,9 +24,6 @@ export default function PackageSelector({
   targetPackage,
 }: PackageSelectorProps): JSX.Element {
   const [id] = useState<string>(crypto.randomUUID());
-
-  const triggerElementRef = useRef<HTMLInputElement>(null);
-  const refMustFocusOnDirectoriesLoaded = useRef<boolean>(false);
 
   const [pathDirectories, setPathDirectories] = useState<string[]>(
     PathService.getPathDirectories(targetPackage?.cwd)
@@ -59,20 +56,26 @@ export default function PackageSelector({
     };
   }, cwd);
 
+  const triggerElementRef = useRef<HTMLInputElement>(null);
+  const refShouldFocus = useRef<boolean>(false);
+  const [shouldFocus, setShouldFocus] = useState<boolean>(false);
   const directoryOptions = useDirectorySelectOptions({
     cwd,
     onDirectoriesLoad: (): void => {
-      if (refMustFocusOnDirectoriesLoaded.current) {
-        triggerElementRef.current?.focus();
-        refMustFocusOnDirectoriesLoaded.current = false;
-      }
+      setShouldFocus(refShouldFocus.current);
+      refShouldFocus.current = false;
     },
   });
+  useEffect(() => {
+    if (shouldFocus && !isValidatingPackage) {
+      triggerElementRef.current?.focus();
+    }
+  }, [shouldFocus, isValidatingPackage]);
 
   const handlePathChange = (value?: string): void => {
     if (value) {
       setPathDirectories([...pathDirectories, value]);
-      refMustFocusOnDirectoriesLoaded.current = true;
+      refShouldFocus.current = true;
     }
   };
 
