@@ -36,6 +36,14 @@ const consoleLog = (
   // eslint-disable-next-line no-console
   console.log(...getConsoleInitColorizedFlag(type, icon), ...params);
 
+const consoleWarn = (
+  type: ExecuteCommandOutput['type'],
+  icon?: string,
+  ...params
+): void =>
+  // eslint-disable-next-line no-console
+  console.warn(...getConsoleInitColorizedFlag(type, icon), ...params);
+
 const consoleError = (
   type: ExecuteCommandOutput['type'],
   icon?: string,
@@ -56,6 +64,9 @@ const displayLogs = (
       case ExecuteCommandOutputType.STDOUT:
         consoleLog(type, icon, data);
         break;
+      case ExecuteCommandOutputType.STDERR_WARN:
+        consoleWarn(type, icon, data);
+        break;
       case ExecuteCommandOutputType.ERROR:
       case ExecuteCommandOutputType.STDERR_ERROR:
         consoleError(type, icon, data);
@@ -75,6 +86,7 @@ export default class TerminalRepository {
     cwd,
     traceOnTime,
     abortController,
+    ignoreStderrErrors,
   }: ExecuteCommandOptions): Promise<ExecuteCommandOutput[]> {
     return new Promise((resolve, reject) => {
       if (!cwd) {
@@ -142,7 +154,7 @@ export default class TerminalRepository {
           new RegExp('command not found', 'gi'),
         ].some(regExp => regExp.test(cleanMessage));
 
-        if (isError) {
+        if (isError && !ignoreStderrErrors) {
           const error = new Error(cleanMessage);
           const output = {
             type: ExecuteCommandOutputType.STDERR_ERROR,
@@ -151,11 +163,16 @@ export default class TerminalRepository {
           enqueueOutput(output);
           reject(error);
         } else {
+          const isIgnoredError = isError && ignoreStderrErrors;
           const output = {
             type: ExecuteCommandOutputType.STDERR_WARN,
             data: cleanMessage,
           };
-          outputs.push(output);
+
+          if (!isIgnoredError) {
+            outputs.push(output);
+          }
+
           enqueueOutput(output);
         }
       });

@@ -38,13 +38,15 @@ export default class GitService {
 
   static async getCurrentBranch(
     cwd: string,
-    abortController?: AbortController
+    abortController?: AbortController,
+    ignoreStderrErrors?: boolean
   ): Promise<string> {
     const { content } = await TerminalService.executeCommand({
       command: 'git',
       args: ['branch', '--show-current'],
       cwd,
       abortController,
+      ignoreStderrErrors,
     });
     const value = (content ?? '').trim();
     return value;
@@ -73,7 +75,11 @@ export default class GitService {
     abortController?: AbortController
   ): Promise<boolean> {
     try {
-      const branch = await GitService.getCurrentBranch(cwd, abortController);
+      const branch = await GitService.getCurrentBranch(
+        cwd,
+        abortController,
+        true
+      );
       return Boolean(branch);
     } catch (error) {
       // eslint-disable-next-line no-console
