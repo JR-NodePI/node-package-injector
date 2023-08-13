@@ -1,5 +1,6 @@
-import { DependencyMode } from '@renderer/models/DependencyConstants';
 import { Form } from 'fratch-ui';
+
+import { DependencyMode } from '@renderer/models/DependencyConstants';
 
 import { DependencySelectorProps } from './DependencySelectorProps';
 

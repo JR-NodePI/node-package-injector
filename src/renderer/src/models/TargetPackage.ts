@@ -1,4 +1,4 @@
-import type { PackageScript } from './PackageScript';
+import type PackageScript from './PackageScript';
 
 export default class TargetPackage {
   private _id = crypto.randomUUID();
@@ -13,5 +13,15 @@ export default class TargetPackage {
 
   public resetId(): void {
     this._id = crypto.randomUUID();
+  }
+
+  public clone(): TargetPackage {
+    const targetPackage = new TargetPackage();
+    targetPackage.resetId();
+    targetPackage.cwd = this.cwd;
+    targetPackage.isValidPackage = this.isValidPackage;
+    targetPackage.performGitPull = this.performGitPull;
+    targetPackage.scripts = this.scripts.map(script => script.clone());
+    return targetPackage;
   }
 }

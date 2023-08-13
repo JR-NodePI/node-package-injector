@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 
-import type TargetPackage from '@renderer/models/TargetPackage';
-import NodeService from '@renderer/services/NodeService';
 import { Form } from 'fratch-ui';
 
-import { type PackageScript } from '../../../../models/PackageScript';
+import type PackageScript from '@renderer/models/PackageScript';
+import type TargetPackage from '@renderer/models/TargetPackage';
+import NodeService from '@renderer/services/NodeService';
+
 import { PackageScriptRenderer } from './components/PackageScriptRenderer';
 import {
   ADDITIONAL_PACKAGE_SCRIPTS,

@@ -1,8 +1,9 @@
 import { type ReactNode } from 'react';
 
-import useGlobalData from '@renderer/appComponents/GlobalDataProvider/useGlobalData';
 import { Header } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
+
+import useGlobalData from '@renderer/appComponents/GlobalDataProvider/useGlobalData';
 
 import RunProcess from '../../appComponents/RunProcess/RunProcess';
 import logo from '../../assets/logo.png';

@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 
+import { Form } from 'fratch-ui';
+import { c } from 'fratch-ui/helpers/classNameHelpers';
+
 import GitService from '@renderer/services/GitService';
 import NodeService from '@renderer/services/NodeService';
 import PathService from '@renderer/services/PathService';
-import { Form } from 'fratch-ui';
-import { c } from 'fratch-ui/helpers/classNameHelpers';
 
 import BranchSelector from './BranchSelector';
 import PackageScripts from './PackageScripts/PackageScripts';

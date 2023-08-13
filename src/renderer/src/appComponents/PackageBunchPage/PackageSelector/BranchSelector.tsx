@@ -1,9 +1,10 @@
 import { memo, useCallback, useContext, useEffect, useState } from 'react';
 
-import GitService from '@renderer/services/GitService';
 import { Form } from 'fratch-ui';
 import ToasterListContext from 'fratch-ui/components/Toaster/ToasterListContext';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
+
+import GitService from '@renderer/services/GitService';
 
 import LinkButton from '../../../components/linkButton/LinkButton';
 

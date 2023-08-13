@@ -1,5 +1,6 @@
-import { PackageScript } from '@renderer/models/PackageScript';
 import { Form } from 'fratch-ui';
+
+import { PackageScript } from '@renderer/models/PackageScript';
 
 export type PackageScriptRendererProps = {
   index: number;

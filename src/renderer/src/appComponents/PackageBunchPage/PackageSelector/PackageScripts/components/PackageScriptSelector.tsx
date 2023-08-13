@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
 
-import { type PackageScript } from '@renderer/models/PackageScript';
 import { Form } from 'fratch-ui';
 import { SelectOption } from 'fratch-ui/components/Form/Select/SelectProps';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
+
+import { type PackageScript } from '@renderer/models/PackageScript';
 
 import styles from './PackageScriptSelector.module.css';
 
