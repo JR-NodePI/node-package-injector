@@ -1,10 +1,11 @@
+import { Button, Icons } from 'fratch-ui';
+import { c } from 'fratch-ui/helpers/classNameHelpers';
+
 import useGlobalData from '@renderer/appComponents/GlobalDataProvider/useGlobalData';
 import { DependencyMode } from '@renderer/models/DependencyConstants';
 import DependencyPackage from '@renderer/models/DependencyPackage';
 import { PackageScript } from '@renderer/models/PackageScript';
 import PathService from '@renderer/services/PathService';
-import { Button, Icons } from 'fratch-ui';
-import { c } from 'fratch-ui/helpers/classNameHelpers';
 
 import DependencySelector from './DependencySelector';
 

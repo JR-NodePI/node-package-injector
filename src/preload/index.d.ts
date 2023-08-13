@@ -1,7 +1,8 @@
-import { type ElectronAPI } from '@electron-toolkit/preload';
 import type fs from 'fs/promises';
 import type path from 'node:path';
 import type os from 'os';
+
+import { type ElectronAPI } from '@electron-toolkit/preload';
 
 import type TerminalService from '../preload/Terminal/TerminalService';
 

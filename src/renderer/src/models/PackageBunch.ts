@@ -18,4 +18,17 @@ export default class PackageBunch {
   public resetId(): void {
     this._id = crypto.randomUUID();
   }
+
+  public clone(): PackageBunch {
+    const packageBunch = new PackageBunch();
+    packageBunch.resetId();
+    packageBunch.name = this.name;
+    packageBunch.color = this.color;
+    packageBunch.active = this.active;
+    packageBunch.targetPackage = this.targetPackage.clone();
+    packageBunch.dependencies = this.dependencies.map(dependency =>
+      dependency.clone()
+    );
+    return packageBunch;
+  }
 }
