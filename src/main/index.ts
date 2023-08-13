@@ -25,7 +25,7 @@ function createWindow(): void {
     },
     frame: false,
     autoHideMenuBar: process.platform === 'darwin',
-    trafficLightPosition: { x: 10, y: 10 },
+    trafficLightPosition: { x: 10, y: 6 },
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
