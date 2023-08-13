@@ -1,4 +1,4 @@
-import { PackageScript } from '@renderer/models/PackageScript';
+import type PackageScript from '@renderer/models/PackageScript';
 
 import PackageScriptButtons from './PackageScriptButtons';
 import { type PackageScriptRendererProps } from './PackageScriptRendererProps';
@@ -19,7 +19,6 @@ export function PackageScriptRenderer({
 
   return (
     <PackageScriptSelector
-      key={index}
       label={`${index + 1}º p. script`}
       title={`${index + 1}º package script`}
       selectedScript={script}

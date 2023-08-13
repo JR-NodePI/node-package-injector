@@ -55,15 +55,8 @@ export default function ImportConfig(): JSX.Element {
     if (importedBunch != null) {
       importedBunch.resetId();
       importedBunch.active = true;
-      importedBunch.targetPackage.resetId();
       importedBunch.color = getRandomColor(
         packageBunches?.map(bunch => bunch.color) ?? []
-      );
-      importedBunch.dependencies = importedBunch.dependencies.map(
-        dependency => {
-          dependency.resetId();
-          return dependency;
-        }
       );
 
       await setPackageBunches?.([
