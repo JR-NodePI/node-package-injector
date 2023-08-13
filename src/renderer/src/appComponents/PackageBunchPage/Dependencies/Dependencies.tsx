@@ -4,7 +4,7 @@ import { c } from 'fratch-ui/helpers/classNameHelpers';
 import useGlobalData from '@renderer/appComponents/GlobalDataProvider/useGlobalData';
 import { DependencyMode } from '@renderer/models/DependencyConstants';
 import DependencyPackage from '@renderer/models/DependencyPackage';
-import { PackageScript } from '@renderer/models/PackageScript';
+import PackageScript from '@renderer/models/PackageScript';
 import PathService from '@renderer/services/PathService';
 
 import DependencySelector from './DependencySelector';
@@ -47,15 +47,16 @@ function Dependencies(): JSX.Element {
       activeDependencies,
       dependency,
       () => {
+        const clonedDependency = dependency.clone();
         if (!isValidPackage) {
-          dependency.performGitPull = false;
-          dependency.mode = DependencyMode.BUILD;
+          clonedDependency.performGitPull = false;
+          clonedDependency.mode = DependencyMode.BUILD;
         }
-        dependency.scripts = [];
-        dependency.cwd = cwd;
-        dependency.isValidPackage = isValidPackage;
+        clonedDependency.scripts = [];
+        clonedDependency.cwd = cwd;
+        clonedDependency.isValidPackage = isValidPackage;
 
-        return dependency;
+        return clonedDependency;
       }
     );
 

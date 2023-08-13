@@ -80,8 +80,9 @@ export default function useTabsFromPackageBunches(): Props {
 
       const newBunches = [
         ...(packageBunches ?? []).map(bunch => {
-          bunch.active = false;
-          return bunch;
+          const clonedBunch = bunch.clone();
+          clonedBunch.active = false;
+          return clonedBunch;
         }),
         newBunch,
       ];

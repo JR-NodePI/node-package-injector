@@ -7,12 +7,11 @@ export default class DependencyPackage extends TargetPackage {
     DependencyMode.BUILD;
 
   public clone(): DependencyPackage {
-    const dependencyPackage = new DependencyPackage();
-    dependencyPackage.resetId();
-    dependencyPackage.cwd = this.cwd;
-    dependencyPackage.isValidPackage = this.isValidPackage;
-    dependencyPackage.performGitPull = this.performGitPull;
-    dependencyPackage.scripts = this.scripts.map(script => script.clone());
+    const dependencyPackage = Object.assign<DependencyPackage, TargetPackage>(
+      new DependencyPackage(),
+      super.clone()
+    ) as DependencyPackage;
+
     dependencyPackage.mode = this.mode;
     return dependencyPackage;
   }

@@ -11,13 +11,9 @@ export default class TargetPackage {
   public performGitPull = false;
   public scripts: PackageScript[] = [];
 
-  public resetId(): void {
-    this._id = crypto.randomUUID();
-  }
-
   public clone(): TargetPackage {
     const targetPackage = new TargetPackage();
-    targetPackage.resetId();
+    targetPackage._id = this._id;
     targetPackage.cwd = this.cwd;
     targetPackage.isValidPackage = this.isValidPackage;
     targetPackage.performGitPull = this.performGitPull;

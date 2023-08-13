@@ -1,4 +1,4 @@
-import { PackageScript } from '@renderer/models/PackageScript';
+import PackageScript from '@renderer/models/PackageScript';
 
 import useGlobalData from '../GlobalDataProvider/useGlobalData';
 import PackageSelector from './PackageSelector/PackageSelector';
@@ -11,27 +11,31 @@ export default function TargetPackageSelector(): JSX.Element {
       return;
     }
 
-    if (!isValidPackage) {
-      activeTargetPackage.performGitPull = false;
-    }
-    activeTargetPackage.scripts = [];
-    activeTargetPackage.cwd = cwd;
-    activeTargetPackage.isValidPackage = isValidPackage;
+    const clonedPackage = activeTargetPackage.clone();
 
-    setActiveTargetPackage?.(activeTargetPackage);
+    if (!isValidPackage) {
+      clonedPackage.performGitPull = false;
+    }
+    clonedPackage.scripts = [];
+    clonedPackage.cwd = cwd;
+    clonedPackage.isValidPackage = isValidPackage;
+
+    setActiveTargetPackage?.(clonedPackage);
   };
 
   const handleGitPullChange = (checked?: boolean): void => {
     if (activeTargetPackage) {
-      activeTargetPackage.performGitPull = checked ?? false;
-      setActiveTargetPackage?.(activeTargetPackage);
+      const clonedPackage = activeTargetPackage.clone();
+      clonedPackage.performGitPull = checked ?? false;
+      setActiveTargetPackage?.(clonedPackage);
     }
   };
 
   const handleScriptsChange = (scripts: PackageScript[]): void => {
     if (activeTargetPackage) {
-      activeTargetPackage.scripts = scripts;
-      setActiveTargetPackage?.(activeTargetPackage);
+      const clonedPackage = activeTargetPackage.clone();
+      clonedPackage.scripts = scripts;
+      setActiveTargetPackage?.(clonedPackage);
     }
   };
 

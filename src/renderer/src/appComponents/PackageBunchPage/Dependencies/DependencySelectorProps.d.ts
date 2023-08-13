@@ -1,6 +1,6 @@
 import { type DependencyMode } from '@renderer/models/DependencyConstants';
 import type DependencyPackage from '@renderer/models/DependencyPackage';
-import { PackageScript } from '@renderer/models/PackageScript';
+import PackageScript from '@renderer/models/PackageScript';
 
 export type DependencySelectorProps = {
   disabled?: boolean;
