@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 
-import { Form, Modal, ModalProps } from 'fratch-ui';
+import { Form, Modal } from 'fratch-ui';
+import { type ModalCloseType } from 'fratch-ui/components/Modal/ModalProps';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
 import useGlobalData from '@renderer/appComponents/GlobalDataProvider/useGlobalData';
@@ -25,7 +26,7 @@ export default function WSLActivator({
     setConfirmVisible(true);
   };
 
-  const handleConfirmClose = (type: ModalProps.ModalCloseType): void => {
+  const handleConfirmClose = (type: ModalCloseType): void => {
     setConfirmVisible(false);
 
     if (ref.current?.checked == null) {

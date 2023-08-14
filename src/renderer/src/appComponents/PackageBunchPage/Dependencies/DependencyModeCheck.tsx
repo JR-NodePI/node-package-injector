@@ -19,10 +19,10 @@ export default function DependencyModeCheck({
       disabled={disabled}
       checked={dependency.mode === DependencyMode.SYNC}
       label="sync mode"
-      onChange={(event): void => {
+      onChange={(checked): void => {
         onModeChange(
           dependency,
-          event.target.checked ? DependencyMode.SYNC : DependencyMode.BUILD
+          checked ? DependencyMode.SYNC : DependencyMode.BUILD
         );
       }}
     />

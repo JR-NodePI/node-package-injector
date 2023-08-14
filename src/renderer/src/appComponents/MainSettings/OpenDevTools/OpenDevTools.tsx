@@ -23,8 +23,7 @@ export default function OpenDevTools({
     }
   }, [openDevTools]);
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
-    const checked = event.target.checked ?? false;
+  const handleChange = (checked): void => {
     setOpenDevTools(checked);
   };
 

@@ -140,9 +140,8 @@ export default function PackageSelector({
               disabled={disabled}
               checked={targetPackage.performGitPull}
               label="git pull"
-              onChange={(event): void => {
-                onGitPullChange &&
-                  onGitPullChange(event.target.checked ?? false);
+              onChange={(checked): void => {
+                onGitPullChange && onGitPullChange(checked ?? false);
               }}
             />
             {additionalComponent}
