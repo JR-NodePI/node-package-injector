@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { Form } from 'fratch-ui';
+import { type SelectOption } from 'fratch-ui/components/Form/Select/SelectProps';
 
 import PackageScript from '@renderer/models/PackageScript';
 import type TargetPackage from '@renderer/models/TargetPackage';
@@ -12,7 +12,7 @@ import {
   ADDITIONAL_PACKAGE_SCRIPTS_NAMES,
 } from './PackageScriptsConstants';
 
-type PackageScriptOption = Form.SelectProps.SelectOption<PackageScript>;
+type PackageScriptOption = SelectOption<PackageScript>;
 
 const getScriptsHash = (scripts: PackageScript[]): string =>
   scripts

@@ -3,7 +3,7 @@ import { ChangeEvent, useContext, useRef } from 'react';
 import { Button, ToasterListContext } from 'fratch-ui';
 import { IconDownload } from 'fratch-ui/components/Icons/Icons';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
-import getRandomColor from 'fratch-ui/helpers/getRandomColor';
+import getRandomColor from 'fratch-ui/randomColors/getRandomColor';
 
 import useGlobalData from '@renderer/appComponents/GlobalDataProvider/useGlobalData';
 import PackageBunch from '@renderer/models/PackageBunch';
