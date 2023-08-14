@@ -19,7 +19,7 @@ export function PackageScriptRenderer({
 
   return (
     <PackageScriptSelector
-      label={`${index + 1}º p. script`}
+      label={`${index + 1}º p. script`.padStart(13, ' ')}
       title={`${index + 1}º package script`}
       selectedScript={script}
       scriptOptions={scriptOptions}
