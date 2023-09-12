@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Form } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
@@ -60,13 +60,17 @@ export default function PackageSelector({
   const triggerElementRef = useRef<HTMLInputElement>(null);
   const refShouldFocus = useRef<boolean>(false);
   const [shouldFocus, setShouldFocus] = useState<boolean>(false);
+
+  const onDirectoriesLoad = useCallback((): void => {
+    setShouldFocus(refShouldFocus.current);
+    refShouldFocus.current = false;
+  }, []);
+
   const directoryOptions = useDirectorySelectOptions({
     cwd,
-    onDirectoriesLoad: (): void => {
-      setShouldFocus(refShouldFocus.current);
-      refShouldFocus.current = false;
-    },
+    onDirectoriesLoad,
   });
+
   useEffect(() => {
     if (shouldFocus && !isValidatingPackage) {
       triggerElementRef.current?.focus();

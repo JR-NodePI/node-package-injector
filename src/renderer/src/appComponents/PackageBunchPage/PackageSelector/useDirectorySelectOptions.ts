@@ -1,11 +1,12 @@
 import { useState } from 'react';
 
+import useDeepCompareEffect from 'use-deep-compare-effect';
+
 import useExcludedDirectories from '../../GlobalDataProvider/useExcludedDirectories';
 import type {
   DirectorySelectOption,
   useDirectorySelectOptionsProps,
 } from './PackageSelectorProps';
-import useEffectCWD from './useEffectCWD';
 
 const getDirectorySelectOptions = async (
   cwd: string,
@@ -35,7 +36,7 @@ export function useDirectorySelectOptions({
 
   const excludedDirectories = useExcludedDirectories();
 
-  useEffectCWD(() => {
+  useDeepCompareEffect(() => {
     const abortController = new AbortController();
 
     (async (): Promise<void> => {
@@ -51,7 +52,7 @@ export function useDirectorySelectOptions({
     return () => {
       abortController.abort();
     };
-  }, cwd);
+  }, [cwd, excludedDirectories, onDirectoriesLoad]);
 
   return directoryOptions;
 }
