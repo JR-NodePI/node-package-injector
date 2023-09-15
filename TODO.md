@@ -8,7 +8,3 @@
   - Try to use npm workspaces to sync the dependencies.
 
 ---
-
-BUGS
-
-- DON´T show dist script when is not a dependency

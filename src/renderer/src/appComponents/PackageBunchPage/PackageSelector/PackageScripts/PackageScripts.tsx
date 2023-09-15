@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 
 import { type SelectOption } from 'fratch-ui/components/Form/Select/SelectProps';
 
+import DependencyPackage from '@renderer/models/DependencyPackage';
 import PackageScript from '@renderer/models/PackageScript';
-import type TargetPackage from '@renderer/models/TargetPackage';
+import TargetPackage from '@renderer/models/TargetPackage';
 import NodeService from '@renderer/services/NodeService';
 
 import { PackageScriptRenderer } from './components/PackageScriptRenderer';
@@ -117,14 +118,16 @@ export default function PackageScripts({
           scripts.push(new PackageScript());
         }
 
-        const packScript = scriptOptions.find(
-          ({ value }) =>
-            / pack /gi.test(value.scriptValue) ||
-            / pack$/gi.test(value.scriptValue)
-        );
+        if (targetPackage instanceof DependencyPackage) {
+          const packScript = scriptOptions.find(
+            ({ value }) =>
+              / pack /gi.test(value.scriptValue) ||
+              / pack$/gi.test(value.scriptValue)
+          );
 
-        if (packScript) {
-          scripts.push(packScript.value);
+          if (packScript) {
+            scripts.push(packScript.value);
+          }
         }
 
         if (scripts.length > 0) {
@@ -132,7 +135,7 @@ export default function PackageScripts({
         }
       }
     })();
-  }, [scriptOptions, selectedScrips]);
+  }, [scriptOptions, selectedScrips, targetPackage]);
 
   const handleAddScript = (): void => {
     setSelectedScrips([...selectedScrips, new PackageScript()]);
