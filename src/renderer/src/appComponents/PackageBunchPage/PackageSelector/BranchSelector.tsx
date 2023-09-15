@@ -11,7 +11,6 @@ import LinkButton from '../../../components/linkButton/LinkButton';
 
 type BranchSelectOption = SelectOption<string>;
 type BranchSelectorProps = {
-  currentBranch?: string;
   disabled?: boolean;
   className?: string;
   cwd: string;
@@ -23,13 +22,28 @@ function BranchSelector({
   disabled,
   cwd,
   className,
-  currentBranch,
 }: BranchSelectorProps): JSX.Element {
   const [id] = useState<string>(crypto.randomUUID());
   const { addToaster } = useContext(ToasterListContext);
 
+  const [gitBranch, setGitBranch] = useState<string>();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [branches, setBranches] = useState<BranchSelectOption[]>([]);
+
+  // load current branch
+  useEffect(() => {
+    const abortController = new AbortController();
+
+    (async (): Promise<void> => {
+      if (isValidDirectory(cwd)) {
+        setGitBranch(await GitService.getCurrentBranch(cwd, abortController));
+      }
+    })();
+
+    return () => {
+      abortController.abort();
+    };
+  }, [cwd]);
 
   const loadBranches = useCallback(
     async (abortController?: AbortController): Promise<void> => {
@@ -38,15 +52,17 @@ function BranchSelector({
         label: branch,
         value: branch,
       }));
+
       setBranches(newBranches);
     },
     [cwd]
   );
 
+  // load all branches
   useEffect(() => {
     const abortController = new AbortController();
 
-    if (isValidDirectory(cwd) && currentBranch != null) {
+    if (isValidDirectory(cwd) && gitBranch != null) {
       setIsLoading(true);
       (async (): Promise<void> => {
         await loadBranches(abortController);
@@ -57,7 +73,7 @@ function BranchSelector({
     return () => {
       abortController.abort();
     };
-  }, [cwd, currentBranch, loadBranches]);
+  }, [cwd, gitBranch, loadBranches]);
 
   const handleRefreshBranches = async (): Promise<void> => {
     if (isValidDirectory(cwd)) {
@@ -81,6 +97,8 @@ function BranchSelector({
           message: error.toString(),
           nlToBr: true,
         });
+      } else {
+        setGitBranch(value);
       }
 
       await loadBranches();
@@ -106,7 +124,7 @@ function BranchSelector({
         field={
           <Form.Select
             id={id}
-            value={currentBranch}
+            value={gitBranch}
             placeholder={isLoading ? 'Loading...' : 'Select branch...'}
             searchable
             options={branches}

@@ -32,7 +32,6 @@ export default function PackageSelector({
   const cwd = PathService.getPath(pathDirectories);
 
   const [isValidatingPackage, setIsValidatingPackage] = useState<boolean>(true);
-  const [gitBranch, setGitBranch] = useState<string>();
 
   useEffectCWD(() => {
     const abortController = new AbortController();
@@ -45,7 +44,6 @@ export default function PackageSelector({
         const branch = await GitService.getCurrentBranch(cwd, abortController);
         const isValid = isValidPackage && branch.length > 0;
         if (!abortController.signal.aborted) {
-          setGitBranch(branch);
           onPathChange?.(cwd, isValid);
         }
         setIsValidatingPackage(false);
@@ -135,7 +133,6 @@ export default function PackageSelector({
         <>
           <div className={c(styles.options)}>
             <BranchSelector
-              currentBranch={gitBranch}
               disabled={isDisabled}
               className={c(styles.branch)}
               cwd={cwd}
