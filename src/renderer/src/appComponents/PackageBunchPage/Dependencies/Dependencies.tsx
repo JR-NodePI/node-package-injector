@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+
 import { Button, Icons } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
@@ -5,6 +7,7 @@ import useGlobalData from '@renderer/appComponents/GlobalDataProvider/useGlobalD
 import { DependencyMode } from '@renderer/models/DependencyConstants';
 import DependencyPackage from '@renderer/models/DependencyPackage';
 import PackageScript from '@renderer/models/PackageScript';
+import NodeService from '@renderer/services/NodeService';
 import PathService from '@renderer/services/PathService';
 
 import DependencySelector from './DependencySelector';
@@ -26,6 +29,19 @@ const getUpdatedDependencyLits = (
 function Dependencies(): JSX.Element {
   const { activeTargetPackage, activeDependencies, setActiveDependencies } =
     useGlobalData();
+
+  const [isTargetSinchronizable, isTargetSinchronizableSet] =
+    useState<boolean>(false);
+
+  useEffect(() => {
+    (async (): Promise<void> => {
+      if (activeTargetPackage.cwd != null) {
+        isTargetSinchronizableSet(
+          await NodeService.checkIsSynchronizable(activeTargetPackage.cwd)
+        );
+      }
+    })();
+  }, [activeTargetPackage.cwd]);
 
   const handleAddDependency = (): void => {
     if (
@@ -121,10 +137,11 @@ function Dependencies(): JSX.Element {
         <DependencySelector
           key={dependency.id}
           dependency={dependency}
+          isTargetSinchronizable={isTargetSinchronizable}
           onClickRemove={handleRemoveDependency}
           onGitPullChange={handleGitPullChange}
-          onPathChange={handlePathChange}
           onModeChange={handleModeChange}
+          onPathChange={handlePathChange}
           onScriptsChange={handleScriptsChange}
         />
       ))}

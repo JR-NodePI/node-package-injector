@@ -11,6 +11,7 @@ import styles from './DependencySelector.module.css';
 export default function DependencySelector({
   disabled,
   dependency,
+  isTargetSinchronizable,
   onClickRemove,
   onGitPullChange,
   onPathChange,
@@ -33,11 +34,14 @@ export default function DependencySelector({
     <div className={c(styles.dependency)}>
       <PackageSelector
         additionalComponent={
-          <DependencyModeCheck
-            disabled //TODO: ={disabled}, enable when sync mode will be implemented
-            dependency={dependency}
-            onModeChange={onModeChange}
-          />
+          <>
+            {isTargetSinchronizable && (
+              <DependencyModeCheck
+                dependency={dependency}
+                onModeChange={onModeChange}
+              />
+            )}
+          </>
         }
         disabled={disabled}
         targetPackage={dependency}

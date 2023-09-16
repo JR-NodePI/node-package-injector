@@ -92,7 +92,7 @@ export default class NodeService {
   }
 
   public static async checkViteConfig(cwd: string): Promise<boolean> {
-    return NodeService.hasFile(cwd, 'pnpm-lock.yaml');
+    return NodeService.hasFile(cwd, 'vite.config.js');
   }
 
   public static async checkCracoConfig(cwd: string): Promise<boolean> {
