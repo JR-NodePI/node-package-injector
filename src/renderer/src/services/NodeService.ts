@@ -36,6 +36,22 @@ export default class NodeService {
       .map(({ id: uuid }) => uuid);
   }
 
+  private static async hasFile(
+    cwd: string,
+    fileName: string
+  ): Promise<boolean> {
+    try {
+      await window.api.fs.access(
+        window.api.path.join(cwd, fileName),
+        window.api.fs.constants.F_OK
+      );
+    } catch (error) {
+      return false;
+    }
+
+    return true;
+  }
+
   public static async getNodeVersions(): Promise<Record<string, string>> {
     const output = await TerminalService.executeCommand({
       command: 'bash',
@@ -57,16 +73,7 @@ export default class NodeService {
   }
 
   public static async checkPackageJSON(cwd: string): Promise<boolean> {
-    try {
-      await window.api.fs.access(
-        window.api.path.join(cwd, 'package.json'),
-        window.api.fs.constants.F_OK
-      );
-    } catch (error) {
-      return false;
-    }
-
-    return true;
+    return NodeService.hasFile(cwd, 'package.json');
   }
 
   public static async getDependenciesRelations(
@@ -81,29 +88,26 @@ export default class NodeService {
   }
 
   public static async checkYarn(cwd: string): Promise<boolean> {
-    try {
-      await window.api.fs.access(
-        window.api.path.join(cwd, 'yarn.lock'),
-        window.api.fs.constants.F_OK
-      );
-    } catch (error) {
-      return false;
-    }
+    return NodeService.hasFile(cwd, 'yarn.lock');
+  }
 
-    return true;
+  public static async checkViteConfig(cwd: string): Promise<boolean> {
+    return NodeService.hasFile(cwd, 'pnpm-lock.yaml');
+  }
+
+  public static async checkCracoConfig(cwd: string): Promise<boolean> {
+    return NodeService.hasFile(cwd, 'craco.config.json');
+  }
+
+  public static async checkIsSynchronizable(cwd: string): Promise<boolean> {
+    return (
+      (await NodeService.checkViteConfig(cwd)) ||
+      (await NodeService.checkCracoConfig(cwd))
+    );
   }
 
   public static async checkPnpm(cwd: string): Promise<boolean> {
-    try {
-      await window.api.fs.access(
-        window.api.path.join(cwd, 'pnpm-lock.yaml'),
-        window.api.fs.constants.F_OK
-      );
-    } catch (error) {
-      return false;
-    }
-
-    return true;
+    return NodeService.hasFile(cwd, 'pnpm-lock.yaml');
   }
 
   public static async getPackageScripts(
