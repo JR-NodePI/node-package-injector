@@ -14,6 +14,7 @@ export type useDirectorySelectOptionsProps = {
 export type PackageSelectorProps = {
   additionalComponent?: JSX.Element;
   disabled?: boolean;
+  disableScripts?: boolean;
   onGitPullChange?: (checked?: boolean) => void;
   onPathChange?: (cwd: string, isValidPackage: boolean) => void;
   onScriptsChange?: (scripts: PackageScript[]) => void;

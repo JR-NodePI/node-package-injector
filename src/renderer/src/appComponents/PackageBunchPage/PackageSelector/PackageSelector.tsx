@@ -19,6 +19,7 @@ import styles from './PackageSelector.module.css';
 export default function PackageSelector({
   additionalComponent,
   disabled,
+  disableScripts,
   onGitPullChange,
   onPathChange,
   onScriptsChange,
@@ -147,10 +148,12 @@ export default function PackageSelector({
             />
             {additionalComponent}
           </div>
-          <PackageScripts
-            onChange={onScriptsChange}
-            targetPackage={targetPackage}
-          />
+          {!disableScripts && (
+            <PackageScripts
+              onChange={onScriptsChange}
+              targetPackage={targetPackage}
+            />
+          )}
         </>
       )}
     </div>

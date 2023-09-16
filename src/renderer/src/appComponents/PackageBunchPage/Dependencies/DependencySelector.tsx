@@ -2,6 +2,8 @@ import { Button } from 'fratch-ui';
 import { Icons } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
+import { DependencyMode } from '@renderer/models/DependencyConstants';
+
 import PackageSelector from '../PackageSelector/PackageSelector';
 import DependencyModeCheck from './DependencyModeCheck';
 import type { DependencySelectorProps } from './DependencySelectorProps';
@@ -44,6 +46,7 @@ export default function DependencySelector({
           </>
         }
         disabled={disabled}
+        disableScripts={dependency.mode !== DependencyMode.BUILD}
         targetPackage={dependency}
         onPathChange={handlePathChange}
         onGitPullChange={handleGitPullChange}
