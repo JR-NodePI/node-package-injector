@@ -5,6 +5,7 @@ import PackageScript from '@renderer/models/PackageScript';
 export type DependencySelectorProps = {
   disabled?: boolean;
   dependency: DependencyPackage;
+  isTargetSinchronizable: boolean;
   onClickRemove?: (dependency: DependencyPackage) => void;
   onGitPullChange: (dependency: DependencyPackage, checked?: boolean) => void;
   onPathChange: (
