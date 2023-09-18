@@ -2,18 +2,17 @@ import { Button } from 'fratch-ui';
 import { Icons } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
-import { DependencyMode } from '@renderer/models/DependencyConstants';
-
 import PackageSelector from '../PackageSelector/PackageSelector';
 import DependencyModeCheck from './DependencyModeCheck';
 import type { DependencySelectorProps } from './DependencySelectorProps';
 
 import styles from './DependencySelector.module.css';
+import { DependencyMode } from '@renderer/models/DependencyConstants';
 
 export default function DependencySelector({
   disabled,
   dependency,
-  isTargetSinchronizable,
+  isTargetSynchronizable: isTargetSinchronizable,
   onClickRemove,
   onGitPullChange,
   onPathChange,
