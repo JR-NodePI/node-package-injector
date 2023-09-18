@@ -33,6 +33,7 @@ export class RunProcessService {
       }
     }
 
+    // package scripts
     const scriptsResponses = await promiseAllSequentially(
       targetPackage.scripts
         .filter(script => Boolean(script.scriptName.trim()))
@@ -41,6 +42,13 @@ export class RunProcessService {
             RunProcessService.runScript(script, cwd, pkgName, abortController)
         )
     );
+
+    // Dependencies relations
+    const sortedRelations = await NodeService.getDependenciesSortedByHierarchy(
+      dependencies
+    );
+
+    console.log('>>>----->> sortedRelations', sortedRelations);
 
     const dependenciesResponses = await promiseAllSequentially(
       dependencies.map(
@@ -68,6 +76,13 @@ export class RunProcessService {
       ? `yarn ${script.scriptName}`
       : `npm run ${script.scriptName}`;
 
+    if (abortController?.signal.aborted) {
+      return Promise.resolve({
+        error: 'Aborted',
+        title: `Dependency: "${script.scriptName}" aborted`,
+      });
+    }
+
     if (ADDITIONAL_PACKAGE_SCRIPTS[script.scriptName] != null) {
       npmScript = ADDITIONAL_PACKAGE_SCRIPTS[script.scriptName].scriptValue;
     }
@@ -90,6 +105,15 @@ export class RunProcessService {
   ): Promise<ProcessServiceResponse[]> {
     const depCwd = dependency.cwd ?? '';
     const depName = PathService.getPathDirectories(depCwd).pop();
+
+    if (abortController?.signal.aborted) {
+      return Promise.resolve([
+        {
+          error: 'Aborted',
+          title: `Dependency: "${depName}" aborted`,
+        },
+      ]);
+    }
 
     //TODO: execute each child-dependency before and, if it has npm package, try to inject in this one.
     //TODO: use NPMService.getDependenciesWithRelatedIds

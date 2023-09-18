@@ -93,6 +93,22 @@ export default class TerminalRepository {
         reject(new Error('cwd is required'));
       }
 
+      const soShell = ['win32'].includes(process.platform)
+        ? 'powershell'
+        : 'bash';
+
+      const cmd = spawn(command, args, {
+        cwd,
+        env: process.env,
+        shell: soShell,
+        signal: abortController?.signal,
+      });
+
+      abortController?.signal.addEventListener('abort', () => {
+        cmd.kill();
+        cmd.emit('close', 0);
+      });
+
       const icon = OutputIcons[Math.floor(Math.random() * OutputIcons.length)];
 
       const commandTrace = `${cwd} ${command} ${args.join(' ')}`;
@@ -121,17 +137,6 @@ export default class TerminalRepository {
       enqueueOutput({
         type: ExecuteCommandOutputType.INIT,
         data: commandTrace,
-      });
-
-      const soShell = ['win32'].includes(process.platform)
-        ? 'powershell'
-        : 'bash';
-
-      const cmd = spawn(command, args, {
-        cwd,
-        env: process.env,
-        shell: soShell,
-        signal: abortController?.signal,
       });
 
       cmd.stdout.on('data', data => {

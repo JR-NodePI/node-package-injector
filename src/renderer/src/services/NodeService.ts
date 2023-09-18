@@ -1,39 +1,42 @@
 import type DependencyPackage from '@renderer/models/DependencyPackage';
 
+import getDependenciesSortedByHierarchy from './getDependenciesSortedByHierarchy';
 import PathService from './PathService';
 import TerminalService, { TerminalResponse } from './TerminalService';
 
 export default class NodeService {
-  private static async getDependenciesNames(cwd?: string): Promise<string[]> {
+  private static async getPackageJson(
+    cwd?: string
+  ): Promise<Record<string, string | Record<string, string>> | null> {
     try {
       const fileContent = await window.api.fs.readFile(
         window.api.path.join(cwd ?? '', 'package.json'),
         'utf8'
       );
-
-      const json = JSON.parse(fileContent);
-
-      return [
-        ...Object.keys(json?.dependencies ?? {}),
-        ...Object.keys(json?.devDependencies ?? {}),
-        ...Object.keys(json?.peerDependencies ?? {}),
-      ];
+      return JSON.parse(fileContent);
     } catch (error) {
-      return [];
+      return null;
     }
   }
 
-  private static getDependencyIdsByNames(
-    dependencies: DependencyPackage[],
-    names: string[]
-  ): string[] {
-    return dependencies
-      .filter(({ cwd }) => {
-        const pathDirectories = PathService.getPathDirectories(cwd);
-        const name = pathDirectories.pop();
-        return names.some(npmDependency => npmDependency === name);
-      })
-      .map(({ id: uuid }) => uuid);
+  public static async getDependenciesNames(cwd?: string): Promise<string[]> {
+    const packageJson = await NodeService.getPackageJson(cwd);
+    if (packageJson != null) {
+      return [
+        ...Object.keys(packageJson?.dependencies ?? {}),
+        ...Object.keys(packageJson?.devDependencies ?? {}),
+        ...Object.keys(packageJson?.peerDependencies ?? {}),
+      ];
+    }
+    return [];
+  }
+
+  public static async getPackageName(cwd?: string): Promise<string | null> {
+    const packageJson = await NodeService.getPackageJson(cwd);
+    if (packageJson != null) {
+      return (packageJson?.name as string) ?? null;
+    }
+    return null;
   }
 
   private static async hasFile(
@@ -76,15 +79,10 @@ export default class NodeService {
     return NodeService.hasFile(cwd, 'package.json');
   }
 
-  public static async getDependenciesRelations(
+  public static async getDependenciesSortedByHierarchy(
     dependencies: DependencyPackage[]
-  ): Promise<Record<string, string[]>> {
-    const promises = dependencies.map(async depConf => {
-      const npmDepNames = await NodeService.getDependenciesNames(depConf.cwd);
-      return NodeService.getDependencyIdsByNames(dependencies, npmDepNames);
-    });
-    const entries = await Promise.all(promises);
-    return Object.fromEntries(entries);
+  ): Promise<Array<[string, string[]]>> {
+    return await getDependenciesSortedByHierarchy(dependencies);
   }
 
   public static async checkYarn(cwd: string): Promise<boolean> {
@@ -96,7 +94,7 @@ export default class NodeService {
   }
 
   public static async checkCracoConfig(cwd: string): Promise<boolean> {
-    return NodeService.hasFile(cwd, 'craco.config.json');
+    return NodeService.hasFile(cwd, 'craco.config.js');
   }
 
   public static async checkIsSynchronizable(cwd: string): Promise<boolean> {

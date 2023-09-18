@@ -30,13 +30,13 @@ function Dependencies(): JSX.Element {
   const { activeTargetPackage, activeDependencies, setActiveDependencies } =
     useGlobalData();
 
-  const [isTargetSinchronizable, isTargetSinchronizableSet] =
+  const [isTargetSynchronizable, setIsTargetSynchronizable] =
     useState<boolean>(false);
 
   useEffect(() => {
     (async (): Promise<void> => {
       if (activeTargetPackage.cwd != null) {
-        isTargetSinchronizableSet(
+        setIsTargetSynchronizable(
           await NodeService.checkIsSynchronizable(activeTargetPackage.cwd)
         );
       }
@@ -137,7 +137,7 @@ function Dependencies(): JSX.Element {
         <DependencySelector
           key={dependency.id}
           dependency={dependency}
-          isTargetSinchronizable={isTargetSinchronizable}
+          isTargetSynchronizable={isTargetSynchronizable}
           onClickRemove={handleRemoveDependency}
           onGitPullChange={handleGitPullChange}
           onModeChange={handleModeChange}
