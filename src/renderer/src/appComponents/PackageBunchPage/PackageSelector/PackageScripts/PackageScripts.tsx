@@ -5,7 +5,7 @@ import { type SelectOption } from 'fratch-ui/components/Form/Select/SelectProps'
 import DependencyPackage from '@renderer/models/DependencyPackage';
 import NodePackage from '@renderer/models/NodePackage';
 import PackageScript from '@renderer/models/PackageScript';
-import NodeService from '@renderer/services/NodeService';
+import NodeService from '@renderer/services/NodeService/NodeService';
 
 import { PackageScriptRenderer } from './components/PackageScriptRenderer';
 import {
@@ -29,9 +29,15 @@ export default function PackageScripts({
   onChange?: (scripts: PackageScript[]) => void;
 }): JSX.Element {
   const [scriptOptions, setScriptOptions] = useState<PackageScriptOption[]>([]);
-  const [selectedScrips, setSelectedScrips] = useState<
-    PackageScript[] | undefined
-  >(nodePackage.scripts);
+
+  const initialScripts =
+    nodePackage.scripts != null && nodePackage.scripts.length > 0
+      ? nodePackage.scripts
+      : [new PackageScript()];
+
+  const [selectedScrips, setSelectedScrips] =
+    useState<PackageScript[]>(initialScripts);
+
   const [isYarn, setIsYarn] = useState<boolean>();
   const [isPnpm, setIsPnpm] = useState<boolean>();
   useEffect(() => {
@@ -98,12 +104,12 @@ export default function PackageScripts({
       },
       ...scriptOptions,
     ]);
-  }, [scriptOptions, selectedScrips, isYarn, isPnpm]);
+  }, [scriptOptions, isYarn, isPnpm]);
 
   // try to determine the install and pack script
   useEffect(() => {
     (async (): Promise<void> => {
-      if (selectedScrips == null && scriptOptions.length > 0) {
+      if (nodePackage.scripts == null && scriptOptions.length > 0) {
         const installScript = scriptOptions.find(
           ({ value }) =>
             / install/gi.test(value.scriptValue) &&
@@ -135,15 +141,15 @@ export default function PackageScripts({
         }
       }
     })();
-  }, [scriptOptions, selectedScrips, nodePackage]);
+  }, [scriptOptions, nodePackage.scripts, nodePackage]);
 
   const handleAddScript = (): void => {
-    setSelectedScrips([...(selectedScrips ?? []), new PackageScript()]);
+    setSelectedScrips([...selectedScrips, new PackageScript()]);
   };
 
   const handleRemoveScript = (indexToRemove: number): void => {
     const newScripts =
-      selectedScrips?.filter((_script, index) => index !== indexToRemove) ?? [];
+      selectedScrips.filter((_script, index) => index !== indexToRemove) ?? [];
     setSelectedScrips(
       newScripts.length > 0 ? newScripts : [new PackageScript()]
     );
@@ -154,7 +160,7 @@ export default function PackageScripts({
     modifiedScript?: PackageScript
   ): void => {
     setSelectedScrips(
-      selectedScrips?.map((script, index) =>
+      selectedScrips.map((script, index) =>
         index === modifiedScriptIndex
           ? modifiedScript ?? new PackageScript()
           : script.clone()
@@ -163,20 +169,15 @@ export default function PackageScripts({
   };
 
   const noSelectedScriptOptions = scriptOptions.filter(({ value }) =>
-    selectedScrips?.every(({ scriptName }) => scriptName !== value.scriptName)
+    selectedScrips.every(({ scriptName }) => scriptName !== value.scriptName)
   );
-
-  const scriptsToRender =
-    selectedScrips != null && selectedScrips.length > 0
-      ? selectedScrips
-      : [new PackageScript()];
 
   return (
     <>
-      {scriptsToRender.map((script, index) => {
+      {selectedScrips.map((script, index) => {
         const showAddButton =
-          index === scriptsToRender.length - 1 &&
-          scriptOptions.length > scriptsToRender.length;
+          index === selectedScrips.length - 1 &&
+          scriptOptions.length > selectedScrips.length;
 
         return (
           <PackageScriptRenderer
