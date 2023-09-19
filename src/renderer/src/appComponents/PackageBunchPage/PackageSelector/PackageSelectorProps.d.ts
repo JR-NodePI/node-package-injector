@@ -2,7 +2,7 @@ import '../../../models/PackageScript';
 
 import { Form } from 'fratch-ui';
 
-import TargetPackage from '../../../models/TargetPackage';
+import NodePackage from '../../../models/NodePackage';
 
 export type DirectorySelectOption = Form.SelectProps.SelectOption<string>;
 
@@ -18,5 +18,5 @@ export type PackageSelectorProps = {
   onGitPullChange?: (checked?: boolean) => void;
   onPathChange?: (cwd: string, isValidPackage: boolean) => void;
   onScriptsChange?: (scripts: PackageScript[]) => void;
-  targetPackage?: TargetPackage;
+  nodePackage?: NodePackage;
 };

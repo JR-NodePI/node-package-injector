@@ -1,7 +1,7 @@
 import { CSSProperties } from 'react';
 
 import type DependencyPackage from './DependencyPackage';
-import TargetPackage from './TargetPackage';
+import NodePackage from './NodePackage';
 
 export default class PackageBunch {
   private _id = crypto.randomUUID();
@@ -16,7 +16,7 @@ export default class PackageBunch {
   public name?: string;
   public color?: CSSProperties['color'];
   public active = false;
-  public targetPackage: TargetPackage = new TargetPackage();
+  public targetPackage: NodePackage = new NodePackage();
   public dependencies: DependencyPackage[] = [];
 
   public clone(): PackageBunch {

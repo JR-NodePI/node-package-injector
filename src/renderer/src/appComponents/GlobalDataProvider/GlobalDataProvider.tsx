@@ -3,8 +3,8 @@ import { useCallback, useMemo } from 'react';
 import { debounce } from 'lodash';
 
 import DependencyPackage from '@renderer/models/DependencyPackage';
+import NodePackage from '@renderer/models/NodePackage';
 import PackageBunch from '@renderer/models/PackageBunch';
-import TargetPackage from '@renderer/models/TargetPackage';
 
 import { packageBunchesTemplateValue } from './GlobalDataConstants';
 import GlobalDataContext, { GlobalDataProps } from './GlobalDataContext';
@@ -46,7 +46,7 @@ export default function GlobalDataProvider({
   );
 
   const _setActiveTargetPackage = useCallback(
-    (targetPackage: TargetPackage) => {
+    (targetPackage: NodePackage) => {
       setPackageBunchActive('targetPackage', targetPackage);
     },
     [setPackageBunchActive]
@@ -68,7 +68,7 @@ export default function GlobalDataProvider({
     const activeDependencies = activePackageBunch?.dependencies ?? [];
 
     const activeTargetPackage =
-      activePackageBunch?.targetPackage ?? new TargetPackage();
+      activePackageBunch?.targetPackage ?? new NodePackage();
 
     const loading =
       isGlobalLoading || packageBunchesLoading || isWSLActiveLoading;

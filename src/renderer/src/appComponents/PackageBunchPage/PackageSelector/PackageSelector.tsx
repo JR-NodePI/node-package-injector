@@ -23,12 +23,12 @@ export default function PackageSelector({
   onGitPullChange,
   onPathChange,
   onScriptsChange,
-  targetPackage,
+  nodePackage,
 }: PackageSelectorProps): JSX.Element {
   const [id] = useState<string>(crypto.randomUUID());
 
   const [pathDirectories, setPathDirectories] = useState<string[]>(
-    PathService.getPathDirectories(targetPackage?.cwd)
+    PathService.getPathDirectories(nodePackage?.cwd)
   );
   const cwd = PathService.getPath(pathDirectories);
 
@@ -130,7 +130,7 @@ export default function PackageSelector({
           />
         }
       />
-      {!isValidatingPackage && targetPackage?.isValidPackage && (
+      {!isValidatingPackage && nodePackage?.isValidPackage && (
         <>
           <div className={c(styles.options)}>
             <BranchSelector
@@ -140,7 +140,7 @@ export default function PackageSelector({
             />
             <Form.InputCheck
               disabled={disabled}
-              checked={targetPackage.performGitPull}
+              checked={nodePackage.performGitPull}
               label="git pull"
               onChange={(checked): void => {
                 onGitPullChange && onGitPullChange(checked ?? false);
@@ -151,7 +151,7 @@ export default function PackageSelector({
           {!disableScripts && (
             <PackageScripts
               onChange={onScriptsChange}
-              targetPackage={targetPackage}
+              nodePackage={nodePackage}
             />
           )}
         </>

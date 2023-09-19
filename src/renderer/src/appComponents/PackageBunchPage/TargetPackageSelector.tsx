@@ -16,7 +16,6 @@ export default function TargetPackageSelector(): JSX.Element {
     if (!isValidPackage) {
       clonedPackage.performGitPull = false;
     }
-    clonedPackage.scripts = [];
     clonedPackage.cwd = cwd;
     clonedPackage.isValidPackage = isValidPackage;
 
@@ -44,7 +43,7 @@ export default function TargetPackageSelector(): JSX.Element {
       onGitPullChange={handleGitPullChange}
       onPathChange={handlePathChange}
       onScriptsChange={handleScriptsChange}
-      targetPackage={activeTargetPackage}
+      nodePackage={activeTargetPackage}
     />
   );
 }

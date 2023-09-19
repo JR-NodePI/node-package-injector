@@ -68,7 +68,6 @@ function Dependencies(): JSX.Element {
           clonedDependency.performGitPull = false;
           clonedDependency.mode = DependencyMode.BUILD;
         }
-        clonedDependency.scripts = [];
         clonedDependency.cwd = cwd;
         clonedDependency.isValidPackage = isValidPackage;
 

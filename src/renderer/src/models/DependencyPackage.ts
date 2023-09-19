@@ -1,13 +1,13 @@
 import { DependencyMode } from '@renderer/models/DependencyConstants';
 
-import TargetPackage from './TargetPackage';
+import NodePackage from './NodePackage';
 
-export default class DependencyPackage extends TargetPackage {
+export default class DependencyPackage extends NodePackage {
   public mode: (typeof DependencyMode)[keyof typeof DependencyMode] =
     DependencyMode.BUILD;
 
   public clone(): DependencyPackage {
-    const dependencyPackage = Object.assign<DependencyPackage, TargetPackage>(
+    const dependencyPackage = Object.assign<DependencyPackage, NodePackage>(
       new DependencyPackage(),
       super.clone()
     ) as DependencyPackage;

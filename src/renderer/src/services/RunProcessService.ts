@@ -1,8 +1,8 @@
 import { ADDITIONAL_PACKAGE_SCRIPTS } from '@renderer/appComponents/PackageBunchPage/PackageSelector/PackageScripts/PackageScriptsConstants';
 import { promiseAllSequentially } from '@renderer/helpers/promisesHelpers';
 import DependencyPackage from '@renderer/models/DependencyPackage';
+import NodePackage from '@renderer/models/NodePackage';
 import PackageScript from '@renderer/models/PackageScript';
-import TargetPackage from '@renderer/models/TargetPackage';
 import GitService from '@renderer/services/GitService';
 import PathService from '@renderer/services/PathService';
 import { type TerminalResponse } from '@renderer/services/TerminalService';
@@ -13,7 +13,7 @@ type ProcessServiceResponse = TerminalResponse & { title: string };
 
 export class RunProcessService {
   public static async run(
-    targetPackage: TargetPackage,
+    targetPackage: NodePackage,
     dependencies: DependencyPackage[],
     abortController?: AbortController //TODO. Implement abortController to TerminalRepository
   ): Promise<ProcessServiceResponse[]> {
@@ -44,9 +44,8 @@ export class RunProcessService {
     );
 
     // Dependencies relations
-    const sortedRelations = await NodeService.getDependenciesSortedByHierarchy(
-      dependencies
-    );
+    const sortedRelations =
+      await NodeService.getBuildModeDependenciesSortedByHierarchy(dependencies);
 
     console.log('>>>----->> sortedRelations', sortedRelations);
 
