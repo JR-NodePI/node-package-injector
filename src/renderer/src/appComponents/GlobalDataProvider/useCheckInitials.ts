@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import NodeService from '@renderer/services/NodeService';
+import NodeService from '@renderer/services/NodeService/NodeService';
 import TerminalService from '@renderer/services/TerminalService';
 
 const useCheckInitials = (): {

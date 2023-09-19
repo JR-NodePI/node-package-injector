@@ -2,11 +2,11 @@ import { DependencyMode } from '@renderer/models/DependencyConstants';
 import DependencyPackage from '@renderer/models/DependencyPackage';
 
 import NodeService from './NodeService';
-import type { DependencyRelationProjection } from './NodeServiceTypes';
+import type { RelatedDependencyProjection } from './NodeServiceTypes';
 
 const getDependencyPosition = (
-  dependencies: DependencyRelationProjection[],
-  { dependencyName }: DependencyRelationProjection,
+  dependencies: RelatedDependencyProjection[],
+  { dependencyName }: RelatedDependencyProjection,
   currentIndex: number
 ): number =>
   dependencies.reduce<number>(
@@ -16,16 +16,16 @@ const getDependencyPosition = (
   );
 
 const sortDependencies = (
-  deps: DependencyRelationProjection[]
-): DependencyRelationProjection[] =>
-  deps.reduce<DependencyRelationProjection[]>((sorted, dep, index) => {
+  deps: RelatedDependencyProjection[]
+): RelatedDependencyProjection[] =>
+  deps.reduce<RelatedDependencyProjection[]>((sorted, dep, index) => {
     const position = getDependencyPosition(sorted, dep, index);
     return sorted.toSpliced(position, 0, dep);
   }, []);
 
 const sortAsManyTimesAsNumberOfDependencies = (
-  deps: DependencyRelationProjection[]
-): DependencyRelationProjection[] => {
+  deps: RelatedDependencyProjection[]
+): RelatedDependencyProjection[] => {
   return Array(deps.length)
     .fill(null)
     .reduce(sortedDeps => sortDependencies(sortedDeps), deps);
@@ -33,32 +33,45 @@ const sortAsManyTimesAsNumberOfDependencies = (
 
 export default async function getBuildModeDependenciesSortedByHierarchy(
   dependencies: DependencyPackage[]
-): Promise<Array<DependencyRelationProjection>> {
+): Promise<Array<RelatedDependencyProjection>> {
   // filter dependencies by build mode
   const buildModeDeps = dependencies.filter(
     ({ mode }) => mode === DependencyMode.BUILD
   );
 
   // get all dependencies names
-  const allDepNames = await Promise.all(
-    buildModeDeps.map(async ({ cwd }) => await NodeService.getPackageName(cwd))
+  const allDepNamesProjection = await Promise.all(
+    buildModeDeps.map(async dependency => ({
+      name: await NodeService.getPackageName(dependency.cwd ?? ''),
+      dependency,
+    }))
   );
+
+  const allDepNames = allDepNamesProjection.map(({ name }) => name);
 
   // get the list of dependencies with their related dependencies
   const depsWithSubDeps = await Promise.all(
     buildModeDeps.map(
-      async (dependency): Promise<DependencyRelationProjection> => {
+      async (dependency): Promise<RelatedDependencyProjection> => {
         const dependencyName =
-          (await NodeService.getPackageName(dependency.cwd)) ?? '';
+          (await NodeService.getPackageName(dependency.cwd ?? '')) ?? '';
+
         const allNpmDepNames =
-          (await NodeService.getDependenciesNames(dependency.cwd)) ?? [];
+          (await NodeService.getDependenciesNames(dependency.cwd ?? '')) ?? [];
+
         const subDependenciesNames = allNpmDepNames.filter(packageName =>
           allDepNames.includes(packageName)
         );
+
+        const subDependencies = allDepNamesProjection
+          .filter(({ name }) => subDependenciesNames.includes(name))
+          .map(({ dependency }) => dependency);
+
         return {
           dependencyName,
           subDependenciesNames,
           dependency,
+          subDependencies,
         };
       }
     )

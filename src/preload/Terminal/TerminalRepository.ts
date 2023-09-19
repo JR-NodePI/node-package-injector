@@ -13,7 +13,7 @@ import {
 
 const cleanOutput = (output: string): string =>
   output
-    .replace(/[^a-z0-9-\n\s\r\t{}()"',:_\\/\\*+.|>=@áéíóúÁÉÍÓÚñçü]/gi, '')
+    .replace(/[^a-z0-9-\n\s\r\t{}()"',:_\\/\\*+.|><=@áéíóúÁÉÍÓÚñçü]/gi, '')
     .trim();
 
 const getConsoleInitColorizedFlag = (
@@ -154,8 +154,8 @@ export default class TerminalRepository {
         const message = data instanceof Buffer ? data.toString() : data;
         const cleanMessage = cleanOutput(message);
         const isError = [
-          new RegExp('fatal:', 'gi'),
-          new RegExp('error', 'gi'),
+          new RegExp('fatal: ', 'gi'),
+          new RegExp('error ', 'gi'),
           new RegExp('command not found', 'gi'),
         ].some(regExp => regExp.test(cleanMessage));
 

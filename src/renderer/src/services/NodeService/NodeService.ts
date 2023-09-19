@@ -1,14 +1,16 @@
 import type DependencyPackage from '@renderer/models/DependencyPackage';
 
+import PathService from '../PathService';
+import TerminalService, { TerminalResponse } from '../TerminalService';
 import getBuildModeDependenciesSortedByHierarchy from './getBuildModeDependenciesSortedByHierarchy';
-import { DependencyRelationProjection } from './NodeServiceTypes';
-import PathService from './PathService';
-import TerminalService, { TerminalResponse } from './TerminalService';
+import { RelatedDependencyProjection } from './NodeServiceTypes';
+
+type PackageJsonStructure = string | Record<string, string>;
 
 export default class NodeService {
   private static async getPackageJson(
-    cwd?: string
-  ): Promise<Record<string, string | Record<string, string>> | null> {
+    cwd: string
+  ): Promise<Record<string, PackageJsonStructure> | null> {
     try {
       const fileContent = await window.api.fs.readFile(
         window.api.path.join(cwd ?? '', 'package.json'),
@@ -20,7 +22,36 @@ export default class NodeService {
     }
   }
 
-  public static async getDependenciesNames(cwd?: string): Promise<string[]> {
+  private static async getPackageJsonDataItem(
+    cwd: string,
+    itemKey: string
+  ): Promise<PackageJsonStructure | null> {
+    const packageJson = await NodeService.getPackageJson(cwd);
+
+    if (packageJson != null) {
+      return (packageJson?.[itemKey] as PackageJsonStructure) ?? null;
+    }
+
+    return null;
+  }
+
+  private static async hasFile(
+    cwd: string,
+    ...fileName: string[]
+  ): Promise<boolean> {
+    try {
+      await window.api.fs.access(
+        window.api.path.join(cwd, ...fileName),
+        window.api.fs.constants.F_OK
+      );
+    } catch (error) {
+      return false;
+    }
+
+    return true;
+  }
+
+  public static async getDependenciesNames(cwd: string): Promise<string[]> {
     const packageJson = await NodeService.getPackageJson(cwd);
     if (packageJson != null) {
       return [
@@ -32,28 +63,40 @@ export default class NodeService {
     return [];
   }
 
-  public static async getPackageName(cwd?: string): Promise<string | null> {
-    const packageJson = await NodeService.getPackageJson(cwd);
-    if (packageJson != null) {
-      return (packageJson?.name as string) ?? null;
-    }
-    return null;
+  public static async getPackageName(cwd: string): Promise<string> {
+    return ((await NodeService.getPackageJsonDataItem(cwd, 'name')) ??
+      '') as string;
   }
 
-  private static async hasFile(
-    cwd: string,
-    fileName: string
-  ): Promise<boolean> {
-    try {
-      await window.api.fs.access(
-        window.api.path.join(cwd, fileName),
-        window.api.fs.constants.F_OK
-      );
-    } catch (error) {
-      return false;
+  public static async getPackageVersion(cwd: string): Promise<string> {
+    return ((await NodeService.getPackageJsonDataItem(cwd, 'version')) ??
+      '') as string;
+  }
+
+  public static async getPackageScripts(
+    cwd: string
+  ): Promise<Record<string, string>> {
+    const packageJson = await NodeService.getPackageJson(cwd);
+    if (packageJson != null) {
+      return (packageJson?.scripts ?? {}) as Record<string, string>;
+    }
+    return {};
+  }
+
+  public static async getPackageBuildedPath(
+    cwd: string
+  ): Promise<string | null> {
+    const packageName = await NodeService.getPackageName(cwd);
+    const packageVersion = await NodeService.getPackageVersion(cwd);
+    const fileName = `${packageName}-v${packageVersion}.tgz`;
+
+    for (const dir of ['', 'dist', '.dist', 'build', '.build', 'out', '.out']) {
+      if (await NodeService.hasFile(cwd, dir, fileName)) {
+        return window.api.path.join(cwd, dir, fileName);
+      }
     }
 
-    return true;
+    return null;
   }
 
   public static async getNodeVersions(): Promise<Record<string, string>> {
@@ -82,7 +125,7 @@ export default class NodeService {
 
   public static async getBuildModeDependenciesSortedByHierarchy(
     dependencies: DependencyPackage[]
-  ): Promise<Array<DependencyRelationProjection>> {
+  ): Promise<Array<RelatedDependencyProjection>> {
     return await getBuildModeDependenciesSortedByHierarchy(dependencies);
   }
 
@@ -105,24 +148,13 @@ export default class NodeService {
     );
   }
 
-  public static async checkPnpm(cwd: string): Promise<boolean> {
-    return NodeService.hasFile(cwd, 'pnpm-lock.yaml');
+  public static async checkBuildedDist(cwd: string): Promise<boolean> {
+    //redpoints-front-testing-v0.0.1.tgz
+    return NodeService.hasFile(window.api.path.join(cwd, '/'), 'yarn.lock');
   }
 
-  public static async getPackageScripts(
-    cwd: string
-  ): Promise<Record<string, string>> {
-    const output = await TerminalService.executeCommand({
-      command: 'bash',
-      args: [PathService.getExtraResourcesScriptPath('npm_get_scripts.sh')],
-      cwd,
-    });
-
-    try {
-      return JSON.parse(output.content ?? '{}');
-    } catch (error) {
-      return {};
-    }
+  public static async checkPnpm(cwd: string): Promise<boolean> {
+    return NodeService.hasFile(cwd, 'pnpm-lock.yaml');
   }
 
   public static async runScript(

@@ -4,7 +4,7 @@ import { Form } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
 import GitService from '@renderer/services/GitService';
-import NodeService from '@renderer/services/NodeService';
+import NodeService from '@renderer/services/NodeService/NodeService';
 import PathService from '@renderer/services/PathService';
 
 import BranchSelector from './BranchSelector';
