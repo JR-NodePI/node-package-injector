@@ -3,8 +3,8 @@ import { useEffect, useState } from 'react';
 import { type SelectOption } from 'fratch-ui/components/Form/Select/SelectProps';
 
 import DependencyPackage from '@renderer/models/DependencyPackage';
+import NodePackage from '@renderer/models/NodePackage';
 import PackageScript from '@renderer/models/PackageScript';
-import TargetPackage from '@renderer/models/TargetPackage';
 import NodeService from '@renderer/services/NodeService';
 
 import { PackageScriptRenderer } from './components/PackageScriptRenderer';
@@ -15,46 +15,46 @@ import {
 
 type PackageScriptOption = SelectOption<PackageScript>;
 
-const getScriptsHash = (scripts: PackageScript[]): string =>
+const getScriptsHash = (scripts: PackageScript[] = []): string =>
   scripts
     .map(({ scriptName }) => scriptName)
     .filter(scriptName => Boolean(scriptName))
     .join('-');
 
 export default function PackageScripts({
-  targetPackage,
+  nodePackage,
   onChange,
 }: {
-  targetPackage: TargetPackage;
+  nodePackage: NodePackage;
   onChange?: (scripts: PackageScript[]) => void;
 }): JSX.Element {
   const [scriptOptions, setScriptOptions] = useState<PackageScriptOption[]>([]);
-  const [selectedScrips, setSelectedScrips] = useState<PackageScript[]>(
-    targetPackage.scripts
-  );
+  const [selectedScrips, setSelectedScrips] = useState<
+    PackageScript[] | undefined
+  >(nodePackage.scripts);
   const [isYarn, setIsYarn] = useState<boolean>();
   const [isPnpm, setIsPnpm] = useState<boolean>();
   useEffect(() => {
     (async (): Promise<void> => {
-      setIsPnpm(await NodeService.checkPnpm(targetPackage.cwd ?? ''));
-      setIsYarn(await NodeService.checkYarn(targetPackage.cwd ?? ''));
+      setIsPnpm(await NodeService.checkPnpm(nodePackage.cwd ?? ''));
+      setIsYarn(await NodeService.checkYarn(nodePackage.cwd ?? ''));
     })();
-  }, [targetPackage.cwd]);
+  }, [nodePackage.cwd]);
 
   // handle onChange when there is a change
   useEffect(() => {
-    const initialHash = getScriptsHash(targetPackage.scripts);
+    const initialHash = getScriptsHash(nodePackage.scripts);
     const selectedHash = getScriptsHash(selectedScrips);
-    if (initialHash !== selectedHash) {
+    if (Array.isArray(selectedScrips) && initialHash !== selectedHash) {
       onChange?.(selectedScrips);
     }
-  }, [selectedScrips, targetPackage.scripts, onChange]);
+  }, [selectedScrips, nodePackage.scripts, onChange]);
 
   // load package scripts
   useEffect(() => {
     (async (): Promise<void> => {
       const scripts = await NodeService.getPackageScripts(
-        targetPackage.cwd ?? ''
+        nodePackage.cwd ?? ''
       );
 
       const options = Object.entries(scripts).map(
@@ -66,7 +66,7 @@ export default function PackageScripts({
 
       setScriptOptions(options);
     })();
-  }, [targetPackage.cwd]);
+  }, [nodePackage.cwd]);
 
   //add additional install script
   useEffect(() => {
@@ -103,7 +103,7 @@ export default function PackageScripts({
   // try to determine the install and pack script
   useEffect(() => {
     (async (): Promise<void> => {
-      if (selectedScrips.length === 0 && scriptOptions.length > 0) {
+      if (selectedScrips == null && scriptOptions.length > 0) {
         const installScript = scriptOptions.find(
           ({ value }) =>
             / install/gi.test(value.scriptValue) &&
@@ -118,7 +118,7 @@ export default function PackageScripts({
           scripts.push(new PackageScript());
         }
 
-        if (targetPackage instanceof DependencyPackage) {
+        if (nodePackage instanceof DependencyPackage) {
           const packScript = scriptOptions.find(
             ({ value }) =>
               / pack /gi.test(value.scriptValue) ||
@@ -135,16 +135,15 @@ export default function PackageScripts({
         }
       }
     })();
-  }, [scriptOptions, selectedScrips, targetPackage]);
+  }, [scriptOptions, selectedScrips, nodePackage]);
 
   const handleAddScript = (): void => {
-    setSelectedScrips([...selectedScrips, new PackageScript()]);
+    setSelectedScrips([...(selectedScrips ?? []), new PackageScript()]);
   };
 
   const handleRemoveScript = (indexToRemove: number): void => {
-    const newScripts = selectedScrips.filter(
-      (_script, index) => index !== indexToRemove
-    );
+    const newScripts =
+      selectedScrips?.filter((_script, index) => index !== indexToRemove) ?? [];
     setSelectedScrips(
       newScripts.length > 0 ? newScripts : [new PackageScript()]
     );
@@ -155,7 +154,7 @@ export default function PackageScripts({
     modifiedScript?: PackageScript
   ): void => {
     setSelectedScrips(
-      selectedScrips.map((script, index) =>
+      selectedScrips?.map((script, index) =>
         index === modifiedScriptIndex
           ? modifiedScript ?? new PackageScript()
           : script.clone()
@@ -164,15 +163,20 @@ export default function PackageScripts({
   };
 
   const noSelectedScriptOptions = scriptOptions.filter(({ value }) =>
-    selectedScrips.every(({ scriptName }) => scriptName !== value.scriptName)
+    selectedScrips?.every(({ scriptName }) => scriptName !== value.scriptName)
   );
+
+  const scriptsToRender =
+    selectedScrips != null && selectedScrips.length > 0
+      ? selectedScrips
+      : [new PackageScript()];
 
   return (
     <>
-      {selectedScrips.map((script, index) => {
+      {scriptsToRender.map((script, index) => {
         const showAddButton =
-          index === selectedScrips.length - 1 &&
-          scriptOptions.length > selectedScrips.length;
+          index === scriptsToRender.length - 1 &&
+          scriptOptions.length > scriptsToRender.length;
 
         return (
           <PackageScriptRenderer

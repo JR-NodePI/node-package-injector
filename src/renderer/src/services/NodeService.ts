@@ -1,6 +1,7 @@
 import type DependencyPackage from '@renderer/models/DependencyPackage';
 
-import getDependenciesSortedByHierarchy from './getDependenciesSortedByHierarchy';
+import getBuildModeDependenciesSortedByHierarchy from './getBuildModeDependenciesSortedByHierarchy';
+import { DependencyRelationProjection } from './NodeServiceTypes';
 import PathService from './PathService';
 import TerminalService, { TerminalResponse } from './TerminalService';
 
@@ -79,10 +80,10 @@ export default class NodeService {
     return NodeService.hasFile(cwd, 'package.json');
   }
 
-  public static async getDependenciesSortedByHierarchy(
+  public static async getBuildModeDependenciesSortedByHierarchy(
     dependencies: DependencyPackage[]
-  ): Promise<Array<[string, string[]]>> {
-    return await getDependenciesSortedByHierarchy(dependencies);
+  ): Promise<Array<DependencyRelationProjection>> {
+    return await getBuildModeDependenciesSortedByHierarchy(dependencies);
   }
 
   public static async checkYarn(cwd: string): Promise<boolean> {

@@ -13,8 +13,8 @@ import {
   TABS_MINIMUM_REMOVABLE,
 } from '@renderer/constants';
 import { getTabTitle } from '@renderer/helpers/utilsHelpers';
+import NodePackage from '@renderer/models/NodePackage';
 import PackageBunch from '@renderer/models/PackageBunch';
-import TargetPackage from '@renderer/models/TargetPackage';
 import PathService from '@renderer/services/PathService';
 
 import useGlobalData from '../GlobalDataProvider/useGlobalData';
@@ -33,7 +33,7 @@ const getDefaultPackageBunch = async (
   isWSLActive?: boolean
 ): Promise<PackageBunch> => {
   const bunch = new PackageBunch();
-  bunch.targetPackage = new TargetPackage();
+  bunch.targetPackage = new NodePackage();
   bunch.targetPackage.cwd = await PathService.getHomePath(isWSLActive);
   bunch.active = true;
   bunch.name = getTabTitle(1);
