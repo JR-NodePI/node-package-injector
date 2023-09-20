@@ -2,10 +2,6 @@
 
 . "$(dirname "$0")/enable_node.sh"
 
-## powershell ----   $env:Temp
-## linux --- systemd-path temporary
-## macos --- $TMPDIR
-
 DEPENDENCY_NAME=$1
 DEPENDENCY_PACKAGE_PATH=$2
 TMP_DEPENDENCY_DIR=$3

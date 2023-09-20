@@ -38,10 +38,13 @@ export default function DependencySelector({
         additionalComponent={
           <>
             {isTargetSynchronizable && (
-              <DependencyModeCheck
-                dependency={dependency}
-                onModeChange={onModeChange}
-              />
+              <span title="Sync mode will be available very soon, stay tuned!">
+                <DependencyModeCheck
+                  disabled
+                  dependency={dependency}
+                  onModeChange={onModeChange}
+                />
+              </span>
             )}
           </>
         }
