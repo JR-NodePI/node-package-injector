@@ -1,8 +1,8 @@
 import type DependencyPackage from '@renderer/models/DependencyPackage';
 
 import PathService from '../PathService';
-import TerminalService, { TerminalResponse } from '../TerminalService';
-import getBuildModeDependenciesSortedByHierarchy from './getBuildModeDependenciesSortedByHierarchy';
+import TerminalService, { type TerminalResponse } from '../TerminalService';
+import getDependenciesSortedByHierarchy from './getBuildModeDependenciesSortedByHierarchy';
 import { RelatedDependencyProjection } from './NodeServiceTypes';
 
 type PackageJsonStructure = string | Record<string, string>;
@@ -85,18 +85,27 @@ export default class NodeService {
 
   public static async getPackageBuildedPath(
     cwd: string
-  ): Promise<string | null> {
+  ): Promise<TerminalResponse> {
     const packageName = await NodeService.getPackageName(cwd);
     const packageVersion = await NodeService.getPackageVersion(cwd);
+    if (!packageName) {
+      return { error: 'There is no package name' };
+    }
+
+    if (!packageVersion) {
+      return { error: 'There is no package version' };
+    }
+
     const fileName = `${packageName}-v${packageVersion}.tgz`;
 
     for (const dir of ['', 'dist', '.dist', 'build', '.build', 'out', '.out']) {
       if (await NodeService.hasFile(cwd, dir, fileName)) {
-        return window.api.path.join(cwd, dir, fileName);
+        const builtPackagePath = window.api.path.join(cwd, dir, fileName);
+        return { content: builtPackagePath };
       }
     }
 
-    return null;
+    return { error: `There is no built package for ${packageName}` };
   }
 
   public static async getNodeVersions(): Promise<Record<string, string>> {
@@ -123,10 +132,10 @@ export default class NodeService {
     return NodeService.hasFile(cwd, 'package.json');
   }
 
-  public static async getBuildModeDependenciesSortedByHierarchy(
+  public static async getDependenciesSortedByHierarchy(
     dependencies: DependencyPackage[]
   ): Promise<Array<RelatedDependencyProjection>> {
-    return await getBuildModeDependenciesSortedByHierarchy(dependencies);
+    return await getDependenciesSortedByHierarchy(dependencies);
   }
 
   public static async checkYarn(cwd: string): Promise<boolean> {
