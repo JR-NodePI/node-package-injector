@@ -5,7 +5,7 @@ import { ToasterType } from 'fratch-ui/components/Toaster/ToasterConstants';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 import useDeepCompareEffect from 'use-deep-compare-effect';
 
-import { RunProcessService } from '../../services/RunProcessService';
+import RunProcessService from '../../services/RunProcessService';
 import useGlobalData from '../GlobalDataProvider/useGlobalData';
 
 import styles from './RunProcess.module.css';
@@ -68,7 +68,8 @@ export default function RunProcess(): JSX.Element {
     addToaster,
     activeTargetPackage,
     activeDependencies,
-    abortController?.signal,
+    abortController,
+    isWSLActive,
   ]);
 
   const handleRunClick = (): void => {

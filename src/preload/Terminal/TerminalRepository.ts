@@ -18,58 +18,66 @@ const cleanOutput = (output: string): string =>
 
 const getConsoleInitColorizedFlag = (
   type: ExecuteCommandOutput['type'],
+  pid?: number,
   icon?: string
 ): string[] => {
   const typeColor = OutputTypeToColor[type];
   return [
-    `%c>${icon ? ` ${icon}` : ''} %c${type}`,
+    `%c>${icon ? ` ${icon}` : ''} %c${type.padEnd(5, ' ')}`,
     `color:${OutputColor}`,
     `color:${typeColor}`,
+    `PID: ${pid}`,
   ];
 };
 
-const consoleLog = (
-  type: ExecuteCommandOutput['type'],
-  icon?: string,
-  ...params
-): void =>
+const consoleLog = ({
+  type,
+  pid,
+  icon,
+  data,
+}: ExecuteCommandOutput & { icon?: string }): void => {
   // eslint-disable-next-line no-console
-  console.log(...getConsoleInitColorizedFlag(type, icon), ...params);
+  console.log(...getConsoleInitColorizedFlag(type, pid, icon), `\n${data}`);
+};
 
-const consoleWarn = (
-  type: ExecuteCommandOutput['type'],
-  icon?: string,
-  ...params
-): void =>
+const consoleWarn = ({
+  type,
+  pid,
+  icon,
+  data,
+}: ExecuteCommandOutput & { icon?: string }): void => {
   // eslint-disable-next-line no-console
-  console.warn(...getConsoleInitColorizedFlag(type, icon), ...params);
+  console.warn(...getConsoleInitColorizedFlag(type, pid, icon), `\n${data}`);
+};
 
-const consoleError = (
-  type: ExecuteCommandOutput['type'],
-  icon?: string,
-  ...params
-): void =>
+const consoleError = ({
+  type,
+  pid,
+  icon,
+  data,
+}: ExecuteCommandOutput & { icon?: string }): void => {
   // eslint-disable-next-line no-console
-  console.error(...getConsoleInitColorizedFlag(type, icon), ...params);
+  console.error(...getConsoleInitColorizedFlag(type, pid, icon), '\n', data);
+};
 
 const displayLogs = (
   outputStack: ExecuteCommandOutput[],
   icon?: string
 ): void => {
-  outputStack.forEach(({ type, data }) => {
+  outputStack.forEach(({ type, pid, data }) => {
     switch (type) {
       case ExecuteCommandOutputType.CLOSE:
       case ExecuteCommandOutputType.EXIT:
       case ExecuteCommandOutputType.INIT:
       case ExecuteCommandOutputType.STDOUT:
-        consoleLog(type, icon, data);
+        consoleLog({ type, pid, icon, data });
         break;
       case ExecuteCommandOutputType.STDERR_WARN:
-        consoleWarn(type, icon, data);
+        consoleWarn({ type, pid, icon, data });
         break;
       case ExecuteCommandOutputType.ERROR:
       case ExecuteCommandOutputType.STDERR_ERROR:
-        consoleError(type, icon, data);
+        consoleError({ type, pid, icon, data });
         break;
       default:
         break;
@@ -93,6 +101,10 @@ export default class TerminalRepository {
         reject(new Error('cwd is required'));
       }
 
+      if (abortController?.signal?.aborted) {
+        reject(new Error('Process was aborted'));
+      }
+
       const soShell = ['win32'].includes(process.platform)
         ? 'powershell'
         : 'bash';
@@ -104,18 +116,24 @@ export default class TerminalRepository {
         signal: abortController?.signal,
       });
 
-      abortController?.signal.addEventListener('abort', () => {
-        cmd.kill();
-        cmd.emit('close', 0);
-      });
-
       const icon = OutputIcons[Math.floor(Math.random() * OutputIcons.length)];
 
-      const commandTrace = `${cwd} ${command} ${args.join(' ')}`;
+      const argsAsString = args.join(' ');
+      const commandTrace = `CWD: ${cwd}\nCMD: ${command} ${argsAsString}`;
       const outputs: ExecuteCommandOutput[] = [];
       let outputStack: ExecuteCommandOutput[] = [];
+      let aborted = false;
 
-      const enqueueOutput = (output: ExecuteCommandOutput): void => {
+      abortController?.signal.addEventListener('abort', () => {
+        cmd.kill();
+        aborted = true;
+      });
+
+      const enqueueConsoleOutput = (output: ExecuteCommandOutput): void => {
+        if (aborted) {
+          return;
+        }
+
         outputStack.push(output);
 
         const mustDisplay =
@@ -127,15 +145,13 @@ export default class TerminalRepository {
 
         if (mustDisplay) {
           displayLogs(outputStack, icon);
-        }
-
-        if (mustDisplay) {
           outputStack = [];
         }
       };
 
-      enqueueOutput({
+      enqueueConsoleOutput({
         type: ExecuteCommandOutputType.INIT,
+        pid: cmd.pid,
         data: commandTrace,
       });
 
@@ -144,10 +160,11 @@ export default class TerminalRepository {
         const cleanMessage = cleanOutput(message);
         const output = {
           type: ExecuteCommandOutputType.STDOUT,
+          pid: cmd.pid,
           data: cleanMessage,
         };
         outputs.push(output);
-        enqueueOutput(output);
+        enqueueConsoleOutput(output);
       });
 
       cmd.stderr.on('data', data => {
@@ -156,21 +173,23 @@ export default class TerminalRepository {
         const isError = [
           new RegExp('fatal: ', 'gi'),
           new RegExp('error ', 'gi'),
+          new RegExp('error: ', 'gi'),
           new RegExp('command not found', 'gi'),
         ].some(regExp => regExp.test(cleanMessage));
 
         if (isError && !ignoreStderrErrors) {
           const error = new Error(cleanMessage);
-          const output = {
-            type: ExecuteCommandOutputType.STDERR_ERROR,
-            data: error,
-          };
-          enqueueOutput(output);
           reject(error);
+          enqueueConsoleOutput({
+            type: ExecuteCommandOutputType.STDERR_ERROR,
+            pid: cmd.pid,
+            data: error,
+          });
         } else {
           const isIgnoredError = isError && ignoreStderrErrors;
           const output = {
             type: ExecuteCommandOutputType.STDERR_WARN,
+            pid: cmd.pid,
             data: cleanMessage,
           };
 
@@ -178,29 +197,29 @@ export default class TerminalRepository {
             outputs.push(output);
           }
 
-          enqueueOutput(output);
+          enqueueConsoleOutput(output);
         }
       });
 
       cmd.on('error', error => {
-        const output = {
-          type: ExecuteCommandOutputType.ERROR,
-          data: error,
-        };
-        enqueueOutput(output);
         reject(error);
+        enqueueConsoleOutput({
+          type: ExecuteCommandOutputType.ERROR,
+          pid: cmd.pid,
+          data: error,
+        });
       });
 
       cmd.on('close', code => {
         if (exitTimeoutId) {
           clearTimeout(exitTimeoutId);
         }
-        const output = {
-          type: ExecuteCommandOutputType.CLOSE,
-          data: code,
-        };
-        enqueueOutput(output);
         resolve(outputs);
+        enqueueConsoleOutput({
+          type: ExecuteCommandOutputType.CLOSE,
+          pid: cmd.pid,
+          data: code,
+        });
       });
 
       cmd.on('exit', code => {
@@ -208,12 +227,12 @@ export default class TerminalRepository {
           clearTimeout(exitTimeoutId);
         }
         exitTimeoutId = setTimeout(() => {
-          const output = {
-            type: ExecuteCommandOutputType.EXIT,
-            data: code,
-          };
-          enqueueOutput(output);
           resolve(outputs);
+          enqueueConsoleOutput({
+            type: ExecuteCommandOutputType.EXIT,
+            pid: cmd.pid,
+            data: code,
+          });
         }, exitDelay);
       });
     });

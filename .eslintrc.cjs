@@ -59,6 +59,13 @@ module.exports = {
     '@typescript-eslint/no-non-null-assertion': 'off',
     '@typescript-eslint/no-var-requires': 'off',
     'react/jsx-uses-react': 'off',
+    'react-hooks/exhaustive-deps': [
+      'warn',
+      {
+        additionalHooks:
+          '(useDeepCompareEffect|useDeepCompareMemoize|useDeepCompareEffectNoCheck)',
+      },
+    ],
   },
   overrides: [
     {

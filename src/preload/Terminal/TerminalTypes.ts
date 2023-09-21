@@ -2,6 +2,7 @@ import { ExecuteCommandOutputType } from './TerminalConstants';
 
 export type ExecuteCommandOutput = {
   type: (typeof ExecuteCommandOutputType)[keyof typeof ExecuteCommandOutputType];
+  pid?: number;
   data: null | string | number | Error;
 };
 
