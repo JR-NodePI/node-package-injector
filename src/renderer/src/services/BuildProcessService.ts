@@ -219,6 +219,7 @@ export default class BuildProcessService {
       const dependencyName = await NodeService.getPackageName(
         dependency.cwd ?? ''
       );
+
       if (!dependencyName) {
         abortController?.abort();
         return {
@@ -313,10 +314,10 @@ export default class BuildProcessService {
       command: 'bash',
       args: [
         PathService.getExtraResourcesScriptPath('inject_package.sh'),
-        dependencyName,
-        cleanDependencyPackagePath,
-        tmpDependencyDir,
-        targetPackageDir,
+        `"${dependencyName}"`,
+        `"${cleanDependencyPackagePath}"`,
+        `"${tmpDependencyDir}"`,
+        `"${targetPackageDir}"`,
       ],
       cwd: targetPackage.cwd ?? '',
       traceOnTime,

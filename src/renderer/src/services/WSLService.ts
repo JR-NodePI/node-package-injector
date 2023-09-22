@@ -77,14 +77,14 @@ export default class WSLService {
         .replace(/\\/g, '/')
         .replace(
           new RegExp(
-            `//${WSL_DOMAIN.replace(/\$/gi, '\\$')}/${wslDistro}(.+)`,
+            `(?//${WSL_DOMAIN.replace(/\$/gi, '\\$')}/${wslDistro})(.+)`,
             'gi'
           ),
-          '$1'
+          '$2'
         );
     }
 
-    return '';
+    return path;
   }
 
   public static async getSWLHomePath(
