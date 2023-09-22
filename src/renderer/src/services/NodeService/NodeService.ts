@@ -88,6 +88,7 @@ export default class NodeService {
   ): Promise<TerminalResponse> {
     const packageName = await NodeService.getPackageName(cwd);
     const packageVersion = await NodeService.getPackageVersion(cwd);
+
     if (!packageName) {
       return { error: 'There is no package name' };
     }

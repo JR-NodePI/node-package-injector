@@ -31,6 +31,7 @@ export default class RunProcessService {
       skipWSLRoot: true,
       traceOnTime: true,
     });
+
     if (!tmpDir) {
       abortController?.abort();
       return [
