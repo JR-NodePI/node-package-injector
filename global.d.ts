@@ -16,12 +16,12 @@ declare global {
       TerminalService: typeof TerminalService;
     };
   }
-}
 
-interface Array<T> {
-  toSorted(compareFn?: (a: T, b: T) => number): T[];
-}
+  interface Array<T> {
+    toSorted(compareFn?: (a: T, b: T) => number): T[];
+  }
 
-interface Array<T> {
-  toSpliced(start: number, deleteCount: number, ...items: T[]): T[];
+  interface Array<T> {
+    toSpliced(start: number, deleteCount: number, ...items: T[]): T[];
+  }
 }
