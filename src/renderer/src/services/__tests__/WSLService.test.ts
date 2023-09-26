@@ -8,13 +8,13 @@ vi.mock('../TerminalService');
 describe('WSLService', () => {
   const cwd = '/mock/cwd';
   const wslDistroName = 'kali-linux';
-  const paramsToGetDistroNameWithExecuteCommand = {
+  const getDistroNameWithExecuteCommandParams = {
     command: 'wsl',
     args: ['-l', '--all'],
     cwd,
     skipWSL: true,
   };
-  const paramsToGetHomePathWithExecuteCommand = {
+  const getHomePathWithExecuteCommandParams = {
     command: 'wsl',
     args: ['-e', 'ls', '/home'],
     cwd,
@@ -55,7 +55,7 @@ describe('WSLService', () => {
 
       expect(TerminalService.executeCommand).toHaveBeenCalledTimes(1);
       expect(TerminalService.executeCommand).toHaveBeenCalledWith(
-        paramsToGetDistroNameWithExecuteCommand
+        getDistroNameWithExecuteCommandParams
       );
     });
 
@@ -66,6 +66,12 @@ describe('WSLService', () => {
 
       const result = await WSLService.getSWLRoot(cwd, linuxPath);
 
+      expect(result).toEqual('');
+    });
+
+    it('should empty when executeCommand returns content undefined', async () => {
+      (TerminalService.executeCommand as Mock).mockResolvedValue({});
+      const result = await WSLService.getSWLRoot(cwd, linuxPath);
       expect(result).toEqual('');
     });
 
@@ -96,7 +102,7 @@ describe('WSLService', () => {
 
       expect(TerminalService.executeCommand).toHaveBeenCalledTimes(1);
       expect(TerminalService.executeCommand).toHaveBeenCalledWith(
-        paramsToGetDistroNameWithExecuteCommand
+        getDistroNameWithExecuteCommandParams
       );
     });
 
@@ -106,7 +112,7 @@ describe('WSLService', () => {
 
       expect(TerminalService.executeCommand).toHaveBeenCalledTimes(1);
       expect(TerminalService.executeCommand).toHaveBeenCalledWith({
-        ...paramsToGetDistroNameWithExecuteCommand,
+        ...getDistroNameWithExecuteCommandParams,
         traceOnTime,
       });
     });
@@ -118,7 +124,7 @@ describe('WSLService', () => {
         .mockResolvedValueOnce({
           content: `${wslDistroName} (default)`,
         })
-        .mockResolvedValueOnce({
+        .mockResolvedValue({
           content: `User`,
         });
     });
@@ -131,19 +137,34 @@ describe('WSLService', () => {
       expect(TerminalService.executeCommand).toHaveBeenCalledTimes(2);
       expect(TerminalService.executeCommand).toHaveBeenNthCalledWith(
         1,
-        paramsToGetDistroNameWithExecuteCommand
+        getDistroNameWithExecuteCommandParams
       );
       expect(TerminalService.executeCommand).toHaveBeenNthCalledWith(
         2,
-        paramsToGetHomePathWithExecuteCommand
+        getHomePathWithExecuteCommandParams
       );
     });
 
-    it('should return empty when executeCommand fails', async () => {
-      (TerminalService.executeCommand as Mock).mockReset();
-      (TerminalService.executeCommand as Mock).mockRejectedValue(
-        new Error('error')
-      );
+    it('should return empty when executeCommand fails when getting distroName', async () => {
+      (TerminalService.executeCommand as Mock)
+        .mockReset()
+        .mockRejectedValueOnce(new Error('error'))
+        .mockResolvedValue({
+          content: `User`,
+        });
+
+      const result = await WSLService.getSWLHomePath(cwd);
+
+      expect(result).toEqual('');
+    });
+
+    it('should return empty when executeCommand fails when getting home path', async () => {
+      (TerminalService.executeCommand as Mock)
+        .mockReset()
+        .mockResolvedValueOnce({
+          content: `${wslDistroName} (default)`,
+        })
+        .mockRejectedValue(new Error('error'));
 
       const result = await WSLService.getSWLHomePath(cwd);
 
@@ -152,6 +173,32 @@ describe('WSLService', () => {
 
     it('should return empty when there is no WSL SO compatible', async () => {
       vi.spyOn(window.api.os, 'platform').mockReturnValue('linux');
+
+      const result = await WSLService.getSWLHomePath(cwd);
+
+      expect(result).toEqual('');
+    });
+
+    it('should empty when executeCommand returns content undefined when getting distroName', async () => {
+      (TerminalService.executeCommand as Mock)
+        .mockReset()
+        .mockResolvedValueOnce({})
+        .mockResolvedValue({
+          content: `User`,
+        });
+
+      const result = await WSLService.getSWLHomePath(cwd);
+
+      expect(result).toEqual('');
+    });
+
+    it('should empty when executeCommand returns content undefined when getting home path', async () => {
+      (TerminalService.executeCommand as Mock)
+        .mockReset()
+        .mockResolvedValueOnce({
+          content: `${wslDistroName} (default)`,
+        })
+        .mockResolvedValue({});
 
       const result = await WSLService.getSWLHomePath(cwd);
 
@@ -168,15 +215,15 @@ describe('WSLService', () => {
       expect(TerminalService.executeCommand).toHaveBeenCalledTimes(3);
       expect(TerminalService.executeCommand).toHaveBeenNthCalledWith(
         1,
-        paramsToGetDistroNameWithExecuteCommand
+        getDistroNameWithExecuteCommandParams
       );
       expect(TerminalService.executeCommand).toHaveBeenNthCalledWith(
         2,
-        paramsToGetHomePathWithExecuteCommand
+        getHomePathWithExecuteCommandParams
       );
       expect(TerminalService.executeCommand).toHaveBeenNthCalledWith(
         3,
-        paramsToGetHomePathWithExecuteCommand
+        getHomePathWithExecuteCommandParams
       );
     });
 
@@ -186,11 +233,11 @@ describe('WSLService', () => {
 
       expect(TerminalService.executeCommand).toHaveBeenCalledTimes(2);
       expect(TerminalService.executeCommand).toHaveBeenNthCalledWith(1, {
-        ...paramsToGetDistroNameWithExecuteCommand,
+        ...getDistroNameWithExecuteCommandParams,
         traceOnTime,
       });
       expect(TerminalService.executeCommand).toHaveBeenNthCalledWith(2, {
-        ...paramsToGetHomePathWithExecuteCommand,
+        ...getHomePathWithExecuteCommandParams,
         traceOnTime,
       });
     });
@@ -230,7 +277,7 @@ describe('WSLService', () => {
 
       expect(TerminalService.executeCommand).toHaveBeenCalledTimes(1);
       expect(TerminalService.executeCommand).toHaveBeenCalledWith({
-        ...paramsToGetDistroNameWithExecuteCommand,
+        ...getDistroNameWithExecuteCommandParams,
         traceOnTime,
       });
     });

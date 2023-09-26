@@ -109,7 +109,7 @@ export default class WSLService {
         username = '';
       }
 
-      return WSLService.getSWLRoot(cwd, `/home/${username}`);
+      return username ? WSLService.getSWLRoot(cwd, `/home/${username}`) : '';
     }
 
     return '';

@@ -19,7 +19,8 @@
     "build:mac": "electron-vite build && electron-builder --mac --config",
     "build:linux": "electron-vite build && electron-builder --linux --config",
     "icons": "electron-icon-builder --input=./resources/icon.png --output=./build",
-    "test": "vitest --run --config ./vitest.config.ts"
+    "test": "vitest --run --config ./vitest.config.ts",
+    "test:cover": "yarn test run --coverage"
   },
   "dependencies": {
     "@electron-toolkit/preload": "^2.0.0",
@@ -43,6 +44,7 @@
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",
     "@vitejs/plugin-react": "^4.0.3",
+    "@vitest/coverage-v8": "^0.34.5",
     "electron": "^24.6.2",
     "electron-builder": "^23.6.0",
     "electron-vite": "^1.0.25",
