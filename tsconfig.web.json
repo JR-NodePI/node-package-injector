@@ -1,11 +1,12 @@
 {
   "extends": "@electron-toolkit/tsconfig/tsconfig.web.json",
   "include": [
-    "src/renderer/src/env.d.ts",
-    "src/renderer/src/**/*",
-    "src/renderer/src/**/*.tsx",
-    "src/preload/*.d.ts"
-, "src/preload/types.ts", "src/renderer/src/appComponents/PackagesTabsMenu"  ],
+    "./global.d.ts" ,
+    "./src/renderer/src/env.d.ts",
+    "./src/renderer/src/**/*",
+    "./src/renderer/src/**/*.tsx",
+    "./src/renderer/src/appComponents/PackagesTabsMenu",
+  ],
   "compilerOptions": {
     "composite": true,
     "jsx": "react-jsx",

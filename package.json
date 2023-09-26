@@ -1,6 +1,6 @@
 {
   "name": "node-package-injector",
-  "version": "1.4.3-alpha",
+  "version": "1.4.6-alpha",
   "description": "Dev tool to simulate npm dependencies",
   "repository": "https://github.com/JorgeRojo/node-package-injector",
   "main": "./out/main/index.js",
@@ -18,12 +18,13 @@
     "build:win": "yarn build && electron-builder --win --config",
     "build:mac": "electron-vite build && electron-builder --mac --config",
     "build:linux": "electron-vite build && electron-builder --linux --config",
-    "icons": "electron-icon-builder --input=./resources/icon.png --output=./build"
+    "icons": "electron-icon-builder --input=./resources/icon.png --output=./build",
+    "test": "vitest --run --config ./vitest.config.ts",
+    "test:cover": "yarn test run --coverage"
   },
   "dependencies": {
     "@electron-toolkit/preload": "^2.0.0",
     "@electron-toolkit/utils": "^1.0.2",
-    "child_process": "^1.0.2",
     "electron-updater": "^5.3.0",
     "fratch-ui": "1.2.4",
     "lodash": "^4.17.21",
@@ -34,12 +35,16 @@
   "devDependencies": {
     "@electron-toolkit/tsconfig": "^1.0.1",
     "@electron/notarize": "^1.2.3",
+    "@testing-library/jest-dom": "^5.17.0",
+    "@testing-library/react": "^14.0.0",
+    "@testing-library/user-event": "^14.4.3",
     "@types/node": "^18.16.19",
     "@types/react": "^18.2.14",
     "@types/react-dom": "^18.2.6",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",
     "@vitejs/plugin-react": "^4.0.3",
+    "@vitest/coverage-v8": "^0.34.5",
     "electron": "^24.6.2",
     "electron-builder": "^23.6.0",
     "electron-vite": "^1.0.25",
@@ -48,13 +53,18 @@
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-react": "^7.32.2",
     "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.3",
     "eslint-plugin-simple-import-sort": "^10.0.0",
+    "istanbul-lib-coverage": "^3.2.0",
+    "jsdom": "^22.1.0",
     "million": "^2.5.10",
     "prettier": "^2.8.8",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "rollup-plugin-node-builtins": "^2.1.2",
     "typescript": "^5.1.6",
     "vite": "^4.4.2",
-    "vite-plugin-dts": "^3.3.1"
+    "vite-plugin-dts": "^3.3.1",
+    "vitest": "^0.33.0"
   }
 }

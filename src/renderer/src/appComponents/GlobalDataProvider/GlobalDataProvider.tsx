@@ -1,10 +1,9 @@
 import { useCallback, useMemo } from 'react';
 
-import { debounce } from 'lodash';
-
 import DependencyPackage from '@renderer/models/DependencyPackage';
 import NodePackage from '@renderer/models/NodePackage';
 import PackageBunch from '@renderer/models/PackageBunch';
+import { debounce } from 'lodash';
 
 import { packageBunchesTemplateValue } from './GlobalDataConstants';
 import GlobalDataContext, { GlobalDataProps } from './GlobalDataContext';
