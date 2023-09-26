@@ -1,14 +1,6 @@
 import { useEffect, useState } from 'react';
 
 import {
-  type Tab,
-  type TabEvent,
-  type TabsMenuProps,
-} from 'fratch-ui/components/TabsMenu/TabsMenuProps';
-import getRandomColor from 'fratch-ui/randomColors/getRandomColor';
-import useDeepCompareEffect from 'use-deep-compare-effect';
-
-import {
   TABS_MAXIMUM_ADDABLE,
   TABS_MINIMUM_REMOVABLE,
 } from '@renderer/constants';
@@ -16,6 +8,13 @@ import { getTabTitle } from '@renderer/helpers/utilsHelpers';
 import NodePackage from '@renderer/models/NodePackage';
 import PackageBunch from '@renderer/models/PackageBunch';
 import PathService from '@renderer/services/PathService';
+import {
+  type Tab,
+  type TabEvent,
+  type TabsMenuProps,
+} from 'fratch-ui/components/TabsMenu/TabsMenuProps';
+import getRandomColor from 'fratch-ui/randomColors/getRandomColor';
+import useDeepCompareEffect from 'use-deep-compare-effect';
 
 import useGlobalData from '../GlobalDataProvider/useGlobalData';
 
