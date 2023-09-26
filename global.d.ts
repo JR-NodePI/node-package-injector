@@ -1,9 +1,9 @@
 import { type ElectronAPI } from '@electron-toolkit/preload';
-import type fs from 'fs/promises';
+import type fs from 'node:fs/promises';
+import type os from 'node:os';
 import type path from 'node:path';
-import type os from 'os';
 
-import type TerminalService from '../preload/Terminal/TerminalService';
+import type TerminalService from './src/preload/Terminal/TerminalService';
 
 declare global {
   interface Window {
@@ -16,4 +16,12 @@ declare global {
       TerminalService: typeof TerminalService;
     };
   }
+}
+
+interface Array<T> {
+  toSorted(compareFn?: (a: T, b: T) => number): T[];
+}
+
+interface Array<T> {
+  toSpliced(start: number, deleteCount: number, ...items: T[]): T[];
 }
