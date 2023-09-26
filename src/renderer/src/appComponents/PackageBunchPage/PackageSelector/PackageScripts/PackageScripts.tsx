@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
 
-import { type SelectOption } from 'fratch-ui/components/Form/Select/SelectProps';
-
 import DependencyPackage from '@renderer/models/DependencyPackage';
 import NodePackage from '@renderer/models/NodePackage';
 import PackageScript from '@renderer/models/PackageScript';
 import NodeService from '@renderer/services/NodeService/NodeService';
+import { type SelectOption } from 'fratch-ui/components/Form/Select/SelectProps';
 
 import { PackageScriptRenderer } from './components/PackageScriptRenderer';
 import {

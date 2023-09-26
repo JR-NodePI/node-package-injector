@@ -1,11 +1,10 @@
-import { memo, useCallback, useContext, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useState } from 'react';
 
+import GitService from '@renderer/services/GitService';
 import { Form } from 'fratch-ui';
 import { type SelectOption } from 'fratch-ui/components/Form/Select/SelectProps';
 import ToasterListContext from 'fratch-ui/components/Toaster/ToasterListContext';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
-
-import GitService from '@renderer/services/GitService';
 
 import LinkButton from '../../../components/linkButton/LinkButton';
 
@@ -18,7 +17,7 @@ type BranchSelectorProps = {
 
 const isValidDirectory = (cwd: string): boolean => !/\.$/.test(cwd);
 
-function BranchSelector({
+export default function BranchSelector({
   disabled,
   cwd,
   className,
@@ -136,5 +135,3 @@ function BranchSelector({
     </div>
   );
 }
-
-export default memo(BranchSelector);
