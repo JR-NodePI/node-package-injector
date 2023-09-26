@@ -1,4 +1,3 @@
-import { DependencyMode } from '@renderer/models/DependencyConstants';
 import DependencyPackage from '@renderer/models/DependencyPackage';
 
 import NodeService from './NodeService';
@@ -31,17 +30,12 @@ const sortAsManyTimesAsNumberOfDependencies = (
     .reduce(sortedDeps => sortDependencies(sortedDeps), deps);
 };
 
-export default async function getBuildModeDependenciesSortedByHierarchy(
+export default async function getDependenciesSortedByHierarchy(
   dependencies: DependencyPackage[]
 ): Promise<Array<RelatedDependencyProjection>> {
-  // filter dependencies by build mode
-  const buildModeDeps = dependencies.filter(
-    ({ mode }) => mode === DependencyMode.BUILD
-  );
-
   // get all dependencies names
   const allDepNamesProjection = await Promise.all(
-    buildModeDeps.map(async dependency => ({
+    dependencies.map(async dependency => ({
       name: await NodeService.getPackageName(dependency.cwd ?? ''),
       dependency,
     }))
@@ -51,7 +45,7 @@ export default async function getBuildModeDependenciesSortedByHierarchy(
 
   // get the list of dependencies with their related dependencies
   const depsWithSubDeps = await Promise.all(
-    buildModeDeps.map(
+    dependencies.map(
       async (dependency): Promise<RelatedDependencyProjection> => {
         const dependencyName =
           (await NodeService.getPackageName(dependency.cwd ?? '')) ?? '';

@@ -1,7 +1,6 @@
+import TerminalService from '@renderer/services/TerminalService';
 import { ColorSchemeSwitcher, SettingsMenu } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
-
-import TerminalService from '@renderer/services/TerminalService';
 
 import ExportImportBunch from './ExportImportBunch/ExportImportBunch';
 import NodeInfo from './NodeInfo/NodeInfo';

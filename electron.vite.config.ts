@@ -1,9 +1,8 @@
-import { defineConfig, externalizeDepsPlugin } from 'electron-vite';
-import { resolve } from 'path';
+import packageJson from './package.json';
 
 import react from '@vitejs/plugin-react';
-
-import packageJson from './package.json';
+import { defineConfig, externalizeDepsPlugin } from 'electron-vite';
+import { resolve } from 'path';
 
 const APP_TITLE = 'Node Package Injector';
 

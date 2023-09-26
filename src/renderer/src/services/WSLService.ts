@@ -7,13 +7,12 @@ export default class WSLService {
     lastUpdate: 0,
     value: '',
   };
+
   private static async getSWLDistroName(
     cwd: string,
     traceOnTime?: boolean
   ): Promise<string> {
-    const isSWLCompatible = ['win32', 'cygwin'].includes(
-      window.api.os.platform()
-    );
+    const isSWLCompatible = ['win32'].includes(window.api.os.platform());
 
     if (!isSWLCompatible) {
       return '';
@@ -77,14 +76,14 @@ export default class WSLService {
         .replace(/\\/g, '/')
         .replace(
           new RegExp(
-            `//${WSL_DOMAIN.replace(/\$/gi, '\\$')}/${wslDistro}(.+)`,
+            `(!?//${WSL_DOMAIN.replace(/\$/gi, '\\$')}/${wslDistro})(.+)`,
             'gi'
           ),
-          '$1'
+          '$2'
         );
     }
 
-    return '';
+    return path;
   }
 
   public static async getSWLHomePath(
@@ -110,9 +109,16 @@ export default class WSLService {
         username = '';
       }
 
-      return WSLService.getSWLRoot(cwd, `/home/${username}`);
+      return username ? WSLService.getSWLRoot(cwd, `/home/${username}`) : '';
     }
 
     return '';
+  }
+
+  public static cacheClean(): void {
+    WSLService.cacheDistroName = {
+      lastUpdate: 0,
+      value: '',
+    };
   }
 }
