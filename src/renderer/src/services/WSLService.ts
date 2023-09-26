@@ -7,13 +7,12 @@ export default class WSLService {
     lastUpdate: 0,
     value: '',
   };
+
   private static async getSWLDistroName(
     cwd: string,
     traceOnTime?: boolean
   ): Promise<string> {
-    const isSWLCompatible = ['win32', 'cygwin'].includes(
-      window.api.os.platform()
-    );
+    const isSWLCompatible = ['win32'].includes(window.api.os.platform());
 
     if (!isSWLCompatible) {
       return '';
@@ -114,5 +113,12 @@ export default class WSLService {
     }
 
     return '';
+  }
+
+  public static cacheClean(): void {
+    WSLService.cacheDistroName = {
+      lastUpdate: 0,
+      value: '',
+    };
   }
 }

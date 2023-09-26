@@ -18,12 +18,12 @@
     "build:win": "yarn build && electron-builder --win --config",
     "build:mac": "electron-vite build && electron-builder --mac --config",
     "build:linux": "electron-vite build && electron-builder --linux --config",
-    "icons": "electron-icon-builder --input=./resources/icon.png --output=./build"
+    "icons": "electron-icon-builder --input=./resources/icon.png --output=./build",
+    "test": "vitest --run --config ./vitest.config.ts"
   },
   "dependencies": {
     "@electron-toolkit/preload": "^2.0.0",
     "@electron-toolkit/utils": "^1.0.2",
-    "child_process": "^1.0.2",
     "electron-updater": "^5.3.0",
     "fratch-ui": "1.2.4",
     "lodash": "^4.17.21",
@@ -54,10 +54,12 @@
     "eslint-plugin-react-refresh": "^0.4.3",
     "eslint-plugin-simple-import-sort": "^10.0.0",
     "istanbul-lib-coverage": "^3.2.0",
+    "jsdom": "^22.1.0",
     "million": "^2.5.10",
     "prettier": "^2.8.8",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "rollup-plugin-node-builtins": "^2.1.2",
     "typescript": "^5.1.6",
     "vite": "^4.4.2",
     "vite-plugin-dts": "^3.3.1",
