@@ -10,6 +10,7 @@ export default class NodePackage {
   public isValidPackage = false;
   public performGitPull = false;
   public scripts?: PackageScript[];
+  public afterBuildScripts?: PackageScript[];
 
   public clone(): NodePackage {
     const nodePackage = new NodePackage();
@@ -18,6 +19,9 @@ export default class NodePackage {
     nodePackage.isValidPackage = this.isValidPackage;
     nodePackage.performGitPull = this.performGitPull;
     nodePackage.scripts = this.scripts?.map(script => script.clone());
+    nodePackage.afterBuildScripts = this.afterBuildScripts?.map(script =>
+      script.clone()
+    );
     return nodePackage;
   }
 }

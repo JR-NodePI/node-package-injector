@@ -35,7 +35,16 @@ const consoleLog = ({
   pid,
   icon,
   data,
+  hidePID,
 }: ExecuteCommandOutput & { icon?: string }): void => {
+  const isMiddleTrace =
+    type === ExecuteCommandOutputType.STDOUT ||
+    type === ExecuteCommandOutputType.STDERR_WARN;
+  if (hidePID && isMiddleTrace) {
+    // eslint-disable-next-line no-console
+    console.log(data);
+  }
+
   // eslint-disable-next-line no-console
   console.log(...getConsoleInitColorizedFlag(type, pid, icon), `\n${data}`);
 };
@@ -62,6 +71,7 @@ const consoleError = ({
 
 const displayLogs = (
   outputStack: ExecuteCommandOutput[],
+  hidePID?: boolean,
   icon?: string
 ): void => {
   outputStack.forEach(({ type, pid, data }) => {
@@ -70,7 +80,7 @@ const displayLogs = (
       case ExecuteCommandOutputType.EXIT:
       case ExecuteCommandOutputType.INIT:
       case ExecuteCommandOutputType.STDOUT:
-        consoleLog({ type, pid, icon, data });
+        consoleLog({ type, pid, icon, data, hidePID });
         break;
       case ExecuteCommandOutputType.STDERR_WARN:
         consoleWarn({ type, pid, icon, data });
@@ -95,6 +105,7 @@ export default class TerminalRepository {
     traceOnTime,
     abortController,
     ignoreStderrErrors,
+    hidePID,
   }: ExecuteCommandOptions): Promise<ExecuteCommandOutput[]> {
     return new Promise((resolve, reject) => {
       if (!cwd) {
@@ -144,7 +155,7 @@ export default class TerminalRepository {
           output.type === ExecuteCommandOutputType.EXIT;
 
         if (mustDisplay) {
-          displayLogs(outputStack, icon);
+          displayLogs(outputStack, hidePID, icon);
           outputStack = [];
         }
       };

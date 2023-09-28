@@ -19,11 +19,11 @@ export default function DependencySelector({
   onModeChange,
   onScriptsChange,
 }: DependencySelectorProps): JSX.Element {
-  const handlePathChange = (cwd: string, isValidPackage): void => {
+  const handlePathChange = (cwd: string, isValidPackage: boolean): void => {
     onPathChange(dependency, cwd, isValidPackage);
   };
 
-  const handleGitPullChange = (checked): void => {
+  const handleGitPullChange = (checked: boolean): void => {
     onGitPullChange(dependency, checked);
   };
 
@@ -53,6 +53,8 @@ export default function DependencySelector({
         onPathChange={handlePathChange}
         onGitPullChange={handleGitPullChange}
         onScriptsChange={handleScriptsChange}
+        findInstallScript
+        findBuildScript
       />
       {onClickRemove && (
         <div className={c(styles.buttons)}>

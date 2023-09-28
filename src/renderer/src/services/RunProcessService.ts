@@ -108,6 +108,19 @@ export default class RunProcessService {
       return injectDependenciesResponses;
     }
 
+    // Run after build dependencies package scripts
+    const afterBuildScriptsResponses =
+      await BuildProcessService.runPackageScripts({
+        packageScripts: targetPackage.afterBuildScripts,
+        cwd,
+        packageName,
+        abortController,
+      });
+    if (hasError(afterBuildScriptsResponses)) {
+      abortController?.abort();
+      return afterBuildScriptsResponses;
+    }
+
     return dependenciesResponses.flat();
   }
 

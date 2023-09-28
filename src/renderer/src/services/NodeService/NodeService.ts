@@ -181,6 +181,7 @@ export default class NodeService {
       cwd,
       traceOnTime: true,
       abortController,
+      hidePID: true,
     });
   }
 }

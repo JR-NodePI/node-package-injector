@@ -44,6 +44,7 @@ export default class TerminalService {
     skipWSL = false,
     traceOnTime = false,
     abortController,
+    hidePID = false,
     ignoreStderrErrors = false,
   }: ExecuteCommandOptions): Promise<TerminalResponse> {
     if (TerminalService.isTerminalInitialized === false) {
@@ -77,6 +78,7 @@ export default class TerminalService {
         traceOnTime,
         abortController,
         ignoreStderrErrors,
+        hidePID,
       });
     }
 
