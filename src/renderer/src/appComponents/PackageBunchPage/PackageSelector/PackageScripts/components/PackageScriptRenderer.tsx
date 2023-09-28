@@ -1,3 +1,4 @@
+import { formatOrdinals } from '@renderer/helpers/utilsHelpers';
 import type PackageScript from '@renderer/models/PackageScript';
 
 import PackageScriptButtons from './PackageScriptButtons';
@@ -17,10 +18,12 @@ export function PackageScriptRenderer({
     onChange(index, script);
   };
 
+  const ordinal = formatOrdinals(index + 1);
+
   return (
     <PackageScriptSelector
-      label={`${index + 1}º p. script`.padStart(13, ' ')}
-      title={`${index + 1}º package script`}
+      label={`${ordinal}`}
+      title={`${ordinal}package script`}
       selectedScript={script}
       scriptOptions={scriptOptions}
       onChange={handleOnChange}

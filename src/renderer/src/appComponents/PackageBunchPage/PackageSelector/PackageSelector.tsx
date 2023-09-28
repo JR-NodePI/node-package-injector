@@ -15,6 +15,45 @@ import useEffectCWD from './useEffectCWD';
 
 import styles from './PackageSelector.module.css';
 
+function AllPackageScripts({
+  onScriptsChange,
+  onAfterBuildScriptsChange,
+  nodePackage,
+  findInstallScript,
+  findBuildScript,
+}: Pick<
+  PackageSelectorProps,
+  | 'findInstallScript'
+  | 'findBuildScript'
+  | 'onScriptsChange'
+  | 'onAfterBuildScriptsChange'
+  | 'nodePackage'
+>): JSX.Element {
+  return (
+    <>
+      <p className={c(styles.scripts_title)}>Package scripts</p>
+      <PackageScripts
+        onChange={onScriptsChange}
+        cwd={nodePackage?.cwd}
+        initialScripts={nodePackage?.scripts}
+        findInstallScript={findInstallScript}
+        findBuildScript={findBuildScript}
+      />
+
+      {typeof onAfterBuildScriptsChange === 'function' && (
+        <>
+          <p className={c(styles.scripts_title)}>After build package scripts</p>
+          <PackageScripts
+            onChange={onAfterBuildScriptsChange}
+            cwd={nodePackage?.cwd}
+            initialScripts={nodePackage?.afterBuildScripts}
+          />
+        </>
+      )}
+    </>
+  );
+}
+
 export default function PackageSelector({
   additionalComponent,
   disabled,
@@ -22,7 +61,10 @@ export default function PackageSelector({
   onGitPullChange,
   onPathChange,
   onScriptsChange,
+  onAfterBuildScriptsChange,
   nodePackage,
+  findInstallScript,
+  findBuildScript,
 }: PackageSelectorProps): JSX.Element {
   const [id] = useState<string>(crypto.randomUUID());
 
@@ -148,9 +190,12 @@ export default function PackageSelector({
             {additionalComponent}
           </div>
           {!disableScripts && (
-            <PackageScripts
-              onChange={onScriptsChange}
+            <AllPackageScripts
+              onScriptsChange={onScriptsChange}
+              onAfterBuildScriptsChange={onAfterBuildScriptsChange}
               nodePackage={nodePackage}
+              findInstallScript={findInstallScript}
+              findBuildScript={findBuildScript}
             />
           )}
         </>

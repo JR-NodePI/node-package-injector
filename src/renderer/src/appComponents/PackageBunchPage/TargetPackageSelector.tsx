@@ -7,7 +7,7 @@ export default function TargetPackageSelector(): JSX.Element {
   const { activeTargetPackage, setActiveTargetPackage } = useGlobalData();
 
   const handlePathChange = (cwd: string, isValidPackage): void => {
-    if (!activeTargetPackage) {
+    if (!activeTargetPackage || activeTargetPackage.cwd === cwd) {
       return;
     }
 
@@ -17,6 +17,8 @@ export default function TargetPackageSelector(): JSX.Element {
       clonedPackage.performGitPull = false;
     }
     clonedPackage.cwd = cwd;
+    clonedPackage.scripts = undefined;
+    clonedPackage.afterBuildScripts = undefined;
     clonedPackage.isValidPackage = isValidPackage;
 
     setActiveTargetPackage?.(clonedPackage);
@@ -38,12 +40,22 @@ export default function TargetPackageSelector(): JSX.Element {
     }
   };
 
+  const onAfterBuildScriptsChange = (scripts: PackageScript[]): void => {
+    if (activeTargetPackage) {
+      const clonedPackage = activeTargetPackage.clone();
+      clonedPackage.afterBuildScripts = scripts;
+      setActiveTargetPackage?.(clonedPackage);
+    }
+  };
+
   return (
     <PackageSelector
       onGitPullChange={handleGitPullChange}
       onPathChange={handlePathChange}
       onScriptsChange={handleScriptsChange}
+      onAfterBuildScriptsChange={onAfterBuildScriptsChange}
       nodePackage={activeTargetPackage}
+      findInstallScript
     />
   );
 }
