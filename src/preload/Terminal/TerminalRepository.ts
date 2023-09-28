@@ -11,6 +11,11 @@ import {
   type ExecuteCommandOutput,
 } from './TerminalTypes';
 
+type TraceConfig = ExecuteCommandOutput & {
+  icon?: string;
+  logFn?: typeof console.log | typeof console.warn;
+};
+
 const cleanOutput = (output: string): string =>
   output
     .replace(/[^a-z0-9-\n\s\r\t{}()"',:_\\/\\*+.|><=@áéíóúÁÉÍÓÚñçü]/gi, '')
@@ -23,65 +28,71 @@ const getConsoleInitColorizedFlag = (
 ): string[] => {
   const typeColor = OutputTypeToColor[type];
   return [
-    `%c>${icon ? ` ${icon}` : ''} %c${type.padEnd(5, ' ')}`,
+    `%c${icon} %c${type.padEnd(5, ' ')}`,
     `color:${OutputColor}`,
     `color:${typeColor}`,
     `PID: ${pid}`,
   ];
 };
 
-const consoleLog = ({
+const printMiddleTraceWithIconByLine = ({
+  logFn,
   type,
-  pid,
   icon,
   data,
-  hidePID,
-}: ExecuteCommandOutput & { icon?: string }): void => {
+}: TraceConfig): void => {
+  const color =
+    type === ExecuteCommandOutputType.STDOUT ? '' : OutputTypeToColor[type];
+
+  logFn?.(
+    `%c${data}`.replace(/^(.*)/gi, `${icon} $1`).replace(/\n/gi, `\n${icon} `),
+    `color:${color}`
+  );
+};
+
+const printMiddleTrace = ({ logFn, type, icon, data }: TraceConfig): void => {
+  typeof data !== 'object'
+    ? printMiddleTraceWithIconByLine({ logFn, type, icon, data })
+    : logFn?.(icon, data);
+};
+
+const consolePrint = ({ logFn, type, pid, icon, data }: TraceConfig): void => {
   const isMiddleTrace =
     type === ExecuteCommandOutputType.STDOUT ||
     type === ExecuteCommandOutputType.STDERR_WARN;
-  if (hidePID && isMiddleTrace) {
-    // eslint-disable-next-line no-console
-    console.log(data);
+
+  if (isMiddleTrace) {
+    printMiddleTrace({ logFn, type, icon, data });
+    return;
   }
 
-  // eslint-disable-next-line no-console
-  console.log(...getConsoleInitColorizedFlag(type, pid, icon), `\n${data}`);
+  logFn?.(...getConsoleInitColorizedFlag(type, pid, icon), `${data}`);
 };
 
-const consoleWarn = ({
-  type,
-  pid,
+const consoleLog = (config: TraceConfig): void => {
+  // eslint-disable-next-line no-console
+  consolePrint({ ...config, logFn: console.log });
+};
+
+const consoleWarn = (config: TraceConfig): void => {
+  // eslint-disable-next-line no-console
+  consolePrint({ ...config, logFn: console.log });
+};
+
+const consoleError = (config: TraceConfig): void => {
+  // eslint-disable-next-line no-console
+  consolePrint({ ...config, logFn: console.error });
+};
+
+const displayLogs = ({
+  outputStack,
   icon,
-  data,
-}: ExecuteCommandOutput & { icon?: string }): void => {
-  // eslint-disable-next-line no-console
-  console.warn(...getConsoleInitColorizedFlag(type, pid, icon), `\n${data}`);
-};
-
-const consoleError = ({
-  type,
-  pid,
-  icon,
-  data,
-}: ExecuteCommandOutput & { icon?: string }): void => {
-  // eslint-disable-next-line no-console
-  console.error(...getConsoleInitColorizedFlag(type, pid, icon), '\n', data);
-};
-
-const displayLogs = (
-  outputStack: ExecuteCommandOutput[],
-  hidePID?: boolean,
-  icon?: string
-): void => {
+}: {
+  outputStack: ExecuteCommandOutput[];
+  icon?: string;
+}): void => {
   outputStack.forEach(({ type, pid, data }) => {
     switch (type) {
-      case ExecuteCommandOutputType.CLOSE:
-      case ExecuteCommandOutputType.EXIT:
-      case ExecuteCommandOutputType.INIT:
-      case ExecuteCommandOutputType.STDOUT:
-        consoleLog({ type, pid, icon, data, hidePID });
-        break;
       case ExecuteCommandOutputType.STDERR_WARN:
         consoleWarn({ type, pid, icon, data });
         break;
@@ -89,13 +100,18 @@ const displayLogs = (
       case ExecuteCommandOutputType.STDERR_ERROR:
         consoleError({ type, pid, icon, data });
         break;
+      case ExecuteCommandOutputType.CLOSE:
+      case ExecuteCommandOutputType.EXIT:
+      case ExecuteCommandOutputType.INIT:
+      case ExecuteCommandOutputType.STDOUT:
       default:
+        consoleLog({ type, pid, icon, data });
         break;
     }
   });
 };
 
-const exitDelay = 500;
+const exitDelay = 1000;
 let exitTimeoutId: NodeJS.Timeout;
 export default class TerminalRepository {
   static executeCommand({
@@ -105,7 +121,6 @@ export default class TerminalRepository {
     traceOnTime,
     abortController,
     ignoreStderrErrors,
-    hidePID,
   }: ExecuteCommandOptions): Promise<ExecuteCommandOutput[]> {
     return new Promise((resolve, reject) => {
       if (!cwd) {
@@ -130,7 +145,7 @@ export default class TerminalRepository {
       const icon = OutputIcons[Math.floor(Math.random() * OutputIcons.length)];
 
       const argsAsString = args.join(' ');
-      const commandTrace = `CWD: ${cwd}\nCMD: ${command} ${argsAsString}`;
+      const commandTrace = `\n   CWD: ${cwd}\n   CMD: ${command} ${argsAsString}`;
       const outputs: ExecuteCommandOutput[] = [];
       let outputStack: ExecuteCommandOutput[] = [];
       let aborted = false;
@@ -155,7 +170,7 @@ export default class TerminalRepository {
           output.type === ExecuteCommandOutputType.EXIT;
 
         if (mustDisplay) {
-          displayLogs(outputStack, hidePID, icon);
+          displayLogs({ outputStack, icon });
           outputStack = [];
         }
       };
