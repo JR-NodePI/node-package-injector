@@ -43,7 +43,7 @@ export default class GitService {
   ): Promise<string> {
     const { content } = await TerminalService.executeCommand({
       command: 'git',
-      args: ['branch', '--show-current'],
+      args: ['rev-parse', '--abbrev-ref', 'HEAD'],
       cwd,
       abortController,
       ignoreStderrErrors,
