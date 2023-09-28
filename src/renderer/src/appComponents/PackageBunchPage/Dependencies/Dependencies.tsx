@@ -58,6 +58,10 @@ function Dependencies(): JSX.Element {
     cwd: string,
     isValidPackage: boolean
   ): void => {
+    if (!dependency || dependency.cwd === cwd) {
+      return;
+    }
+
     const newDependencies = getUpdatedDependencyLits(
       activeDependencies,
       dependency,
@@ -68,6 +72,8 @@ function Dependencies(): JSX.Element {
           clonedDependency.mode = DependencyMode.BUILD;
         }
         clonedDependency.cwd = cwd;
+        clonedDependency.scripts = undefined;
+        clonedDependency.afterBuildScripts = undefined;
         clonedDependency.isValidPackage = isValidPackage;
 
         return clonedDependency;

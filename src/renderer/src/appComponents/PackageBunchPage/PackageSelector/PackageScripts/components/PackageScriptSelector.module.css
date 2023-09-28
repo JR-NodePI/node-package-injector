@@ -10,7 +10,7 @@
 }
 
 .mode_scripts .scripts_value {
-  flex: 1 1 100%;
+  flex: auto;
   position: relative;
   padding: 0;
   background-color: var(--ft-color-grey-3);
