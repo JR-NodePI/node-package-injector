@@ -4,6 +4,7 @@ export type ExecuteCommandOutput = {
   type: (typeof ExecuteCommandOutputType)[keyof typeof ExecuteCommandOutputType];
   pid?: number;
   data: null | string | number | Error;
+  hidePID?: boolean;
 };
 
 export type ExecuteCommandOptions = {
@@ -14,4 +15,5 @@ export type ExecuteCommandOptions = {
   traceOnTime?: boolean;
   abortController?: AbortController;
   ignoreStderrErrors?: boolean;
+  hidePID?: boolean;
 };
