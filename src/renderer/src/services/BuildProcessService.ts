@@ -82,14 +82,16 @@ export default class BuildProcessService {
     const depCwd = dependency.cwd ?? '';
     const depName = relatedDependency.dependencyName;
 
+    const handleOnAbort = async (): Promise<void> => {
+      await NodeService.restoreFakePackageVersion(depCwd);
+    };
+    abortController?.signal.addEventListener('abort', handleOnAbort);
+
     // Inject fake package version
     const outputFakeVersion = await NodeService.injectFakePackageVersion(
       depCwd,
       abortController
     );
-    abortController?.signal.addEventListener('abort', async () => {
-      await NodeService.restoreFakePackageVersion(depCwd, abortController);
-    });
 
     if (outputFakeVersion.error) {
       return [
@@ -119,6 +121,7 @@ export default class BuildProcessService {
         title: `Restoring package.json: "${depName}"`,
       });
     }
+    abortController?.signal.removeEventListener('abort', handleOnAbort);
 
     if (hasError(scriptsResponses)) {
       abortController?.abort();
