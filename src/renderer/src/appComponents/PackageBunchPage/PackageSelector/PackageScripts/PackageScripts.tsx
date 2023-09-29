@@ -11,17 +11,12 @@ import { type SelectOption } from 'fratch-ui/components/Form/Select/SelectProps'
 
 import { PackageScriptRenderer } from './components/PackageScriptRenderer';
 import {
+  ADDITIONAL_COMMON_PACKAGE_SCRIPTS,
   ADDITIONAL_PACKAGE_SCRIPTS,
   ADDITIONAL_PACKAGE_SCRIPTS_NAMES,
 } from './PackageScriptsConstants';
 
 type PackageScriptOption = SelectOption<PackageScript>;
-
-const getScriptsHash = (scripts: PackageScript[] = []): string =>
-  scripts
-    .map(({ scriptName }) => scriptName)
-    .filter(scriptName => Boolean(scriptName))
-    .join('-');
 
 export default function PackageScripts({
   cwd = '',
@@ -36,10 +31,14 @@ export default function PackageScripts({
   findInstallScript?: boolean;
   findBuildScript?: boolean;
 }): JSX.Element {
+  const currentScripts = initialScripts ?? [];
   const [scriptOptions, setScriptOptions] = useState<PackageScriptOption[]>([]);
-  const [selectedScrips, setSelectedScrips] = useState<PackageScript[]>(
-    initialScripts ?? []
-  );
+
+  useEffect(() => {
+    if (currentScripts.length === 0) {
+      onChange?.([new PackageScript()]);
+    }
+  }, [onChange, currentScripts.length]);
 
   const [isYarn, setIsYarn] = useState<boolean>();
   const [isPnpm, setIsPnpm] = useState<boolean>();
@@ -49,18 +48,6 @@ export default function PackageScripts({
       setIsYarn(await NodeService.checkYarn(cwd ?? ''));
     })();
   }, [cwd]);
-
-  // handle onChange when there is a change
-  const nodePackageScriptsHash = getScriptsHash(initialScripts);
-  const selectedScripsHash = getScriptsHash(selectedScrips);
-  useEffect(() => {
-    if (
-      Array.isArray(selectedScrips) &&
-      nodePackageScriptsHash !== selectedScripsHash
-    ) {
-      onChange?.(selectedScrips);
-    }
-  }, [nodePackageScriptsHash, onChange, selectedScrips, selectedScripsHash]);
 
   // load package scripts
   useEffect(() => {
@@ -83,11 +70,10 @@ export default function PackageScripts({
       return;
     }
 
-    const hasAdditionalInstallScript = scriptOptions.some(
-      ({ label }) =>
-        label === ADDITIONAL_PACKAGE_SCRIPTS_NAMES.PNPM_INSTALL ||
-        label === ADDITIONAL_PACKAGE_SCRIPTS_NAMES.YARN_INSTALL ||
-        label === ADDITIONAL_PACKAGE_SCRIPTS_NAMES.NPM_INSTALL
+    const hasAdditionalInstallScript = scriptOptions.some(({ label }) =>
+      (Object.values(ADDITIONAL_PACKAGE_SCRIPTS_NAMES) as string[]).includes(
+        label
+      )
     );
 
     if (hasAdditionalInstallScript) {
@@ -100,13 +86,41 @@ export default function PackageScripts({
       ? ADDITIONAL_PACKAGE_SCRIPTS_NAMES.YARN_INSTALL
       : ADDITIONAL_PACKAGE_SCRIPTS_NAMES.NPM_INSTALL;
 
-    setScriptOptions([
-      {
-        label: scriptName,
-        value: ADDITIONAL_PACKAGE_SCRIPTS[scriptName],
-      },
-      ...scriptOptions,
-    ]);
+    const additionalScriptOptions: PackageScriptOption[] = [];
+    additionalScriptOptions.push({
+      label: scriptName,
+      value: ADDITIONAL_PACKAGE_SCRIPTS[scriptName],
+    });
+
+    if (window.electron.process.platform === 'darwin') {
+      additionalScriptOptions.push({
+        label: ADDITIONAL_PACKAGE_SCRIPTS_NAMES.OPEN_CURRENT_DIR_IN_I_TERM,
+        value:
+          ADDITIONAL_PACKAGE_SCRIPTS[
+            ADDITIONAL_PACKAGE_SCRIPTS_NAMES.OPEN_CURRENT_DIR_IN_I_TERM
+          ],
+      });
+    }
+
+    if (window.electron.process.platform === 'linux') {
+      additionalScriptOptions.push({
+        label:
+          ADDITIONAL_PACKAGE_SCRIPTS_NAMES.OPEN_CURRENT_DIR_IN_GENOME_TERMINAL,
+        value:
+          ADDITIONAL_PACKAGE_SCRIPTS[
+            ADDITIONAL_PACKAGE_SCRIPTS_NAMES.OPEN_CURRENT_DIR_IN_GENOME_TERMINAL
+          ],
+      });
+    }
+
+    additionalScriptOptions.push(
+      ...ADDITIONAL_COMMON_PACKAGE_SCRIPTS.map(script => ({
+        label: script.scriptName,
+        value: script,
+      }))
+    );
+
+    setScriptOptions([...additionalScriptOptions, ...scriptOptions]);
   }, [scriptOptions, isYarn, isPnpm]);
 
   // try to determine the install and pack script
@@ -143,30 +157,34 @@ export default function PackageScripts({
         }
 
         if (scripts.length > 0) {
-          await setSelectedScrips(scripts);
+          onChange?.(scripts);
         }
       }
     })();
-  }, [scriptOptions, initialScripts, findInstallScript, findBuildScript]);
+  }, [
+    findBuildScript,
+    findInstallScript,
+    initialScripts,
+    onChange,
+    scriptOptions,
+  ]);
 
   const handleAddScript = (): void => {
-    setSelectedScrips([...selectedScrips, new PackageScript()]);
+    onChange?.([...currentScripts, new PackageScript()]);
   };
 
   const handleRemoveScript = (indexToRemove: number): void => {
     const newScripts =
-      selectedScrips.filter((_script, index) => index !== indexToRemove) ?? [];
-    setSelectedScrips(
-      newScripts.length > 0 ? newScripts : [new PackageScript()]
-    );
+      currentScripts.filter((_script, index) => index !== indexToRemove) ?? [];
+    onChange?.(newScripts.length > 0 ? newScripts : [new PackageScript()]);
   };
 
   const handleScriptChange = (
     modifiedScriptIndex: number,
     modifiedScript?: PackageScript
   ): void => {
-    setSelectedScrips(
-      selectedScrips.map((script, index) =>
+    onChange?.(
+      currentScripts.map((script, index) =>
         index === modifiedScriptIndex
           ? modifiedScript ?? new PackageScript()
           : script.clone()
@@ -177,21 +195,21 @@ export default function PackageScripts({
   const handleSortChange = (
     draggableItems: SortedDraggableItem<PackageScript>[]
   ): void => {
-    setSelectedScrips(draggableItems.map(({ dataItem }) => dataItem.clone()));
+    onChange?.(draggableItems.map(({ dataItem }) => dataItem.clone()));
   };
 
   const noSelectedScriptOptions = scriptOptions.filter(({ value }) =>
-    selectedScrips.every(({ scriptName }) => scriptName !== value.scriptName)
+    currentScripts.every(({ scriptName }) => scriptName !== value.scriptName)
   );
 
   return (
     <DragAndDropSorter
       onChange={handleSortChange}
-      items={selectedScrips.map<DraggableItem<PackageScript>>(
+      items={currentScripts.map<DraggableItem<PackageScript>>(
         (script, index) => {
           const showAddButton =
-            index === selectedScrips.length - 1 &&
-            scriptOptions.length > selectedScrips.length;
+            index === currentScripts.length - 1 &&
+            scriptOptions.length > currentScripts.length;
           return {
             dataItem: script,
             children: (
