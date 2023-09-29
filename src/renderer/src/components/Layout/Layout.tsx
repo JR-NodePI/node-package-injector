@@ -25,7 +25,13 @@ export default function Layout({
 
   return (
     <section className={c(styles.layout)}>
-      <Header iconPosition={headerIconPosition} title={title} iconSrc={logo} />
+      <div className={c(styles.header_area)}>
+        <Header
+          iconPosition={headerIconPosition}
+          title={title}
+          iconSrc={logo}
+        />
+      </div>
       <section className={c(styles.content)}>{children}</section>
       <Footer>
         <RunProcess />
