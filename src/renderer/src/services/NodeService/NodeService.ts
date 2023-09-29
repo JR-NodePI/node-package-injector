@@ -87,17 +87,12 @@ export default class NodeService {
     cwd: string
   ): Promise<TerminalResponse> {
     const packageName = await NodeService.getPackageName(cwd);
-    const packageVersion = await NodeService.getPackageVersion(cwd);
 
     if (!packageName) {
       return { error: 'There is no package name' };
     }
 
-    if (!packageVersion) {
-      return { error: 'There is no package version' };
-    }
-
-    const fileName = `${packageName}-v${packageVersion}.tgz`;
+    const fileName = `${packageName}-v${NodeService.FAKE_PACKAGE_VERSION}.tgz`;
 
     for (const dir of ['', 'dist', '.dist', 'build', '.build', 'out', '.out']) {
       if (await NodeService.hasFile(cwd, dir, fileName)) {
@@ -177,6 +172,39 @@ export default class NodeService {
       args: [
         PathService.getExtraResourcesScriptPath('npm_run_script.sh'),
         `${JSON.stringify(script)}`,
+      ],
+      cwd,
+      traceOnTime: true,
+      abortController,
+    });
+  }
+
+  public static readonly FAKE_PACKAGE_VERSION = '6.6.6-node-pi';
+
+  public static async injectFakePackageVersion(
+    cwd: string,
+    abortController?: AbortController
+  ): Promise<TerminalResponse> {
+    return await TerminalService.executeCommand({
+      command: 'bash',
+      args: [
+        PathService.getExtraResourcesScriptPath('inject_fake_pkg_version.sh'),
+        NodeService.FAKE_PACKAGE_VERSION,
+      ],
+      cwd,
+      traceOnTime: true,
+      abortController,
+    });
+  }
+
+  public static async restoreFakePackageVersion(
+    cwd: string,
+    abortController?: AbortController
+  ): Promise<TerminalResponse> {
+    return await TerminalService.executeCommand({
+      command: 'bash',
+      args: [
+        PathService.getExtraResourcesScriptPath('restore_fake_pkg_version.sh'),
       ],
       cwd,
       traceOnTime: true,
