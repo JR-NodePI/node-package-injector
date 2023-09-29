@@ -44,3 +44,20 @@
 .content::after {
   height: calc(24px + var(--ft-footer-height));
 }
+
+.header_area {
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: default;
+  -webkit-app-region: drag;
+  z-index: 2;
+  margin: 0;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: var(--ft-header-height);
+}
+.header_area * {
+  pointer-events: none;
+}
