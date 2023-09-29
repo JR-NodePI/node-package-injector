@@ -2,6 +2,11 @@ import { useEffect, useState } from 'react';
 
 import PackageScript from '@renderer/models/PackageScript';
 import NodeService from '@renderer/services/NodeService/NodeService';
+import DragAndDropSorter from 'fratch-ui/components/DragAndDropSorter/DragAndDropSorter';
+import {
+  DraggableItem,
+  SortedDraggableItem,
+} from 'fratch-ui/components/DragAndDropSorter/DragAndDropSorterProps';
 import { type SelectOption } from 'fratch-ui/components/Form/Select/SelectProps';
 
 import { PackageScriptRenderer } from './components/PackageScriptRenderer';
@@ -169,30 +174,41 @@ export default function PackageScripts({
     );
   };
 
+  const handleSortChange = (
+    draggableItems: SortedDraggableItem<PackageScript>[]
+  ): void => {
+    setSelectedScrips(draggableItems.map(({ dataItem }) => dataItem.clone()));
+  };
+
   const noSelectedScriptOptions = scriptOptions.filter(({ value }) =>
     selectedScrips.every(({ scriptName }) => scriptName !== value.scriptName)
   );
 
   return (
-    <>
-      {selectedScrips.map((script, index) => {
-        const showAddButton =
-          index === selectedScrips.length - 1 &&
-          scriptOptions.length > selectedScrips.length;
-
-        return (
-          <PackageScriptRenderer
-            key={`${script.id}-${script.scriptName}`}
-            index={index}
-            onAdd={handleAddScript}
-            onChange={handleScriptChange}
-            onRemove={handleRemoveScript}
-            script={script}
-            scriptOptions={noSelectedScriptOptions}
-            showAddButton={showAddButton}
-          />
-        );
-      })}
-    </>
+    <DragAndDropSorter
+      onChange={handleSortChange}
+      items={selectedScrips.map<DraggableItem<PackageScript>>(
+        (script, index) => {
+          const showAddButton =
+            index === selectedScrips.length - 1 &&
+            scriptOptions.length > selectedScrips.length;
+          return {
+            dataItem: script,
+            children: (
+              <PackageScriptRenderer
+                key={`${script.id}-${script.scriptName}`}
+                index={index}
+                onAdd={handleAddScript}
+                onChange={handleScriptChange}
+                onRemove={handleRemoveScript}
+                script={script}
+                scriptOptions={noSelectedScriptOptions}
+                showAddButton={showAddButton}
+              />
+            ),
+          };
+        }
+      )}
+    />
   );
 }
