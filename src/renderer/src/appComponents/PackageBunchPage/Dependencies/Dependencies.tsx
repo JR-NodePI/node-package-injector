@@ -123,11 +123,7 @@ function Dependencies(): JSX.Element {
     dependency: DependencyPackage,
     scripts: PackageScript[]
   ): void => {
-    changeDependencyProp(
-      dependency,
-      'scripts',
-      scripts.filter(({ scriptName }) => Boolean(scriptName.trim()))
-    );
+    changeDependencyProp(dependency, 'scripts', scripts);
   };
 
   if (!activeTargetPackage?.isValidPackage) {

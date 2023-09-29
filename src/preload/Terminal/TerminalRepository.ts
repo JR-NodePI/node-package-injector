@@ -201,6 +201,8 @@ export default class TerminalRepository {
           new RegExp('error ', 'gi'),
           new RegExp('error: ', 'gi'),
           new RegExp('command not found', 'gi'),
+          new RegExp('no such file or directory', 'gi'),
+          new RegExp('is not a directory', 'gi'),
         ].some(regExp => regExp.test(cleanMessage));
 
         if (isError && !ignoreStderrErrors) {
