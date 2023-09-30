@@ -1,4 +1,3 @@
-import { ADDITIONAL_PACKAGE_SCRIPTS } from '@renderer/appComponents/PackageBunchPage/PackageSelector/PackageScripts/PackageScriptsConstants';
 import { promiseAllSequentially } from '@renderer/helpers/promisesHelpers';
 import { DependencyMode } from '@renderer/models/DependencyConstants';
 import DependencyPackage from '@renderer/models/DependencyPackage';
@@ -203,15 +202,15 @@ export default class BuildProcessService {
       };
     }
 
-    let script = (await NodeService.checkYarn(cwd))
+    const script = (await NodeService.checkYarn(cwd))
       ? `yarn ${packageScript.scriptName}`
       : (await NodeService.checkPnpm(cwd))
       ? `pnpm run ${packageScript.scriptName}`
       : `npm run ${packageScript.scriptName}`;
 
-    if (ADDITIONAL_PACKAGE_SCRIPTS[packageScript.scriptName] != null) {
-      script = ADDITIONAL_PACKAGE_SCRIPTS[packageScript.scriptName].scriptValue;
-    }
+    // if (ADDITIONAL_PACKAGE_SCRIPTS[packageScript.scriptName] != null) {
+    //   script = ADDITIONAL_PACKAGE_SCRIPTS[packageScript.scriptName].scriptValue;
+    // }
 
     const output = await NodeService.runScript(cwd, script, abortController);
 

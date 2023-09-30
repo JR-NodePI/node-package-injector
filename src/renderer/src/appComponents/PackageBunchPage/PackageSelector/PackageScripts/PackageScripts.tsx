@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 
+import useGlobalData from '@renderer/appComponents/GlobalDataProvider/useGlobalData';
 import PackageScript from '@renderer/models/PackageScript';
 import NodeService from '@renderer/services/NodeService/NodeService';
 import DragAndDropSorter from 'fratch-ui/components/DragAndDropSorter/DragAndDropSorter';
@@ -8,183 +9,177 @@ import {
   SortedDraggableItem,
 } from 'fratch-ui/components/DragAndDropSorter/DragAndDropSorterProps';
 import { type SelectOption } from 'fratch-ui/components/Form/Select/SelectProps';
+import useDeepCompareEffect from 'use-deep-compare-effect';
 
 import { PackageScriptRenderer } from './components/PackageScriptRenderer';
-import {
-  ADDITIONAL_COMMON_PACKAGE_SCRIPTS,
-  ADDITIONAL_PACKAGE_SCRIPTS,
-  ADDITIONAL_PACKAGE_SCRIPTS_NAMES,
-} from './PackageScriptsConstants';
 
 type PackageScriptOption = SelectOption<PackageScript>;
+type PackageScriptsProps = {
+  cwd?: string;
+  selectedScripts?: PackageScript[];
+  onChange: (scripts: PackageScript[]) => void;
+  findInstallScript?: boolean;
+  findBuildScript?: boolean;
+};
 
 export default function PackageScripts({
   cwd = '',
-  initialScripts,
+  selectedScripts,
   onChange,
   findInstallScript,
   findBuildScript,
-}: {
-  cwd?: string;
-  initialScripts?: PackageScript[];
-  onChange?: (scripts: PackageScript[]) => void;
-  findInstallScript?: boolean;
-  findBuildScript?: boolean;
-}): JSX.Element {
-  const currentScripts = initialScripts ?? [];
+}: PackageScriptsProps): JSX.Element {
+  const { additionalPackageScripts } = useGlobalData();
+
+  const [packageScripts, setPackageScripts] = useState<PackageScript[]>([]);
   const [scriptOptions, setScriptOptions] = useState<PackageScriptOption[]>([]);
 
+  // load package.json scripts
+  const [initialScripts] = useState<PackageScript[]>(selectedScripts ?? []);
   useEffect(() => {
-    if (currentScripts.length === 0) {
-      onChange?.([new PackageScript()]);
-    }
-  }, [onChange, currentScripts.length]);
+    const abortController = new AbortController();
 
-  const [isYarn, setIsYarn] = useState<boolean>();
-  const [isPnpm, setIsPnpm] = useState<boolean>();
-  useEffect(() => {
     (async (): Promise<void> => {
-      setIsPnpm(await NodeService.checkPnpm(cwd ?? ''));
-      setIsYarn(await NodeService.checkYarn(cwd ?? ''));
-    })();
-  }, [cwd]);
-
-  // load package scripts
-  useEffect(() => {
-    (async (): Promise<void> => {
-      const scripts = await NodeService.getPackageScripts(cwd ?? '');
-
-      const options = Object.entries(scripts).map(
-        ([scriptName, scriptValue]) => ({
-          value: new PackageScript(scriptName, scriptValue),
-          label: scriptName,
-        })
+      const rawScripts = await NodeService.getPackageScripts(cwd ?? '');
+      const scripts = Object.entries(rawScripts).map(
+        ([scriptName, scriptValue]) =>
+          initialScripts.find(script => script.scriptName === scriptName) ??
+          new PackageScript(scriptName, scriptValue)
       );
-      setScriptOptions(options);
+
+      if (abortController.signal.aborted) {
+        return;
+      }
+
+      setPackageScripts(scripts);
     })();
-  }, [cwd]);
 
-  //add additional install script
-  useEffect(() => {
-    if (scriptOptions.length === 0 || (isYarn == null && isPnpm == null)) {
+    return () => {
+      abortController.abort();
+    };
+  }, [cwd, initialScripts]);
+
+  // create select options from package scripts and additional scripts
+  useDeepCompareEffect(() => {
+    if (!packageScripts?.length) {
       return;
     }
 
-    const hasAdditionalInstallScript = scriptOptions.some(({ label }) =>
-      (Object.values(ADDITIONAL_PACKAGE_SCRIPTS_NAMES) as string[]).includes(
-        label
-      )
-    );
-
-    if (hasAdditionalInstallScript) {
-      return;
-    }
-
-    const scriptName = isPnpm
-      ? ADDITIONAL_PACKAGE_SCRIPTS_NAMES.PNPM_INSTALL
-      : isYarn
-      ? ADDITIONAL_PACKAGE_SCRIPTS_NAMES.YARN_INSTALL
-      : ADDITIONAL_PACKAGE_SCRIPTS_NAMES.NPM_INSTALL;
-
-    const additionalScriptOptions: PackageScriptOption[] = [];
-    additionalScriptOptions.push({
-      label: scriptName,
-      value: ADDITIONAL_PACKAGE_SCRIPTS[scriptName],
-    });
-
-    if (window.electron.process.platform === 'darwin') {
-      additionalScriptOptions.push({
-        label: ADDITIONAL_PACKAGE_SCRIPTS_NAMES.OPEN_CURRENT_DIR_IN_I_TERM,
-        value:
-          ADDITIONAL_PACKAGE_SCRIPTS[
-            ADDITIONAL_PACKAGE_SCRIPTS_NAMES.OPEN_CURRENT_DIR_IN_I_TERM
-          ],
-      });
-    }
-
-    if (window.electron.process.platform === 'linux') {
-      additionalScriptOptions.push({
-        label:
-          ADDITIONAL_PACKAGE_SCRIPTS_NAMES.OPEN_CURRENT_DIR_IN_GENOME_TERMINAL,
-        value:
-          ADDITIONAL_PACKAGE_SCRIPTS[
-            ADDITIONAL_PACKAGE_SCRIPTS_NAMES.OPEN_CURRENT_DIR_IN_GENOME_TERMINAL
-          ],
-      });
-    }
-
-    additionalScriptOptions.push(
-      ...ADDITIONAL_COMMON_PACKAGE_SCRIPTS.map(script => ({
+    const options: PackageScriptOption[] = [
+      ...additionalPackageScripts.map(script => ({
+        label: `🔗 ${script.scriptName}`,
+        labelElement: <i>🔗 {script.scriptName}</i>,
+        value: script,
+      })),
+      ...packageScripts.map(script => ({
         label: script.scriptName,
         value: script,
-      }))
+      })),
+    ];
+
+    setScriptOptions(options);
+  }, [packageScripts, additionalPackageScripts]);
+
+  // update selected scripts when additional scripts change
+  useDeepCompareEffect(() => {
+    if (!selectedScripts?.length || !additionalPackageScripts?.length) {
+      return;
+    }
+
+    const additionalScriptComparer =
+      (scriptA: PackageScript) =>
+      (scriptB: PackageScript): boolean =>
+        scriptA.id === scriptB.id &&
+        (scriptA.scriptName !== scriptB.scriptName ||
+          scriptA.scriptValue !== scriptB.scriptValue);
+
+    const hasAdditionalScriptsWithChanges = selectedScripts.some(script =>
+      additionalPackageScripts.some(additionalScriptComparer(script))
     );
 
-    setScriptOptions([...additionalScriptOptions, ...scriptOptions]);
-  }, [scriptOptions, isYarn, isPnpm]);
+    if (!hasAdditionalScriptsWithChanges) {
+      return;
+    }
+
+    const changedScripts = selectedScripts.map(script => {
+      const additionalScript = additionalPackageScripts.find(
+        additionalScriptComparer(script)
+      );
+      return additionalScript ? additionalScript : script;
+    });
+
+    onChange(changedScripts);
+  }, [selectedScripts, additionalPackageScripts, onChange]);
 
   // try to determine the install and pack script
-  useEffect(() => {
-    (async (): Promise<void> => {
-      if (initialScripts == null && scriptOptions.length > 0) {
-        const installScript = findInstallScript
-          ? scriptOptions.find(
-              ({ label, value }) =>
-                ADDITIONAL_PACKAGE_SCRIPTS[label] == null &&
-                / install/gi.test(value.scriptValue) &&
-                !/prepare/gi.test(value.scriptName)
-            )
-          : undefined;
+  useDeepCompareEffect(() => {
+    const abortController = new AbortController();
 
+    (async (): Promise<void> => {
+      if (selectedScripts == null && packageScripts.length > 0) {
         const scripts: PackageScript[] = [];
 
+        const installScript =
+          findInstallScript &&
+          packageScripts.find(
+            ({ scriptValue, scriptName }) =>
+              / install/gi.test(scriptValue) && !/prepare/gi.test(scriptName)
+          );
+
         if (installScript) {
-          scripts.push(installScript.value);
+          scripts.push(installScript);
         } else {
           scripts.push(new PackageScript());
         }
 
-        if (findBuildScript) {
-          const buildScript = scriptOptions.find(
-            ({ value }) =>
-              / pack /gi.test(value.scriptValue) ||
-              / pack$/gi.test(value.scriptValue)
+        const buildScript =
+          findBuildScript &&
+          packageScripts.find(
+            ({ scriptValue }) =>
+              / pack /gi.test(scriptValue) || / pack$/gi.test(scriptValue)
           );
 
-          if (buildScript) {
-            scripts.push(buildScript.value);
-          }
+        if (buildScript) {
+          scripts.push(buildScript);
         }
 
-        if (scripts.length > 0) {
-          onChange?.(scripts);
+        if (abortController.signal.aborted) {
+          return;
         }
+
+        onChange(scripts);
       }
     })();
+
+    return () => {
+      abortController.abort();
+    };
   }, [
     findBuildScript,
     findInstallScript,
-    initialScripts,
     onChange,
-    scriptOptions,
+    packageScripts,
+    selectedScripts,
   ]);
 
   const handleAddScript = (): void => {
-    onChange?.([...currentScripts, new PackageScript()]);
+    onChange([...(selectedScripts ?? []), new PackageScript()]);
   };
 
   const handleRemoveScript = (indexToRemove: number): void => {
     const newScripts =
-      currentScripts.filter((_script, index) => index !== indexToRemove) ?? [];
-    onChange?.(newScripts.length > 0 ? newScripts : [new PackageScript()]);
+      (selectedScripts ?? []).filter(
+        (_script, index) => index !== indexToRemove
+      ) ?? [];
+    onChange(newScripts.length > 0 ? newScripts : [new PackageScript()]);
   };
 
   const handleScriptChange = (
     modifiedScriptIndex: number,
     modifiedScript?: PackageScript
   ): void => {
-    onChange?.(
-      currentScripts.map((script, index) =>
+    onChange(
+      (selectedScripts ?? []).map((script, index) =>
         index === modifiedScriptIndex
           ? modifiedScript ?? new PackageScript()
           : script.clone()
@@ -195,21 +190,26 @@ export default function PackageScripts({
   const handleSortChange = (
     draggableItems: SortedDraggableItem<PackageScript>[]
   ): void => {
-    onChange?.(draggableItems.map(({ dataItem }) => dataItem.clone()));
+    onChange(draggableItems.map(({ dataItem }) => dataItem.clone()));
   };
 
-  const noSelectedScriptOptions = scriptOptions.filter(({ value }) =>
-    currentScripts.every(({ scriptName }) => scriptName !== value.scriptName)
-  );
+  const scriptOptionsHiddenUsed = scriptOptions.map(option => {
+    const visible = !(selectedScripts ?? []).some(
+      ({ id, scriptName }) =>
+        id === option.value.id || scriptName === option.value.scriptName
+    );
+    return { ...option, visible };
+  });
 
   return (
     <DragAndDropSorter
       onChange={handleSortChange}
-      items={currentScripts.map<DraggableItem<PackageScript>>(
+      items={(selectedScripts ?? []).map<DraggableItem<PackageScript>>(
         (script, index) => {
           const showAddButton =
-            index === currentScripts.length - 1 &&
-            scriptOptions.length > currentScripts.length;
+            index === (selectedScripts ?? []).length - 1 &&
+            scriptOptions.length > (selectedScripts ?? []).length;
+
           return {
             dataItem: script,
             children: (
@@ -220,7 +220,7 @@ export default function PackageScripts({
                 onChange={handleScriptChange}
                 onRemove={handleRemoveScript}
                 script={script}
-                scriptOptions={noSelectedScriptOptions}
+                scriptOptions={scriptOptionsHiddenUsed}
                 showAddButton={showAddButton}
               />
             ),

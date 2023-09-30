@@ -35,7 +35,7 @@ function AllPackageScripts({
       <PackageScripts
         onChange={onScriptsChange}
         cwd={nodePackage?.cwd}
-        initialScripts={nodePackage?.scripts}
+        selectedScripts={nodePackage?.scripts}
         findInstallScript={findInstallScript}
         findBuildScript={findBuildScript}
       />
@@ -46,7 +46,7 @@ function AllPackageScripts({
           <PackageScripts
             onChange={onAfterBuildScriptsChange}
             cwd={nodePackage?.cwd}
-            initialScripts={nodePackage?.afterBuildScripts}
+            selectedScripts={nodePackage?.afterBuildScripts}
           />
         </>
       )}

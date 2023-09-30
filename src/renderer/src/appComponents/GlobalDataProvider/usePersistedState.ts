@@ -1,33 +1,37 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { parseModel } from '@renderer/helpers/parseHelpers';
 import PersistService from '@renderer/services/PersistService';
 
-type usePersistedStateProps<T> = [T, (newData: T) => Promise<void>, boolean];
+type SetDataAndPersistFn<T> = (newData: T) => Promise<void>;
+type usePersistedStateProps<T> = [T, SetDataAndPersistFn<T>, boolean];
 
 export default function usePersistedState<T>(
   key: string,
   defaultValue: T,
   templateValue?: T
 ): usePersistedStateProps<T> {
+  const [templateValueMemo] = useState<T | undefined>(templateValue);
   const [loading, setLoading] = useState<boolean>(true);
   const [data, setData] = useState<T>(defaultValue);
 
-  const setDataAndPersist = (newData: T): Promise<void> => {
-    setData(newData);
-    return PersistService.setItem<T>(key, newData);
-  };
+  const refSetDataAndPersist = useRef<SetDataAndPersistFn<T>>(
+    async (newData: T): Promise<void> => {
+      setData(newData);
+      await PersistService.setItem<T>(key, newData);
+    }
+  );
 
   useEffect(() => {
     (async (): Promise<void> => {
       const persistedData = await PersistService.getItem<T>(key);
-      const parsedData = parseModel<T>(persistedData, templateValue);
+      const parsedData = parseModel<T>(persistedData, templateValueMemo);
       if (parsedData !== undefined) {
         setData(parsedData);
       }
       setLoading(false);
     })();
-  }, [key, templateValue]);
+  }, [key, templateValueMemo]);
 
-  return [data, setDataAndPersist, loading];
+  return [data, refSetDataAndPersist.current, loading];
 }

@@ -26,25 +26,6 @@ export default function PackageScriptSelector({
 }: PackageScriptSelector): JSX.Element {
   const [id] = useState<string>(crypto.randomUUID());
 
-  const finalOptions = useMemo(() => {
-    let options = [...scriptOptions];
-
-    const mustAddSelected = scriptOptions.every(
-      option =>
-        selectedScript.scriptName &&
-        option.value.scriptName !== selectedScript.scriptName
-    );
-
-    if (mustAddSelected) {
-      options = [
-        { value: selectedScript, label: selectedScript.scriptName },
-        ...options,
-      ];
-    }
-
-    return options.toSorted((a, b) => a.label.localeCompare(b.label));
-  }, [scriptOptions, selectedScript]);
-
   const handleOnChange = (selectedScript?: PackageScript): void => {
     onChange(selectedScript);
   };
@@ -62,7 +43,7 @@ export default function PackageScriptSelector({
           <Form.Select
             id={id}
             value={selectedScript}
-            options={finalOptions}
+            options={scriptOptions}
             placeholder={selectorPlaceholder}
             onChange={handleOnChange}
             cleanable

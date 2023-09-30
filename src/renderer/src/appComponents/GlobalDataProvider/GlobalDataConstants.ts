@@ -16,3 +16,5 @@ packageBunchTemplateValue.dependencies[0].afterBuildScripts = [
 ];
 
 export const packageBunchesTemplateValue = [packageBunchTemplateValue];
+
+export const additionalPackageScriptsTemplateValue = [new PackageScript()];

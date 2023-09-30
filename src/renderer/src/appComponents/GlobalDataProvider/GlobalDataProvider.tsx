@@ -3,9 +3,13 @@ import { useCallback, useMemo } from 'react';
 import DependencyPackage from '@renderer/models/DependencyPackage';
 import NodePackage from '@renderer/models/NodePackage';
 import PackageBunch from '@renderer/models/PackageBunch';
+import PackageScript from '@renderer/models/PackageScript';
 import { debounce } from 'lodash';
 
-import { packageBunchesTemplateValue } from './GlobalDataConstants';
+import {
+  additionalPackageScriptsTemplateValue,
+  packageBunchesTemplateValue,
+} from './GlobalDataConstants';
 import GlobalDataContext, { GlobalDataProps } from './GlobalDataContext';
 import useLoadTerminal from './useCheckInitials';
 import usePersistedState from './usePersistedState';
@@ -17,6 +21,16 @@ export default function GlobalDataProvider({
 }): JSX.Element {
   const { isGlobalLoading, isValidTerminal, nodeData, setIsGlobalLoading } =
     useLoadTerminal();
+
+  const [
+    additionalPackageScripts,
+    setAdditionalPackageScripts,
+    isAdditionalPackageScriptsLoading,
+  ] = usePersistedState<PackageScript[]>(
+    'additionalPackageScripts',
+    [],
+    additionalPackageScriptsTemplateValue
+  );
 
   const [isWSLActive, setIsWSLActive, isWSLActiveLoading] =
     usePersistedState<boolean>('isWSLActive', false);
@@ -70,12 +84,16 @@ export default function GlobalDataProvider({
       activePackageBunch?.targetPackage ?? new NodePackage();
 
     const loading =
-      isGlobalLoading || packageBunchesLoading || isWSLActiveLoading;
+      isAdditionalPackageScriptsLoading ||
+      isGlobalLoading ||
+      isWSLActiveLoading ||
+      packageBunchesLoading;
 
     return {
       activeDependencies,
       activePackageBunch,
       activeTargetPackage,
+      additionalPackageScripts,
       isValidTerminal,
       isWSLActive,
       loading,
@@ -83,11 +101,14 @@ export default function GlobalDataProvider({
       packageBunches,
       setActiveDependencies,
       setActiveTargetPackage,
+      setAdditionalPackageScripts,
       setIsGlobalLoading,
       setIsWSLActive,
       setPackageBunches,
     };
   }, [
+    additionalPackageScripts,
+    isAdditionalPackageScriptsLoading,
     isGlobalLoading,
     isValidTerminal,
     isWSLActive,
@@ -97,6 +118,7 @@ export default function GlobalDataProvider({
     packageBunchesLoading,
     setActiveDependencies,
     setActiveTargetPackage,
+    setAdditionalPackageScripts,
     setIsGlobalLoading,
     setIsWSLActive,
     setPackageBunches,
