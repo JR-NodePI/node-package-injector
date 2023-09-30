@@ -2,6 +2,7 @@ import TerminalService from '@renderer/services/TerminalService';
 import { ColorSchemeSwitcher, SettingsMenu } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
+import AdditionalPackageScripts from '../AdditionalPackageScripts/AdditionalPackageScripts';
 import ExportImportBunch from './ExportImportBunch/ExportImportBunch';
 import NodeInfo from './NodeInfo/NodeInfo';
 import OpenDevTools from './OpenDevTools/OpenDevTools';
@@ -23,6 +24,8 @@ export default function MainSettings({
   }
 
   settingsItems.push(<ExportImportBunch />);
+
+  settingsItems.push(<AdditionalPackageScripts />);
 
   settingsItems.push(<NodeInfo />);
 

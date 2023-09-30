@@ -1,7 +1,8 @@
 .config_sharing {
-  display: flex;
+  display: inline-flex;
   gap: 16px;
   margin: 12px 0;
+  max-width: 280px;
 }
 .config_sharing > * {
   position: relative;
