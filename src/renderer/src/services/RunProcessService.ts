@@ -1,6 +1,7 @@
 import { promiseAllSequentially } from '@renderer/helpers/promisesHelpers';
-import DependencyPackage from '@renderer/models/DependencyPackage';
-import NodePackage from '@renderer/models/NodePackage';
+import type DependencyPackage from '@renderer/models/DependencyPackage';
+import type NodePackage from '@renderer/models/NodePackage';
+import type PackageScript from '@renderer/models/PackageScript';
 import GitService from '@renderer/services/GitService';
 import { type TerminalResponse } from '@renderer/services/TerminalService';
 
@@ -16,11 +17,13 @@ const hasError = (responses: ProcessServiceResponse[]): boolean =>
 
 export default class RunProcessService {
   public static async run({
+    additionalPackageScripts,
     targetPackage,
     dependencies,
     abortController,
     isWSLActive,
   }: {
+    additionalPackageScripts: PackageScript[];
     targetPackage: NodePackage;
     dependencies: DependencyPackage[];
     abortController?: AbortController;
@@ -74,6 +77,7 @@ export default class RunProcessService {
 
     // Run package scripts
     const scriptsResponses = await BuildProcessService.runPackageScripts({
+      additionalPackageScripts,
       packageScripts: targetPackage.scripts,
       cwd,
       packageName,
@@ -86,6 +90,7 @@ export default class RunProcessService {
 
     // Run dependencies in build mode
     const dependenciesResponses = await RunProcessService.runDependencies({
+      additionalPackageScripts,
       dependencies,
       tmpDir,
       abortController,
@@ -111,6 +116,7 @@ export default class RunProcessService {
     // Run after build dependencies package scripts
     const afterBuildScriptsResponses =
       await BuildProcessService.runPackageScripts({
+        additionalPackageScripts,
         packageScripts: targetPackage.afterBuildScripts,
         cwd,
         packageName,
@@ -143,10 +149,12 @@ export default class RunProcessService {
   }
 
   private static async runDependencies({
+    additionalPackageScripts,
     dependencies,
     tmpDir,
     abortController,
   }: {
+    additionalPackageScripts: PackageScript[];
     dependencies: DependencyPackage[];
     tmpDir: string;
     abortController?: AbortController;
@@ -163,6 +171,7 @@ export default class RunProcessService {
     }
 
     const dependenciesResponses = await BuildProcessService.buildDependencies({
+      additionalPackageScripts,
       sortedRelatedDependencies,
       tmpDir,
       abortController,

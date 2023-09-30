@@ -19,10 +19,12 @@ const hasError = (responses: ProcessServiceResponse[]): boolean =>
 
 export default class BuildProcessService {
   public static async buildDependencies({
+    additionalPackageScripts,
     sortedRelatedDependencies,
     tmpDir,
     abortController,
   }: {
+    additionalPackageScripts: PackageScript[];
     sortedRelatedDependencies: RelatedDependencyProjection[];
     tmpDir: string;
     abortController?: AbortController;
@@ -45,6 +47,7 @@ export default class BuildProcessService {
     const dependenciesPromises = dependenciesToBuild.map(
       relatedDependency => () =>
         BuildProcessService.buildSingleDependency({
+          additionalPackageScripts,
           relatedDependency,
           tmpDir,
           abortController,
@@ -58,10 +61,12 @@ export default class BuildProcessService {
   }
 
   private static async buildSingleDependency({
+    additionalPackageScripts,
     relatedDependency,
     tmpDir,
     abortController,
   }: {
+    additionalPackageScripts: PackageScript[];
     relatedDependency: RelatedDependencyProjection;
     tmpDir: string;
     abortController?: AbortController;
@@ -103,6 +108,7 @@ export default class BuildProcessService {
 
     // Run dependencies scripts
     const scriptsResponses = await BuildProcessService.runPackageScripts({
+      additionalPackageScripts,
       packageScripts: dependency.scripts,
       cwd: depCwd,
       packageName: depName,
@@ -145,11 +151,13 @@ export default class BuildProcessService {
   }
 
   public static async runPackageScripts({
+    additionalPackageScripts,
     packageScripts = [],
     cwd,
     packageName,
     abortController,
   }: {
+    additionalPackageScripts: PackageScript[];
     packageScripts?: PackageScript[];
     cwd: string;
     packageName?: string;
@@ -169,6 +177,7 @@ export default class BuildProcessService {
       .map(
         packageScript => () =>
           BuildProcessService.runPackageSingleScript({
+            additionalPackageScripts,
             packageScript,
             cwd,
             packageName,
@@ -183,11 +192,13 @@ export default class BuildProcessService {
   }
 
   private static async runPackageSingleScript({
+    additionalPackageScripts,
     packageScript,
     cwd,
     packageName,
     abortController,
   }: {
+    additionalPackageScripts: PackageScript[];
     packageScript: PackageScript;
     cwd: string;
     packageName?: string;
@@ -202,15 +213,18 @@ export default class BuildProcessService {
       };
     }
 
-    const script = (await NodeService.checkYarn(cwd))
+    let script = (await NodeService.checkYarn(cwd))
       ? `yarn ${packageScript.scriptName}`
       : (await NodeService.checkPnpm(cwd))
       ? `pnpm run ${packageScript.scriptName}`
       : `npm run ${packageScript.scriptName}`;
 
-    // if (ADDITIONAL_PACKAGE_SCRIPTS[packageScript.scriptName] != null) {
-    //   script = ADDITIONAL_PACKAGE_SCRIPTS[packageScript.scriptName].scriptValue;
-    // }
+    const isAdditionalScript = additionalPackageScripts.find(
+      ({ id }) => id === packageScript.id
+    );
+    if (isAdditionalScript) {
+      script = packageScript.scriptValue;
+    }
 
     const output = await NodeService.runScript(cwd, script, abortController);
 

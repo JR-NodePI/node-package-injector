@@ -12,8 +12,12 @@ import styles from './RunProcess.module.css';
 
 export default function RunProcess(): JSX.Element {
   const { addToaster } = useContext(ToasterListContext);
-  const { activeTargetPackage, activeDependencies, isWSLActive } =
-    useGlobalData();
+  const {
+    additionalPackageScripts,
+    activeTargetPackage,
+    activeDependencies,
+    isWSLActive,
+  } = useGlobalData();
 
   const [isRunning, setIsRunning] = useState(false);
   const [isSyncing] = useState(false); //TODO: get from process
@@ -26,6 +30,7 @@ export default function RunProcess(): JSX.Element {
 
     const run = async (): Promise<void> => {
       const output = await RunProcessService.run({
+        additionalPackageScripts,
         targetPackage: activeTargetPackage,
         dependencies: activeDependencies,
         abortController,
@@ -64,6 +69,7 @@ export default function RunProcess(): JSX.Element {
       }
     };
   }, [
+    additionalPackageScripts,
     isRunning,
     addToaster,
     activeTargetPackage,
