@@ -15,11 +15,11 @@ export type PackageSelectorProps = {
   additionalComponent?: JSX.Element;
   disabled?: boolean;
   disableScripts?: boolean;
-  onGitPullChange?: (checked: boolean) => void;
-  onPathChange?: (cwd: string, isValidPackage: boolean) => void;
-  onScriptsChange?: (scripts: PackageScript[]) => void;
+  onGitPullChange: (checked: boolean) => void;
+  onPathChange: (cwd: string, isValidPackage: boolean) => void;
+  onScriptsChange: (scripts: PackageScript[]) => void;
   onAfterBuildScriptsChange?: (scripts: PackageScript[]) => void;
-  nodePackage?: NodePackage;
+  nodePackage: NodePackage;
   findInstallScript?: boolean;
   findBuildScript?: boolean;
 };
