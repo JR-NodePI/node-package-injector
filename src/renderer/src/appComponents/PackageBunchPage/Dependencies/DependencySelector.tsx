@@ -56,18 +56,16 @@ export default function DependencySelector({
         findInstallScript
         findBuildScript
       />
-      {onClickRemove && (
-        <div className={c(styles.buttons)}>
-          <Button
-            disabled={disabled}
-            size="small"
-            label="Remove dependency"
-            onClick={(): void => onClickRemove(dependency)}
-            Icon={Icons.IconClose}
-            isRound
-          />
-        </div>
-      )}
+      <div className={c(styles.buttons)}>
+        <Button
+          disabled={disabled}
+          size="small"
+          label="Remove dependency"
+          onClick={(): void => onClickRemove(dependency)}
+          Icon={Icons.IconClose}
+          isRound
+        />
+      </div>
     </div>
   );
 }
