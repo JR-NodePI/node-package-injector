@@ -1,4 +1,5 @@
 import { promiseAllSequentially } from '@renderer/helpers/promisesHelpers';
+import { DependencyMode } from '@renderer/models/DependencyConstants';
 import type DependencyPackage from '@renderer/models/DependencyPackage';
 import type NodePackage from '@renderer/models/NodePackage';
 import type PackageScript from '@renderer/models/PackageScript';
@@ -98,12 +99,17 @@ export default class RunProcessService {
       return scriptsResponses;
     }
 
-    onDependenciesBuildStart?.();
+    const dependenciesToBuild = dependencies.filter(
+      ({ mode }) => mode === DependencyMode.BUILD
+    );
+    if (dependenciesToBuild.length) {
+      onDependenciesBuildStart?.();
+    }
 
     // Run dependencies in build mode
     const dependenciesResponses = await RunProcessService.runDependencies({
       additionalPackageScripts,
-      dependencies,
+      dependencies: dependenciesToBuild,
       tmpDir,
       abortController,
     });
@@ -116,7 +122,7 @@ export default class RunProcessService {
     const injectDependenciesResponses =
       await BuildProcessService.injectDependencies({
         targetPackage,
-        dependencies,
+        dependencies: dependenciesToBuild,
         tmpDir,
         abortController,
       });
@@ -124,10 +130,6 @@ export default class RunProcessService {
       abortController?.abort();
       return injectDependenciesResponses;
     }
-
-    onDependenciesSyncStart?.();
-
-    await new Promise(resolve => setTimeout(resolve, 3000));
 
     onAfterBuildStart?.();
 
@@ -143,6 +145,15 @@ export default class RunProcessService {
     if (hasError(afterBuildScriptsResponses)) {
       abortController?.abort();
       return afterBuildScriptsResponses;
+    }
+
+    // Sync dependencies
+    const dependenciesToSync = dependencies.filter(
+      ({ mode }) => mode === DependencyMode.SYNC
+    );
+    if (dependenciesToSync.length) {
+      onDependenciesSyncStart?.();
+      // TODO: run sync by SyncProcessService
     }
 
     return dependenciesResponses.flat();
