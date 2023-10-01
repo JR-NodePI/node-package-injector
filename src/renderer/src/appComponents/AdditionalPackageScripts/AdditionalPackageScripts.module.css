@@ -1,5 +1,6 @@
 .wrapper {
   width: calc(100vw - 64px);
+  max-width: 780px;
   border-top: solid 1px var(--ft-color-grey-2);
   padding: 12px;
   background-color: var(--ft-color-background);
@@ -26,14 +27,12 @@
   gap: 8px;
 }
 .overflow .script .script_name {
-  flex: auto;
+  flex: 40%;
   height: 40px;
   margin-bottom: 8px;
-
-  width: calc(42vw);
 }
 .overflow .script .script_value {
-  flex: 100%;
+  flex: 60%;
   height: 40px;
   margin-bottom: 8px;
   margin-right: 8px;
