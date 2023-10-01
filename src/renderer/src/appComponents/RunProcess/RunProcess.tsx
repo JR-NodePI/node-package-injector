@@ -45,11 +45,24 @@ export default function RunProcess(): JSX.Element {
   const [abortController, setAbortController] = useState<AbortController>();
 
   useDeepCompareEffect(() => {
-    const mustRun =
-      abortController?.signal != null && !abortController.signal.aborted;
+    let isSyncing = false;
+    const handleAbort = (): void => {
+      console.log('>>>----->> handleAbort', { isSyncing });
+      // TODO: stop sync by SyncProcessService
+    };
 
     const run = async (): Promise<void> => {
-      let isSyncing = false;
+      const mustRun =
+        abortController?.signal != null && !abortController.signal.aborted;
+
+      if (!mustRun) {
+        return;
+      }
+
+      abortController.signal.addEventListener('abort', handleAbort);
+
+      setStatus(STATUSES.RUNNING);
+
       const output = await RunProcessService.run({
         additionalPackageScripts,
         targetPackage: activeTargetPackage,
@@ -95,22 +108,10 @@ export default function RunProcess(): JSX.Element {
       }
     };
 
-    const handleAbort = (): void => {
-      //TODO: stop syncing by SyncProcessService
-    };
-
-    if (mustRun) {
-      run();
-      abortController.signal.addEventListener('abort', handleAbort);
-      setStatus(STATUSES.RUNNING);
-    }
+    run();
 
     return (): void => {
-      if (mustRun) {
-        abortController.signal.removeEventListener('abort', handleAbort);
-        abortController.abort();
-        setStatus(STATUSES.IDLE);
-      }
+      abortController?.signal.removeEventListener('abort', handleAbort);
     };
   }, [
     additionalPackageScripts,
@@ -126,10 +127,8 @@ export default function RunProcess(): JSX.Element {
   };
 
   const handleStopClick = (): void => {
-    if (abortController?.signal != null) {
-      abortController.abort();
-      setStatus(STATUSES.IDLE);
-    }
+    abortController?.abort();
+    setStatus(STATUSES.IDLE);
   };
 
   const processMsg = status.label;
