@@ -1,5 +1,5 @@
 import TerminalService from '@renderer/services/TerminalService';
-import { ColorSchemeSwitcher, SettingsMenu } from 'fratch-ui';
+import { ColorSchemeSwitcher, SettingsModal } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
 import AdditionalPackageScripts from '../AdditionalPackageScripts/AdditionalPackageScripts';
@@ -30,7 +30,7 @@ export default function MainSettings({
   settingsItems.push(<NodeInfo />);
 
   return (
-    <SettingsMenu
+    <SettingsModal
       className={c(className)}
       items={settingsItems}
       position="right"
