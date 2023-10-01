@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import useGlobalData from '@renderer/appComponents/GlobalDataProvider/useGlobalData';
 import PackageScript from '@renderer/models/PackageScript';
@@ -234,13 +234,17 @@ export default function PackageScripts({
     onChange(draggableItems.map(({ dataItem }) => dataItem.clone()));
   };
 
-  const scriptOptionsHiddenUsed = scriptOptions.map(option => {
-    const visible = !(selectedScripts ?? []).some(
-      ({ id, scriptName }) =>
-        id === option.value.id || scriptName === option.value.scriptName
-    );
-    return { ...option, visible };
-  });
+  const scriptOptionsHiddenUsed = useMemo(
+    () =>
+      scriptOptions.map(option => {
+        const visible = !(selectedScripts ?? []).some(
+          ({ id, scriptName }) =>
+            id === option.value.id || scriptName === option.value.scriptName
+        );
+        return { ...option, visible };
+      }),
+    [scriptOptions, selectedScripts]
+  );
 
   return (
     <DragAndDropSorter

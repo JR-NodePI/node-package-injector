@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import type PackageScript from '@renderer/models/PackageScript';
 import { Form } from 'fratch-ui';
@@ -30,6 +30,17 @@ export default function PackageScriptSelector({
     onChange(selectedScript);
   };
 
+  const options = useMemo(
+    () =>
+      scriptOptions.map(option => {
+        if (option.value.id === selectedScript?.id) {
+          return { ...option, visible: true };
+        }
+        return option;
+      }),
+    [scriptOptions, selectedScript?.id]
+  );
+
   const selectorPlaceholder = 'Select script...';
   return (
     <div className={c(styles.mode_scripts)}>
@@ -43,7 +54,7 @@ export default function PackageScriptSelector({
           <Form.Select
             id={id}
             value={selectedScript}
-            options={scriptOptions}
+            options={options}
             placeholder={selectorPlaceholder}
             onChange={handleOnChange}
             cleanable
