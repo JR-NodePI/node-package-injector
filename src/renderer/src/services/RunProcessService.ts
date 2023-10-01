@@ -22,12 +22,20 @@ export default class RunProcessService {
     dependencies,
     abortController,
     isWSLActive,
+    onTargetBuildStart,
+    onDependenciesBuildStart,
+    onDependenciesSyncStart,
+    onAfterBuildStart,
   }: {
     additionalPackageScripts: PackageScript[];
     targetPackage: NodePackage;
     dependencies: DependencyPackage[];
     abortController?: AbortController;
     isWSLActive?: boolean;
+    onTargetBuildStart?: () => void;
+    onDependenciesBuildStart?: () => void;
+    onDependenciesSyncStart?: () => void;
+    onAfterBuildStart?: () => void;
   }): Promise<ProcessServiceResponse[]> {
     const tmpDir = await PathService.getTmpDir({
       isWSLActive,
@@ -65,6 +73,8 @@ export default class RunProcessService {
       ];
     }
 
+    onTargetBuildStart?.();
+
     // package git pull
     const gitPullResponses = await RunProcessService.gitPullPackage({
       nodePackage: targetPackage,
@@ -87,6 +97,8 @@ export default class RunProcessService {
       abortController?.abort();
       return scriptsResponses;
     }
+
+    onDependenciesBuildStart?.();
 
     // Run dependencies in build mode
     const dependenciesResponses = await RunProcessService.runDependencies({
@@ -112,6 +124,12 @@ export default class RunProcessService {
       abortController?.abort();
       return injectDependenciesResponses;
     }
+
+    onDependenciesSyncStart?.();
+
+    await new Promise(resolve => setTimeout(resolve, 3000));
+
+    onAfterBuildStart?.();
 
     // Run after build dependencies package scripts
     const afterBuildScriptsResponses =

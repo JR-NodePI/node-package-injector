@@ -70,8 +70,7 @@ export default function PackageScripts({
 
     const options: PackageScriptOption[] = [
       ...filteredAdditionalPackageScripts.map(script => ({
-        label: `🔗 ${script.scriptName}`,
-        labelElement: <i>🔗 {script.scriptName}</i>,
+        label: `🤖 ${script.scriptName}`,
         value: script,
       })),
       ...packageScripts.map(script => ({
