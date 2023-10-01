@@ -30,6 +30,9 @@ export default function PackageScripts({
   findBuildScript,
 }: PackageScriptsProps): JSX.Element {
   const { additionalPackageScripts } = useGlobalData();
+  const filteredAdditionalPackageScripts = additionalPackageScripts.filter(
+    script => script.scriptName !== '' && script.scriptValue !== ''
+  );
 
   const [packageScripts, setPackageScripts] = useState<PackageScript[]>([]);
   const [scriptOptions, setScriptOptions] = useState<PackageScriptOption[]>([]);
@@ -66,7 +69,7 @@ export default function PackageScripts({
     }
 
     const options: PackageScriptOption[] = [
-      ...additionalPackageScripts.map(script => ({
+      ...filteredAdditionalPackageScripts.map(script => ({
         label: `🔗 ${script.scriptName}`,
         labelElement: <i>🔗 {script.scriptName}</i>,
         value: script,
@@ -78,11 +81,11 @@ export default function PackageScripts({
     ];
 
     setScriptOptions(options);
-  }, [packageScripts, additionalPackageScripts]);
+  }, [packageScripts, filteredAdditionalPackageScripts]);
 
   // update selected scripts when additional scripts change
   useDeepCompareEffect(() => {
-    if (!selectedScripts?.length || !additionalPackageScripts?.length) {
+    if (!selectedScripts?.length || !filteredAdditionalPackageScripts?.length) {
       return;
     }
 
@@ -94,22 +97,60 @@ export default function PackageScripts({
           scriptA.scriptValue !== scriptB.scriptValue);
 
     const hasAdditionalScriptsWithChanges = selectedScripts.some(script =>
-      additionalPackageScripts.some(additionalScriptComparer(script))
+      filteredAdditionalPackageScripts.some(additionalScriptComparer(script))
     );
 
     if (!hasAdditionalScriptsWithChanges) {
       return;
     }
 
-    const changedScripts = selectedScripts.map(script => {
-      const additionalScript = additionalPackageScripts.find(
+    const newScripts = selectedScripts.map(script => {
+      const additionalScript = filteredAdditionalPackageScripts.find(
         additionalScriptComparer(script)
       );
       return additionalScript ? additionalScript : script;
     });
 
-    onChange(changedScripts);
-  }, [selectedScripts, additionalPackageScripts, onChange]);
+    onChange(newScripts);
+  }, [selectedScripts, filteredAdditionalPackageScripts, onChange]);
+
+  // remove selected scripts when available scripts was removed
+  useDeepCompareEffect(() => {
+    if (
+      !selectedScripts?.length ||
+      !packageScripts?.length ||
+      !additionalPackageScripts?.length
+    ) {
+      return;
+    }
+
+    const isAvailableScript = (selectedScript: PackageScript): boolean =>
+      [...packageScripts, ...additionalPackageScripts].some(
+        ({ id, scriptName, scriptValue }) =>
+          selectedScript.id === id && scriptName !== '' && scriptValue !== ''
+      );
+
+    const hasScriptsToRemove = selectedScripts.some(
+      script =>
+        script.scriptName !== '' &&
+        script.scriptValue !== '' &&
+        !isAvailableScript(script)
+    );
+
+    if (!hasScriptsToRemove) {
+      return;
+    }
+
+    const filteredScripts = selectedScripts.filter(script =>
+      isAvailableScript(script)
+    );
+
+    if (filteredScripts.length === 0) {
+      filteredScripts.push(new PackageScript());
+    }
+
+    onChange(filteredScripts);
+  }, [selectedScripts, packageScripts, additionalPackageScripts, onChange]);
 
   // try to determine the install and pack script
   useDeepCompareEffect(() => {
