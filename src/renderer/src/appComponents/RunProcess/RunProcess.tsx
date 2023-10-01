@@ -35,6 +35,18 @@ export default function RunProcess(): JSX.Element {
         dependencies: activeDependencies,
         abortController,
         isWSLActive,
+        onTargetBuildStart: () => {
+          console.log('>>>----->> onTargetBuildStart');
+        },
+        onDependenciesBuildStart: () => {
+          console.log('>>>----->> onDependenciesBuildStart');
+        },
+        onDependenciesSyncStart: () => {
+          console.log('>>>----->> onDependenciesSyncStart');
+        },
+        onAfterBuildStart: () => {
+          console.log('>>>----->> onAfterBuildStart');
+        },
       });
 
       setIsRunning(false);

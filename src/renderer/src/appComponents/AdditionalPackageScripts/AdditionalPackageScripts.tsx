@@ -65,7 +65,7 @@ export default function AdditionalPackageScripts(): JSX.Element {
 
   return (
     <div className={c(styles.wrapper)}>
-      <p className={c(styles.title)}>My custom additional package scripts</p>
+      <p className={c(styles.title)}>🤖 custom package scripts</p>
       <div className={c(styles.overflow)}>
         {additionalPackageScripts.map(({ scriptName, scriptValue }, index) => {
           const showAddButton = index === additionalPackageScripts.length - 1;
