@@ -8,7 +8,6 @@ export default class NodePackage {
   }
   public cwd?: string;
   public isValidPackage = false;
-  public performGitPull = false;
   public scripts?: PackageScript[];
   public afterBuildScripts?: PackageScript[];
 
@@ -17,7 +16,6 @@ export default class NodePackage {
     nodePackage._id = this._id;
     nodePackage.cwd = this.cwd;
     nodePackage.isValidPackage = this.isValidPackage;
-    nodePackage.performGitPull = this.performGitPull;
     nodePackage.scripts = this.scripts?.map(script => script.clone());
     nodePackage.afterBuildScripts = this.afterBuildScripts?.map(script =>
       script.clone()

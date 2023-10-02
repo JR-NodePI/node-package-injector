@@ -6,10 +6,10 @@ import { type SelectOption } from 'fratch-ui/components/Form/Select/SelectProps'
 import ToasterListContext from 'fratch-ui/components/Toaster/ToasterListContext';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
-import LinkButton from '../../../components/linkButton/LinkButton';
+import PackageGitCommands from './PackageGitCommands/PackageGitCommands';
 
 type BranchSelectOption = SelectOption<string>;
-type BranchSelectorProps = {
+type PackageGitActionsProps = {
   disabled?: boolean;
   className?: string;
   cwd: string;
@@ -17,11 +17,11 @@ type BranchSelectorProps = {
 
 const isValidDirectory = (cwd: string): boolean => !/\.$/.test(cwd);
 
-export default function BranchSelector({
+export default function PackageGitActions({
   disabled,
   cwd,
   className,
-}: BranchSelectorProps): JSX.Element {
+}: PackageGitActionsProps): JSX.Element {
   const [id] = useState<string>(crypto.randomUUID());
   const { addToaster } = useContext(ToasterListContext);
 
@@ -46,6 +46,8 @@ export default function BranchSelector({
 
   const loadBranches = useCallback(
     async (abortController?: AbortController): Promise<void> => {
+      setIsLoading(true);
+
       const data = await GitService.getBranches(cwd, abortController);
       const newBranches = data.map(branch => ({
         label: branch,
@@ -53,6 +55,7 @@ export default function BranchSelector({
       }));
 
       setBranches(newBranches);
+      setIsLoading(false);
     },
     [cwd]
   );
@@ -62,10 +65,8 @@ export default function BranchSelector({
     const abortController = new AbortController();
 
     if (isValidDirectory(cwd) && gitBranch != null) {
-      setIsLoading(true);
       (async (): Promise<void> => {
         await loadBranches(abortController);
-        setIsLoading(false);
       })();
     }
 
@@ -73,15 +74,6 @@ export default function BranchSelector({
       abortController.abort();
     };
   }, [cwd, gitBranch, loadBranches]);
-
-  const handleRefreshBranches = async (): Promise<void> => {
-    if (isValidDirectory(cwd)) {
-      setIsLoading(true);
-      await GitService.fetch(cwd);
-      await loadBranches();
-      setIsLoading(false);
-    }
-  };
 
   const handleOnChange = async (value?: string): Promise<void> => {
     if (value) {
@@ -107,31 +99,24 @@ export default function BranchSelector({
   };
 
   return (
-    <div className={c(className)}>
-      <Form.LeftLabeledField
-        label={
-          <div>
-            <label htmlFor={id}>Git branch</label>
-            <LinkButton
-              onClick={handleRefreshBranches}
-              title="update branch list"
-            >
-              ↻
-            </LinkButton>
-          </div>
-        }
-        field={
-          <Form.Select
-            id={id}
-            value={gitBranch}
-            placeholder={isLoading ? 'Loading...' : 'Select branch...'}
-            searchable
-            options={branches}
-            onChange={handleOnChange}
-            disabled={disabled || isLoading}
-          />
-        }
-      />
-    </div>
+    <>
+      <div className={c(className)}>
+        <Form.LeftLabeledField
+          label={<label htmlFor={id}>Git branch</label>}
+          field={
+            <Form.Select
+              id={id}
+              value={gitBranch}
+              placeholder={isLoading ? 'Loading...' : 'Select branch...'}
+              searchable
+              options={branches}
+              onChange={handleOnChange}
+              disabled={disabled || isLoading}
+            />
+          }
+        />
+      </div>
+      <PackageGitCommands cwd={cwd} loadBranches={loadBranches} />
+    </>
   );
 }

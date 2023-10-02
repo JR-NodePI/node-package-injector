@@ -1,4 +1,4 @@
-import { ColorSchemeProvider, ToasterProvider } from 'fratch-ui';
+import { ColorSchemeProvider, ModalProvider, ToasterProvider } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
 import GlobalDataProvider from './appComponents/GlobalDataProvider/GlobalDataProvider';
@@ -12,13 +12,15 @@ export default function App(): JSX.Element {
   return (
     <ColorSchemeProvider>
       <GlobalDataProvider>
-        <ToasterProvider listClassName={c(styles.toaster_list)}>
-          <Layout>
-            <ErrorBoundary>
-              <Main />
-            </ErrorBoundary>
-          </Layout>
-        </ToasterProvider>
+        <ModalProvider>
+          <ToasterProvider listClassName={c(styles.toaster_list)}>
+            <Layout>
+              <ErrorBoundary>
+                <Main />
+              </ErrorBoundary>
+            </Layout>
+          </ToasterProvider>
+        </ModalProvider>
       </GlobalDataProvider>
     </ColorSchemeProvider>
   );
