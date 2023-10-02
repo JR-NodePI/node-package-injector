@@ -5,36 +5,15 @@ import { Button, SettingsModal, Spinner, useModal } from 'fratch-ui';
 import { IconGit } from 'fratch-ui/components/Icons/Icons';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
+import { GIT_COMMANDS } from './PackageGitConstants';
+import type {
+  GitCommand,
+  GitCommandName,
+  GitCommandValue,
+  PackageGitCommandsProps,
+} from './PackageGitConstantsProps';
+
 import styles from './PackageGitCommands.module.css';
-
-type PackageGitCommandsProps = {
-  disabled?: boolean;
-  cwd: string;
-  loadBranches: () => Promise<void>;
-};
-
-const GIT_COMMANDS = {
-  pull: { label: 'git pull', value: 'pull', needsConfirmation: false } as const,
-  fetch: {
-    label: 'git fetch',
-    value: 'fetch',
-    needsConfirmation: false,
-  } as const,
-  clean: {
-    label: 'git checkout .',
-    value: ['checkout', '.'],
-    needsConfirmation: true,
-  } as const,
-  reset: {
-    label: 'git reset --hard HEAD~1',
-    value: ['reset', '--hard', 'HEAD~1'],
-    needsConfirmation: true,
-  } as const,
-} as const;
-
-type GitCommandName = keyof typeof GIT_COMMANDS;
-type GitCommandValue = (typeof GIT_COMMANDS)[GitCommandName]['value'];
-type GitCommand = string | string[];
 
 export default function PackageGitCommands({
   cwd,
