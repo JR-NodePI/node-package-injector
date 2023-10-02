@@ -1,0 +1,12 @@
+.git_commands {
+  height: 36px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding-right: 32px;
+  z-index: 2;
+}
+.git_commands .git_commands_menu {
+  margin: 0;
+  top: -8px;
+}

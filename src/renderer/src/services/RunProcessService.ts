@@ -1,14 +1,11 @@
-import { promiseAllSequentially } from '@renderer/helpers/promisesHelpers';
 import { DependencyMode } from '@renderer/models/DependencyConstants';
 import type DependencyPackage from '@renderer/models/DependencyPackage';
 import type NodePackage from '@renderer/models/NodePackage';
 import type PackageScript from '@renderer/models/PackageScript';
-import GitService from '@renderer/services/GitService';
 import { type TerminalResponse } from '@renderer/services/TerminalService';
 
 import BuildProcessService from './BuildProcessService';
 import NodeService from './NodeService/NodeService';
-import { RelatedDependencyProjection } from './NodeService/NodeServiceTypes';
 import PathService from './PathService';
 
 type ProcessServiceResponse = TerminalResponse & { title: string };
@@ -75,16 +72,6 @@ export default class RunProcessService {
     }
 
     onTargetBuildStart?.();
-
-    // package git pull
-    const gitPullResponses = await RunProcessService.gitPullPackage({
-      nodePackage: targetPackage,
-      packageName,
-    });
-    if (hasError(gitPullResponses)) {
-      abortController?.abort();
-      return gitPullResponses;
-    }
 
     // Run package scripts
     const scriptsResponses = await BuildProcessService.runPackageScripts({
@@ -159,24 +146,6 @@ export default class RunProcessService {
     return dependenciesResponses.flat();
   }
 
-  private static async gitPullPackage({
-    nodePackage,
-    packageName,
-  }: {
-    nodePackage: NodePackage;
-    packageName: string;
-  }): Promise<ProcessServiceResponse[]> {
-    if (nodePackage.performGitPull) {
-      const output = await GitService.pull(nodePackage.cwd ?? '');
-
-      if (output.error) {
-        return [{ ...output, title: `Git pull: ${packageName}` }];
-      }
-    }
-
-    return [];
-  }
-
   private static async runDependencies({
     additionalPackageScripts,
     dependencies,
@@ -191,14 +160,6 @@ export default class RunProcessService {
     const sortedRelatedDependencies =
       await NodeService.getDependenciesSortedByHierarchy(dependencies);
 
-    const gitPullDependenciesResponses =
-      await RunProcessService.gitPullDependencies(sortedRelatedDependencies);
-
-    if (hasError(gitPullDependenciesResponses.flat())) {
-      abortController?.abort();
-      return gitPullDependenciesResponses;
-    }
-
     const dependenciesResponses = await BuildProcessService.buildDependencies({
       additionalPackageScripts,
       sortedRelatedDependencies,
@@ -207,23 +168,5 @@ export default class RunProcessService {
     });
 
     return dependenciesResponses;
-  }
-
-  private static async gitPullDependencies(
-    sortedRelatedDependencies: RelatedDependencyProjection[]
-  ): Promise<ProcessServiceResponse[][]> {
-    const gitPullDependenciesPromises = sortedRelatedDependencies.map(
-      ({ dependencyName, dependency }) =>
-        () =>
-          RunProcessService.gitPullPackage({
-            nodePackage: dependency,
-            packageName: dependencyName,
-          })
-    );
-    const gitPullDependenciesResponses = await promiseAllSequentially<
-      ProcessServiceResponse[]
-    >(gitPullDependenciesPromises);
-
-    return gitPullDependenciesResponses;
   }
 }

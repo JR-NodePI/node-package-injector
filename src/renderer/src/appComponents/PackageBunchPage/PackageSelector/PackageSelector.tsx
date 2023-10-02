@@ -6,7 +6,7 @@ import PathService from '@renderer/services/PathService';
 import { Form } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
-import BranchSelector from './BranchSelector';
+import PackageGitActions from './PackageGitActions/PackageGitActions';
 import PackageScripts from './PackageScripts/PackageScripts';
 import PackageSelectorLabel from './PackageSelectorLabel';
 import { type PackageSelectorProps } from './PackageSelectorProps';
@@ -60,7 +60,6 @@ export default function PackageSelector({
   additionalComponent,
   disabled,
   disableScripts,
-  onGitPullChange,
   onPathChange,
   onScriptsChange,
   onAfterBuildScriptsChange,
@@ -176,18 +175,10 @@ export default function PackageSelector({
       {!isValidatingPackage && nodePackage.isValidPackage && (
         <>
           <div className={c(styles.options)}>
-            <BranchSelector
+            <PackageGitActions
               disabled={isDisabled}
               className={c(styles.branch)}
               cwd={cwd}
-            />
-            <Form.InputCheck
-              disabled={disabled}
-              checked={nodePackage.performGitPull}
-              label="git pull"
-              onChange={(checked): void => {
-                onGitPullChange(checked ?? false);
-              }}
             />
             {additionalComponent}
           </div>

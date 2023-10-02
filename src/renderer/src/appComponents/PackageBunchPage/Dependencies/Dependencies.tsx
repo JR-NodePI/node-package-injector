@@ -68,7 +68,6 @@ function Dependencies(): JSX.Element {
       () => {
         const clonedDependency = dependency.clone();
         if (!isValidPackage) {
-          clonedDependency.performGitPull = false;
           clonedDependency.mode = DependencyMode.BUILD;
         }
         clonedDependency.cwd = cwd;
@@ -112,13 +111,6 @@ function Dependencies(): JSX.Element {
     changeDependencyProp(dependency, 'mode', mode);
   };
 
-  const handleGitPullChange = (
-    dependency: DependencyPackage,
-    checked?: boolean
-  ): void => {
-    changeDependencyProp(dependency, 'performGitPull', Boolean(checked));
-  };
-
   const handleScriptsChange = (
     dependency: DependencyPackage,
     scripts: PackageScript[]
@@ -139,7 +131,6 @@ function Dependencies(): JSX.Element {
           dependency={dependency}
           isTargetSynchronizable={isTargetSynchronizable}
           onClickRemove={handleRemoveDependency}
-          onGitPullChange={handleGitPullChange}
           onModeChange={handleModeChange}
           onPathChange={handlePathChange}
           onScriptsChange={handleScriptsChange}

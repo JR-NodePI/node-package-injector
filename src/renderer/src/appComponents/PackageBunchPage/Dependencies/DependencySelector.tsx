@@ -14,17 +14,12 @@ export default function DependencySelector({
   dependency,
   isTargetSynchronizable,
   onClickRemove,
-  onGitPullChange,
   onPathChange,
   onModeChange,
   onScriptsChange,
 }: DependencySelectorProps): JSX.Element {
   const handlePathChange = (cwd: string, isValidPackage: boolean): void => {
     onPathChange(dependency, cwd, isValidPackage);
-  };
-
-  const handleGitPullChange = (checked: boolean): void => {
-    onGitPullChange(dependency, checked);
   };
 
   const handleScriptsChange = (scripts): void => {
@@ -50,7 +45,6 @@ export default function DependencySelector({
         disableScripts={dependency.mode !== DependencyMode.BUILD}
         nodePackage={dependency}
         onPathChange={handlePathChange}
-        onGitPullChange={handleGitPullChange}
         onScriptsChange={handleScriptsChange}
         findInstallScript
         findBuildScript
