@@ -42,7 +42,8 @@ export default function RunProcess(): JSX.Element {
   } = useGlobalData();
 
   const [status, setStatus] = useState<STATUS>(STATUSES.IDLE);
-  const [abortController, setAbortController] = useState<AbortController>();
+  const [abortController, setAbortController] =
+    useState<AbortController | null>();
 
   useDeepCompareEffect(() => {
     let isSyncing = false;
@@ -105,6 +106,7 @@ export default function RunProcess(): JSX.Element {
 
       if (!isSyncing) {
         setStatus(hasErrors ? STATUSES.FAILURE : STATUSES.SUCCESS);
+        setAbortController(null);
       }
     };
 
@@ -129,6 +131,7 @@ export default function RunProcess(): JSX.Element {
   const handleStopClick = (): void => {
     abortController?.abort();
     setStatus(STATUSES.IDLE);
+    setAbortController(null);
   };
 
   const processMsg = status.label;
