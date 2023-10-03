@@ -18,6 +18,7 @@ function createWindow(): void {
     minWidth: INI_WINDOW_WIDTH,
     minHeight: INI_WINDOW_HEIGHT,
     titleBarStyle: process.platform === 'linux' ? 'default' : 'hidden',
+    icon: join(__dirname, '../../build/icons/png/512x512.png'),
     titleBarOverlay: {
       color: '#5858f0',
       symbolColor: '#e6fffc',
@@ -61,7 +62,7 @@ function createWindow(): void {
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(async () => {
   // Set app user model id for windows
-  electronApp.setAppUserModelId('github.com/JorgeRojo/fratch-ui');
+  electronApp.setAppUserModelId('github.com/JorgeRojo/node-package-injector');
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.

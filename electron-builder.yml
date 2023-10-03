@@ -1,4 +1,4 @@
-appId: jorge.rojodiseno@gmail.com
+appId: github.com/JorgeRojo/node-package-injector
 productName: NodePI
 directories:
   buildResources: build
@@ -33,7 +33,7 @@ mac:
 dmg:
   artifactName: ${name}-${version}.${ext}
 linux:
-  icon: build/icons/png/1024x1024.png
+  icon: build/icons/png/512x512.png
   target:
     - AppImage
     - snap
@@ -45,4 +45,4 @@ appImage:
 npmRebuild: false
 publish:
   provider: generic
-  url: https://github.com/JorgeRojo
+  url: https://github.com/JorgeRojo/node-package-injector
