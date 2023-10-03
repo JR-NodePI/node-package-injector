@@ -34,6 +34,7 @@ export default function DependencySelector({
             {isTargetSynchronizable && (
               <span title="Sync mode will be available very soon, stay tuned!">
                 <DependencyModeCheck
+                  disabled
                   dependency={dependency}
                   onModeChange={onModeChange}
                 />
