@@ -1,5 +1,4 @@
 .main_settings {
   position: fixed !important;
-  top: 80px;
   z-index: 99;
 }

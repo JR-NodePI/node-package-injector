@@ -15,7 +15,7 @@ asarUnpack:
   - resources/**
 afterSign: build/notarize.js
 win:
-  icon: build/icons/win/icon.ico
+  icon: build/public/icons/win/icon.ico
   executableName: NodePI
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
@@ -23,7 +23,7 @@ nsis:
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
 mac:
-  icon: build/icons/mac/icon.icns
+  icon: build/public/icons/mac/icon.icns
   entitlementsInherit: build/entitlements.mac.plist
   extendInfo:
     - NSCameraUsageDescription: Application requests access to the device's camera.
@@ -33,7 +33,7 @@ mac:
 dmg:
   artifactName: ${name}-${version}.${ext}
 linux:
-  icon: build/icons/png/512x512.png
+  icon: build/public/icons/mac/icon.icns
   target:
     - AppImage
     - snap
