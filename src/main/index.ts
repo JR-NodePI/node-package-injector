@@ -12,8 +12,6 @@ import {
 } from './windowRect';
 
 function createWindow(): void {
-  const icon = join(__dirname, '../../build/icons/png/512x512.png');
-
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     ...loadWindowRect(),
@@ -28,7 +26,7 @@ function createWindow(): void {
     frame: process.platform === 'linux',
     autoHideMenuBar: process.platform === 'darwin',
     trafficLightPosition: { x: 10, y: 6 },
-    ...(process.platform === 'linux' ? { icon } : {}),
+    icon: join(__dirname, '../renderer/icons/png/512x512.png'),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       contextIsolation: false,

@@ -10,18 +10,18 @@ import styles from './App.module.css';
 
 export default function App(): JSX.Element {
   return (
-    <ColorSchemeProvider>
-      <GlobalDataProvider>
-        <ModalProvider>
-          <ToasterProvider listClassName={c(styles.toaster_list)}>
-            <Layout>
-              <ErrorBoundary>
+    <ErrorBoundary>
+      <ColorSchemeProvider>
+        <GlobalDataProvider>
+          <ModalProvider>
+            <ToasterProvider listClassName={c(styles.toaster_list)}>
+              <Layout>
                 <Main />
-              </ErrorBoundary>
-            </Layout>
-          </ToasterProvider>
-        </ModalProvider>
-      </GlobalDataProvider>
-    </ColorSchemeProvider>
+              </Layout>
+            </ToasterProvider>
+          </ModalProvider>
+        </GlobalDataProvider>
+      </ColorSchemeProvider>
+    </ErrorBoundary>
   );
 }

@@ -1,6 +1,6 @@
 {
   "name": "node-package-injector",
-  "version": "1.7.2-alpha",
+  "version": "1.7.5-alpha",
   "description": "Dev tool to simulate npm dependencies",
   "repository": "https://github.com/JorgeRojo/node-package-injector",
   "main": "./out/main/index.js",
@@ -18,7 +18,7 @@
     "build:win": "yarn build && electron-builder --win --config",
     "build:mac": "electron-vite build && electron-builder --mac --config",
     "build:linux": "electron-vite build && electron-builder --linux --config",
-    "icons": "electron-icon-builder --input=./resources/icon.png --output=./build",
+    "icons": "electron-icon-builder --input=./src/renderer/src/assets/logo-1024x1024.png --output=./build/public",
     "test": "vitest --run --config ./vitest.config.ts",
     "test:cover": "yarn test run --coverage"
   },
@@ -47,6 +47,7 @@
     "@vitest/coverage-v8": "^0.34.5",
     "electron": "24.6.2",
     "electron-builder": "24.6.4",
+    "electron-icon-builder": "^2.0.1",
     "electron-vite": "^1.0.25",
     "eslint": "^8.44.0",
     "eslint-config-prettier": "^8.8.0",

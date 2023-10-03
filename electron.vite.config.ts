@@ -25,5 +25,6 @@ export default defineConfig({
       },
     },
     plugins: [react()],
+    publicDir: resolve('build/public'),
   },
 });
