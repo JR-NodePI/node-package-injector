@@ -3,5 +3,8 @@
   z-index: 98;
   max-width: 100vw;
   left: 0;
+  top: 0;
+}
+.tabs_menu.with_header {
   top: var(--ft-header-height);
 }

@@ -20,12 +20,15 @@ export const getMenuItemsTemplate = (
 ];
 
 export function createAppMenu(): void {
-  const menuTemplate: MenuItemConstructorOptions[] = [
-    {
-      label: 'NodePI',
-      submenu: getMenuItemsTemplate(),
-    },
-  ];
+  const menuTemplate: MenuItemConstructorOptions[] =
+    process.platform === 'linux'
+      ? []
+      : [
+          {
+            label: 'NodePI',
+            submenu: getMenuItemsTemplate(),
+          },
+        ];
   const menu = Menu.buildFromTemplate(menuTemplate);
   Menu.setApplicationMenu(menu);
 }
