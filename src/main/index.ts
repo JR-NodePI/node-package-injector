@@ -2,7 +2,7 @@ import { electronApp, is, optimizer } from '@electron-toolkit/utils';
 import { app, BrowserWindow, ipcMain, Menu, shell } from 'electron';
 import { join } from 'path';
 
-import icon from '../../build/icons/png/1024x1024.png?asset';
+// import icon from '../../build/icons/png/1024x1024.png?asset';
 import { createAppMenu, getMenuItemsTemplate } from './menu';
 import {
   INI_WINDOW_HEIGHT,
@@ -12,19 +12,20 @@ import {
 } from './windowRect';
 
 function createWindow(): void {
+  const icon = join(__dirname, '../../build/icons/png/512x512.png');
+
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     ...loadWindowRect(),
     minWidth: INI_WINDOW_WIDTH,
     minHeight: INI_WINDOW_HEIGHT,
     titleBarStyle: process.platform === 'linux' ? 'default' : 'hidden',
-    icon: join(__dirname, '../../build/icons/png/512x512.png'),
     titleBarOverlay: {
       color: '#5858f0',
       symbolColor: '#e6fffc',
       height: 30,
     },
-    frame: false,
+    frame: process.platform === 'linux',
     autoHideMenuBar: process.platform === 'darwin',
     trafficLightPosition: { x: 10, y: 6 },
     ...(process.platform === 'linux' ? { icon } : {}),
