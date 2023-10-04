@@ -3360,10 +3360,10 @@ form-data@~2.3.2:
     combined-stream "^1.0.6"
     mime-types "^2.1.12"
 
-fratch-ui@1.5.6:
-  version "1.5.6"
-  resolved "https://registry.npmjs.org/fratch-ui/-/fratch-ui-1.5.6.tgz#decdd6ca353d1710a1ca5015b191fd2ffc088567"
-  integrity sha512-dWvumPvv0d7DMJ46B1RTL462xGuWRcToK137JxUzsJTYGf5MHAAwMo66Y/kYp4pZEv80edyDOATl4H13C+lCxA==
+fratch-ui@1.5.9:
+  version "1.5.9"
+  resolved "https://registry.npmjs.org/fratch-ui/-/fratch-ui-1.5.9.tgz#3512eaf44197502adacff45179972ece4db9a921"
+  integrity sha512-NYx6UX9lr+ewxoxgr+Z8SuGEk8ZSQVOgSgW1Fn9Q38mTFpwzXeXG1SWZFL6+pPZicVrK9CHbHGYM5ZmhFVQUCg==
   dependencies:
     lodash "4.17.21"
     prop-types "^15.8.1"
