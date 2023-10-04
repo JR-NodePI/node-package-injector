@@ -96,13 +96,26 @@ export default function PackageGitCommands({
     }
   );
 
+  const [visible, setVisible] = useState<boolean>(false);
+
   return (
     <div className={c(styles.git_commands)}>
-      <span>Git actions</span>
+      <a
+        onClick={(event): void => {
+          event.preventDefault();
+          setVisible(state => !state);
+        }}
+      >
+        Git actions
+      </a>
       <SettingsModal
         className={c(styles.git_commands_menu)}
         items={items}
         position="right"
+        visible={visible}
+        onClose={(): void => {
+          setVisible(false);
+        }}
       />
     </div>
   );
