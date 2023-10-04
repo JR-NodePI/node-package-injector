@@ -15,7 +15,10 @@ export default function PackageScriptButtons({
   return (
     <div className={c(styles.add_script_buttons)}>
       <Button
-        onClick={(): void => onRemove(index)}
+        onClick={(event): void => {
+          event.preventDefault();
+          onRemove(index);
+        }}
         Icon={IconClose}
         size="smaller"
         isRound
@@ -24,7 +27,10 @@ export default function PackageScriptButtons({
       {showAddButton && (
         <Button
           type="tertiary"
-          onClick={onAdd}
+          onClick={(event): void => {
+            event.preventDefault();
+            onAdd();
+          }}
           Icon={IconPlus}
           size="smaller"
           isRound
