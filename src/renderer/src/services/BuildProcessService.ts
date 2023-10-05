@@ -1,4 +1,3 @@
-import { ADDITIONAL_PACKAGE_SCRIPTS } from '@renderer/appComponents/PackageBunchPage/PackageSelector/PackageScripts/PackageScriptsConstants';
 import { promiseAllSequentially } from '@renderer/helpers/promisesHelpers';
 import { DependencyMode } from '@renderer/models/DependencyConstants';
 import DependencyPackage from '@renderer/models/DependencyPackage';
@@ -20,10 +19,12 @@ const hasError = (responses: ProcessServiceResponse[]): boolean =>
 
 export default class BuildProcessService {
   public static async buildDependencies({
+    additionalPackageScripts,
     sortedRelatedDependencies,
     tmpDir,
     abortController,
   }: {
+    additionalPackageScripts: PackageScript[];
     sortedRelatedDependencies: RelatedDependencyProjection[];
     tmpDir: string;
     abortController?: AbortController;
@@ -46,6 +47,7 @@ export default class BuildProcessService {
     const dependenciesPromises = dependenciesToBuild.map(
       relatedDependency => () =>
         BuildProcessService.buildSingleDependency({
+          additionalPackageScripts,
           relatedDependency,
           tmpDir,
           abortController,
@@ -59,10 +61,12 @@ export default class BuildProcessService {
   }
 
   private static async buildSingleDependency({
+    additionalPackageScripts,
     relatedDependency,
     tmpDir,
     abortController,
   }: {
+    additionalPackageScripts: PackageScript[];
     relatedDependency: RelatedDependencyProjection;
     tmpDir: string;
     abortController?: AbortController;
@@ -82,13 +86,47 @@ export default class BuildProcessService {
     const depCwd = dependency.cwd ?? '';
     const depName = relatedDependency.dependencyName;
 
+    const handleOnAbort = async (): Promise<void> => {
+      await NodeService.restoreFakePackageVersion(depCwd);
+    };
+    abortController?.signal.addEventListener('abort', handleOnAbort);
+
+    // Inject fake package version
+    const outputFakeVersion = await NodeService.injectFakePackageVersion(
+      depCwd,
+      abortController
+    );
+
+    if (outputFakeVersion.error) {
+      return [
+        {
+          ...outputFakeVersion,
+          title: `Injecting fake package version: "${depName}"`,
+        },
+      ];
+    }
+
     // Run dependencies scripts
     const scriptsResponses = await BuildProcessService.runPackageScripts({
+      additionalPackageScripts,
       packageScripts: dependency.scripts,
       cwd: depCwd,
       packageName: depName,
       abortController,
     });
+
+    // Restore fake package version
+    const outputRestoreVersion = await NodeService.restoreFakePackageVersion(
+      depCwd,
+      abortController
+    );
+    if (outputRestoreVersion.error) {
+      scriptsResponses.push({
+        ...outputRestoreVersion,
+        title: `Restoring package.json: "${depName}"`,
+      });
+    }
+    abortController?.signal.removeEventListener('abort', handleOnAbort);
 
     if (hasError(scriptsResponses)) {
       abortController?.abort();
@@ -113,11 +151,13 @@ export default class BuildProcessService {
   }
 
   public static async runPackageScripts({
+    additionalPackageScripts,
     packageScripts = [],
     cwd,
     packageName,
     abortController,
   }: {
+    additionalPackageScripts: PackageScript[];
     packageScripts?: PackageScript[];
     cwd: string;
     packageName?: string;
@@ -137,6 +177,7 @@ export default class BuildProcessService {
       .map(
         packageScript => () =>
           BuildProcessService.runPackageSingleScript({
+            additionalPackageScripts,
             packageScript,
             cwd,
             packageName,
@@ -151,11 +192,13 @@ export default class BuildProcessService {
   }
 
   private static async runPackageSingleScript({
+    additionalPackageScripts,
     packageScript,
     cwd,
     packageName,
     abortController,
   }: {
+    additionalPackageScripts: PackageScript[];
     packageScript: PackageScript;
     cwd: string;
     packageName?: string;
@@ -176,8 +219,11 @@ export default class BuildProcessService {
       ? `pnpm run ${packageScript.scriptName}`
       : `npm run ${packageScript.scriptName}`;
 
-    if (ADDITIONAL_PACKAGE_SCRIPTS[packageScript.scriptName] != null) {
-      script = ADDITIONAL_PACKAGE_SCRIPTS[packageScript.scriptName].scriptValue;
+    const isAdditionalScript = additionalPackageScripts.find(
+      ({ id }) => id === packageScript.id
+    );
+    if (isAdditionalScript) {
+      script = packageScript.scriptValue;
     }
 
     const output = await NodeService.runScript(cwd, script, abortController);

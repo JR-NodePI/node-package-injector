@@ -2,7 +2,7 @@ import { electronApp, is, optimizer } from '@electron-toolkit/utils';
 import { app, BrowserWindow, ipcMain, Menu, shell } from 'electron';
 import { join } from 'path';
 
-import icon from '../../build/icons/png/1024x1024.png?asset';
+// import icon from '../../build/icons/png/1024x1024.png?asset';
 import { createAppMenu, getMenuItemsTemplate } from './menu';
 import {
   INI_WINDOW_HEIGHT,
@@ -23,10 +23,10 @@ function createWindow(): void {
       symbolColor: '#e6fffc',
       height: 30,
     },
-    frame: false,
+    frame: process.platform === 'linux',
     autoHideMenuBar: process.platform === 'darwin',
     trafficLightPosition: { x: 10, y: 6 },
-    ...(process.platform === 'linux' ? { icon } : {}),
+    icon: join(__dirname, '../renderer/icons/png/512x512.png'),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       contextIsolation: false,
@@ -61,7 +61,7 @@ function createWindow(): void {
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(async () => {
   // Set app user model id for windows
-  electronApp.setAppUserModelId('github.com/JorgeRojo/fratch-ui');
+  electronApp.setAppUserModelId('github.com/JorgeRojo/node-package-injector');
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.

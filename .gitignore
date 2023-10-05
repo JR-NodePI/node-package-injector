@@ -132,6 +132,7 @@ dist
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
+!.vscode/build_and_install_for_linux.sh
 .idea
 .DS_Store
 *.suo

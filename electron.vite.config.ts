@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react';
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite';
 import { resolve } from 'path';
 
-const APP_TITLE = 'Node Package Injector';
+const APP_TITLE = 'NODE PACKAGE INJECTOR';
 
 export default defineConfig({
   main: {
@@ -25,5 +25,6 @@ export default defineConfig({
       },
     },
     plugins: [react()],
+    publicDir: resolve('build/public'),
   },
 });

@@ -16,6 +16,8 @@ export default function Layout({
   children: ReactNode;
 }): JSX.Element {
   const { isWSLActive } = useGlobalData();
+
+  const witAppHeader = window.electron.process.platform !== 'linux';
   const headerIconPosition =
     window.electron.process.platform === 'darwin' ? 'right' : 'left';
 
@@ -24,8 +26,19 @@ export default function Layout({
     : import.meta.env.APP_TITLE;
 
   return (
-    <section className={c(styles.layout)}>
-      <Header iconPosition={headerIconPosition} title={title} iconSrc={logo} />
+    <section
+      className={c(styles.layout, witAppHeader ? styles.with_header : '')}
+    >
+      {witAppHeader && (
+        <div className={c(styles.header_area)}>
+          <Header
+            iconPosition={headerIconPosition}
+            title={title}
+            iconSrc={logo}
+          />
+        </div>
+      )}
+
       <section className={c(styles.content)}>{children}</section>
       <Footer>
         <RunProcess />

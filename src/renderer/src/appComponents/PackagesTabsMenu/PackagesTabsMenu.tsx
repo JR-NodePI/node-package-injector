@@ -16,10 +16,12 @@ export default function PackagesTabsMenu(): JSX.Element {
     tabs,
   } = useTabsFromPackageBunches();
 
+  const witAppHeader = window.electron.process.platform !== 'linux';
+
   return (
     <TabsMenu
       newTabTemplate={newTabTemplate}
-      className={c(styles.tabs_menu)}
+      className={c(styles.tabs_menu, witAppHeader ? styles.with_header : '')}
       editable
       addable={addable}
       removable={removable}

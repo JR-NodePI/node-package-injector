@@ -11,12 +11,10 @@
   white-space: nowrap;
   margin-bottom: 8px;
 }
-
 .package .options .branch {
   width: 100%;
   margin-bottom: 0;
 }
-
 .package .scripts_title {
   margin: 0 0 8px 0;
 }

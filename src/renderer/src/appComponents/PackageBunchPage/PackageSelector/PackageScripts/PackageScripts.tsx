@@ -1,167 +1,225 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
+import useGlobalData from '@renderer/appComponents/GlobalDataProvider/useGlobalData';
 import PackageScript from '@renderer/models/PackageScript';
 import NodeService from '@renderer/services/NodeService/NodeService';
+import DragAndDropSorter from 'fratch-ui/components/DragAndDropSorter/DragAndDropSorter';
+import {
+  DraggableItem,
+  SortedDraggableItem,
+} from 'fratch-ui/components/DragAndDropSorter/DragAndDropSorterProps';
 import { type SelectOption } from 'fratch-ui/components/Form/Select/SelectProps';
+import useDeepCompareEffect from 'use-deep-compare-effect';
 
 import { PackageScriptRenderer } from './components/PackageScriptRenderer';
-import {
-  ADDITIONAL_PACKAGE_SCRIPTS,
-  ADDITIONAL_PACKAGE_SCRIPTS_NAMES,
-} from './PackageScriptsConstants';
 
 type PackageScriptOption = SelectOption<PackageScript>;
-
-const getScriptsHash = (scripts: PackageScript[] = []): string =>
-  scripts
-    .map(({ scriptName }) => scriptName)
-    .filter(scriptName => Boolean(scriptName))
-    .join('-');
+type PackageScriptsProps = {
+  cwd?: string;
+  selectedScripts?: PackageScript[];
+  onChange: (scripts: PackageScript[]) => void;
+  findInstallScript?: boolean;
+  findBuildScript?: boolean;
+};
 
 export default function PackageScripts({
   cwd = '',
-  initialScripts,
+  selectedScripts,
   onChange,
   findInstallScript,
   findBuildScript,
-}: {
-  cwd?: string;
-  initialScripts?: PackageScript[];
-  onChange?: (scripts: PackageScript[]) => void;
-  findInstallScript?: boolean;
-  findBuildScript?: boolean;
-}): JSX.Element {
-  const [scriptOptions, setScriptOptions] = useState<PackageScriptOption[]>([]);
-  const [selectedScrips, setSelectedScrips] = useState<PackageScript[]>(
-    initialScripts ?? []
+}: PackageScriptsProps): JSX.Element {
+  const { additionalPackageScripts } = useGlobalData();
+  const filteredAdditionalPackageScripts = additionalPackageScripts.filter(
+    script => script.scriptName !== '' && script.scriptValue !== ''
   );
 
-  const [isYarn, setIsYarn] = useState<boolean>();
-  const [isPnpm, setIsPnpm] = useState<boolean>();
+  const [packageScripts, setPackageScripts] = useState<PackageScript[]>([]);
+  const [scriptOptions, setScriptOptions] = useState<PackageScriptOption[]>([]);
+
+  // load package.json scripts
+  const [initialScripts] = useState<PackageScript[]>(selectedScripts ?? []);
   useEffect(() => {
+    const abortController = new AbortController();
+
     (async (): Promise<void> => {
-      setIsPnpm(await NodeService.checkPnpm(cwd ?? ''));
-      setIsYarn(await NodeService.checkYarn(cwd ?? ''));
-    })();
-  }, [cwd]);
-
-  // handle onChange when there is a change
-  const nodePackageScriptsHash = getScriptsHash(initialScripts);
-  const selectedScripsHash = getScriptsHash(selectedScrips);
-  useEffect(() => {
-    if (
-      Array.isArray(selectedScrips) &&
-      nodePackageScriptsHash !== selectedScripsHash
-    ) {
-      onChange?.(selectedScrips);
-    }
-  }, [nodePackageScriptsHash, onChange, selectedScrips, selectedScripsHash]);
-
-  // load package scripts
-  useEffect(() => {
-    (async (): Promise<void> => {
-      const scripts = await NodeService.getPackageScripts(cwd ?? '');
-
-      const options = Object.entries(scripts).map(
-        ([scriptName, scriptValue]) => ({
-          value: new PackageScript(scriptName, scriptValue),
-          label: scriptName,
-        })
+      const rawScripts = await NodeService.getPackageScripts(cwd ?? '');
+      const scripts = Object.entries(rawScripts).map(
+        ([scriptName, scriptValue]) =>
+          initialScripts.find(script => script.scriptName === scriptName) ??
+          new PackageScript(scriptName, scriptValue)
       );
-      setScriptOptions(options);
-    })();
-  }, [cwd]);
 
-  //add additional install script
-  useEffect(() => {
-    if (scriptOptions.length === 0 || (isYarn == null && isPnpm == null)) {
+      if (abortController.signal.aborted) {
+        return;
+      }
+
+      setPackageScripts(scripts);
+    })();
+
+    return () => {
+      abortController.abort();
+    };
+  }, [cwd, initialScripts]);
+
+  // create select options from package scripts and additional scripts
+  useDeepCompareEffect(() => {
+    if (!packageScripts?.length) {
       return;
     }
 
-    const hasAdditionalInstallScript = scriptOptions.some(
-      ({ label }) =>
-        label === ADDITIONAL_PACKAGE_SCRIPTS_NAMES.PNPM_INSTALL ||
-        label === ADDITIONAL_PACKAGE_SCRIPTS_NAMES.YARN_INSTALL ||
-        label === ADDITIONAL_PACKAGE_SCRIPTS_NAMES.NPM_INSTALL
+    const options: PackageScriptOption[] = [
+      ...filteredAdditionalPackageScripts.map(script => ({
+        label: `🤖 ${script.scriptName}`,
+        value: script,
+      })),
+      ...packageScripts.map(script => ({
+        label: script.scriptName,
+        value: script,
+      })),
+    ];
+
+    setScriptOptions(options);
+  }, [packageScripts, filteredAdditionalPackageScripts]);
+
+  // update selected scripts when additional scripts change
+  useDeepCompareEffect(() => {
+    if (!selectedScripts?.length || !filteredAdditionalPackageScripts?.length) {
+      return;
+    }
+
+    const additionalScriptComparer =
+      (scriptA: PackageScript) =>
+      (scriptB: PackageScript): boolean =>
+        scriptA.id === scriptB.id &&
+        (scriptA.scriptName !== scriptB.scriptName ||
+          scriptA.scriptValue !== scriptB.scriptValue);
+
+    const hasAdditionalScriptsWithChanges = selectedScripts.some(script =>
+      filteredAdditionalPackageScripts.some(additionalScriptComparer(script))
     );
 
-    if (hasAdditionalInstallScript) {
+    if (!hasAdditionalScriptsWithChanges) {
       return;
     }
 
-    const scriptName = isPnpm
-      ? ADDITIONAL_PACKAGE_SCRIPTS_NAMES.PNPM_INSTALL
-      : isYarn
-      ? ADDITIONAL_PACKAGE_SCRIPTS_NAMES.YARN_INSTALL
-      : ADDITIONAL_PACKAGE_SCRIPTS_NAMES.NPM_INSTALL;
+    const newScripts = selectedScripts.map(script => {
+      const additionalScript = filteredAdditionalPackageScripts.find(
+        additionalScriptComparer(script)
+      );
+      return additionalScript ? additionalScript : script;
+    });
 
-    setScriptOptions([
-      {
-        label: scriptName,
-        value: ADDITIONAL_PACKAGE_SCRIPTS[scriptName],
-      },
-      ...scriptOptions,
-    ]);
-  }, [scriptOptions, isYarn, isPnpm]);
+    onChange(newScripts);
+  }, [selectedScripts, filteredAdditionalPackageScripts, onChange]);
+
+  // remove selected scripts when available scripts was removed
+  useDeepCompareEffect(() => {
+    if (
+      !selectedScripts?.length ||
+      !packageScripts?.length ||
+      !additionalPackageScripts?.length
+    ) {
+      return;
+    }
+
+    const isAvailableScript = (selectedScript: PackageScript): boolean =>
+      [...packageScripts, ...additionalPackageScripts].some(
+        ({ id, scriptName, scriptValue }) =>
+          selectedScript.id === id && scriptName !== '' && scriptValue !== ''
+      );
+
+    const hasScriptsToRemove = selectedScripts.some(
+      script =>
+        script.scriptName !== '' &&
+        script.scriptValue !== '' &&
+        !isAvailableScript(script)
+    );
+
+    if (!hasScriptsToRemove) {
+      return;
+    }
+
+    const filteredScripts = selectedScripts.filter(script =>
+      isAvailableScript(script)
+    );
+
+    if (filteredScripts.length === 0) {
+      filteredScripts.push(new PackageScript());
+    }
+
+    onChange(filteredScripts);
+  }, [selectedScripts, packageScripts, additionalPackageScripts, onChange]);
 
   // try to determine the install and pack script
-  useEffect(() => {
-    (async (): Promise<void> => {
-      if (initialScripts == null && scriptOptions.length > 0) {
-        const installScript = findInstallScript
-          ? scriptOptions.find(
-              ({ label, value }) =>
-                ADDITIONAL_PACKAGE_SCRIPTS[label] == null &&
-                / install/gi.test(value.scriptValue) &&
-                !/prepare/gi.test(value.scriptName)
-            )
-          : undefined;
+  useDeepCompareEffect(() => {
+    const abortController = new AbortController();
 
+    (async (): Promise<void> => {
+      if (selectedScripts == null && packageScripts.length > 0) {
         const scripts: PackageScript[] = [];
 
+        const installScript =
+          findInstallScript &&
+          packageScripts.find(
+            ({ scriptValue, scriptName }) =>
+              / install/gi.test(scriptValue) && !/prepare/gi.test(scriptName)
+          );
+
         if (installScript) {
-          scripts.push(installScript.value);
+          scripts.push(installScript);
         } else {
           scripts.push(new PackageScript());
         }
 
-        if (findBuildScript) {
-          const buildScript = scriptOptions.find(
-            ({ value }) =>
-              / pack /gi.test(value.scriptValue) ||
-              / pack$/gi.test(value.scriptValue)
+        const buildScript =
+          findBuildScript &&
+          packageScripts.find(
+            ({ scriptValue }) =>
+              / pack /gi.test(scriptValue) || / pack$/gi.test(scriptValue)
           );
 
-          if (buildScript) {
-            scripts.push(buildScript.value);
-          }
+        if (buildScript) {
+          scripts.push(buildScript);
         }
 
-        if (scripts.length > 0) {
-          await setSelectedScrips(scripts);
+        if (abortController.signal.aborted) {
+          return;
         }
+
+        onChange(scripts);
       }
     })();
-  }, [scriptOptions, initialScripts, findInstallScript, findBuildScript]);
+
+    return () => {
+      abortController.abort();
+    };
+  }, [
+    findBuildScript,
+    findInstallScript,
+    onChange,
+    packageScripts,
+    selectedScripts,
+  ]);
 
   const handleAddScript = (): void => {
-    setSelectedScrips([...selectedScrips, new PackageScript()]);
+    onChange([...(selectedScripts ?? []), new PackageScript()]);
   };
 
   const handleRemoveScript = (indexToRemove: number): void => {
     const newScripts =
-      selectedScrips.filter((_script, index) => index !== indexToRemove) ?? [];
-    setSelectedScrips(
-      newScripts.length > 0 ? newScripts : [new PackageScript()]
-    );
+      (selectedScripts ?? []).filter(
+        (_script, index) => index !== indexToRemove
+      ) ?? [];
+    onChange(newScripts.length > 0 ? newScripts : [new PackageScript()]);
   };
 
   const handleScriptChange = (
     modifiedScriptIndex: number,
     modifiedScript?: PackageScript
   ): void => {
-    setSelectedScrips(
-      selectedScrips.map((script, index) =>
+    onChange(
+      (selectedScripts ?? []).map((script, index) =>
         index === modifiedScriptIndex
           ? modifiedScript ?? new PackageScript()
           : script.clone()
@@ -169,30 +227,50 @@ export default function PackageScripts({
     );
   };
 
-  const noSelectedScriptOptions = scriptOptions.filter(({ value }) =>
-    selectedScrips.every(({ scriptName }) => scriptName !== value.scriptName)
+  const handleSortChange = (
+    draggableItems: SortedDraggableItem<PackageScript>[]
+  ): void => {
+    onChange(draggableItems.map(({ dataItem }) => dataItem.clone()));
+  };
+
+  const scriptOptionsHiddenUsed = useMemo(
+    () =>
+      scriptOptions.map(option => {
+        const visible = !(selectedScripts ?? []).some(
+          ({ id, scriptName }) =>
+            id === option.value.id || scriptName === option.value.scriptName
+        );
+        return { ...option, visible };
+      }),
+    [scriptOptions, selectedScripts]
   );
 
   return (
-    <>
-      {selectedScrips.map((script, index) => {
-        const showAddButton =
-          index === selectedScrips.length - 1 &&
-          scriptOptions.length > selectedScrips.length;
+    <DragAndDropSorter
+      onChange={handleSortChange}
+      items={(selectedScripts ?? []).map<DraggableItem<PackageScript>>(
+        (script, index) => {
+          const showAddButton =
+            index === (selectedScripts ?? []).length - 1 &&
+            scriptOptions.length > (selectedScripts ?? []).length;
 
-        return (
-          <PackageScriptRenderer
-            key={`${script.id}-${script.scriptName}`}
-            index={index}
-            onAdd={handleAddScript}
-            onChange={handleScriptChange}
-            onRemove={handleRemoveScript}
-            script={script}
-            scriptOptions={noSelectedScriptOptions}
-            showAddButton={showAddButton}
-          />
-        );
-      })}
-    </>
+          return {
+            dataItem: script,
+            children: (
+              <PackageScriptRenderer
+                key={`${script.id}-${script.scriptName}`}
+                index={index}
+                onAdd={handleAddScript}
+                onChange={handleScriptChange}
+                onRemove={handleRemoveScript}
+                script={script}
+                scriptOptions={scriptOptionsHiddenUsed}
+                showAddButton={showAddButton}
+              />
+            ),
+          };
+        }
+      )}
+    />
   );
 }
