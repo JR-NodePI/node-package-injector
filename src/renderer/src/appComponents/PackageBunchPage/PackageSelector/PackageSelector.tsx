@@ -6,7 +6,7 @@ import PathService from '@renderer/services/PathService';
 import { Form } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers/classNameHelpers';
 
-import BranchSelector from './BranchSelector';
+import PackageGitActions from './PackageGitActions/PackageGitActions';
 import PackageScripts from './PackageScripts/PackageScripts';
 import PackageSelectorLabel from './PackageSelectorLabel';
 import { type PackageSelectorProps } from './PackageSelectorProps';
@@ -15,27 +15,29 @@ import useEffectCWD from './useEffectCWD';
 
 import styles from './PackageSelector.module.css';
 
-function AllPackageScripts({
-  onScriptsChange,
-  onAfterBuildScriptsChange,
-  nodePackage,
-  findInstallScript,
-  findBuildScript,
-}: Pick<
+type AllPackageScriptsProps = Pick<
   PackageSelectorProps,
   | 'findInstallScript'
   | 'findBuildScript'
   | 'onScriptsChange'
   | 'onAfterBuildScriptsChange'
   | 'nodePackage'
->): JSX.Element {
+>;
+
+function AllPackageScripts({
+  onScriptsChange,
+  onAfterBuildScriptsChange,
+  nodePackage,
+  findInstallScript,
+  findBuildScript,
+}: AllPackageScriptsProps): JSX.Element {
   return (
     <>
       <p className={c(styles.scripts_title)}>Package scripts</p>
       <PackageScripts
         onChange={onScriptsChange}
-        cwd={nodePackage?.cwd}
-        initialScripts={nodePackage?.scripts}
+        cwd={nodePackage.cwd}
+        selectedScripts={nodePackage.scripts}
         findInstallScript={findInstallScript}
         findBuildScript={findBuildScript}
       />
@@ -45,8 +47,8 @@ function AllPackageScripts({
           <p className={c(styles.scripts_title)}>After build package scripts</p>
           <PackageScripts
             onChange={onAfterBuildScriptsChange}
-            cwd={nodePackage?.cwd}
-            initialScripts={nodePackage?.afterBuildScripts}
+            cwd={nodePackage.cwd}
+            selectedScripts={nodePackage.afterBuildScripts}
           />
         </>
       )}
@@ -58,7 +60,6 @@ export default function PackageSelector({
   additionalComponent,
   disabled,
   disableScripts,
-  onGitPullChange,
   onPathChange,
   onScriptsChange,
   onAfterBuildScriptsChange,
@@ -69,7 +70,7 @@ export default function PackageSelector({
   const [id] = useState<string>(crypto.randomUUID());
 
   const [pathDirectories, setPathDirectories] = useState<string[]>(
-    PathService.getPathDirectories(nodePackage?.cwd)
+    PathService.getPathDirectories(nodePackage.cwd)
   );
   const cwd = PathService.getPath(pathDirectories);
 
@@ -86,7 +87,7 @@ export default function PackageSelector({
         const branch = await GitService.getCurrentBranch(cwd, abortController);
         const isValid = isValidPackage && branch.length > 0;
         if (!abortController.signal.aborted) {
-          onPathChange?.(cwd, isValid);
+          onPathChange(cwd, isValid);
         }
         setIsValidatingPackage(false);
       })();
@@ -171,21 +172,13 @@ export default function PackageSelector({
           />
         }
       />
-      {!isValidatingPackage && nodePackage?.isValidPackage && (
+      {!isValidatingPackage && nodePackage.isValidPackage && (
         <>
           <div className={c(styles.options)}>
-            <BranchSelector
+            <PackageGitActions
               disabled={isDisabled}
               className={c(styles.branch)}
               cwd={cwd}
-            />
-            <Form.InputCheck
-              disabled={disabled}
-              checked={nodePackage.performGitPull}
-              label="git pull"
-              onChange={(checked): void => {
-                onGitPullChange && onGitPullChange(checked ?? false);
-              }}
             />
             {additionalComponent}
           </div>

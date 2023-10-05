@@ -9,13 +9,20 @@ type InitWindowBounds = {
   x?: number;
   y?: number;
 };
+import packageJson from '../../package.json';
 
-const INIT_STATUS_PATH = join(os.tmpdir(), '../window_rect.json');
+const INIT_STATUS_DIR = join(
+  os.tmpdir(),
+  `${packageJson.name}_${packageJson.version}`
+);
+const INIT_STATUS_FILE = 'window_rect.json';
+const INIT_STATUS_PATH = join(INIT_STATUS_DIR, '/', INIT_STATUS_FILE);
 
 export const INI_WINDOW_WIDTH = 800;
 export const INI_WINDOW_HEIGHT = 600;
 
 export function loadWindowRect(): InitWindowBounds {
+  fs.mkdirSync(INIT_STATUS_DIR, { recursive: true });
   const initStatus = fs.readFileSync(INIT_STATUS_PATH, {
     encoding: 'utf8',
     flag: 'a+',

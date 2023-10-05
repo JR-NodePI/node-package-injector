@@ -13,23 +13,12 @@ export default function TargetPackageSelector(): JSX.Element {
 
     const clonedPackage = activeTargetPackage.clone();
 
-    if (!isValidPackage) {
-      clonedPackage.performGitPull = false;
-    }
     clonedPackage.cwd = cwd;
     clonedPackage.scripts = undefined;
     clonedPackage.afterBuildScripts = undefined;
     clonedPackage.isValidPackage = isValidPackage;
 
     setActiveTargetPackage?.(clonedPackage);
-  };
-
-  const handleGitPullChange = (checked?: boolean): void => {
-    if (activeTargetPackage) {
-      const clonedPackage = activeTargetPackage.clone();
-      clonedPackage.performGitPull = checked ?? false;
-      setActiveTargetPackage?.(clonedPackage);
-    }
   };
 
   const handleScriptsChange = (scripts: PackageScript[]): void => {
@@ -50,7 +39,6 @@ export default function TargetPackageSelector(): JSX.Element {
 
   return (
     <PackageSelector
-      onGitPullChange={handleGitPullChange}
       onPathChange={handlePathChange}
       onScriptsChange={handleScriptsChange}
       onAfterBuildScriptsChange={onAfterBuildScriptsChange}

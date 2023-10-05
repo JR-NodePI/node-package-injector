@@ -9,10 +9,13 @@ const getLocalBranch = (line: string): string =>
   line.replace(REMOTE_BRANCH_PATTERN, '$2');
 
 export default class GitService {
-  static async fetch(cwd: string): Promise<TerminalResponse> {
+  static async executeCommand(
+    cwd: string,
+    gitCommand: string | string[]
+  ): Promise<TerminalResponse> {
     return await TerminalService.executeCommand({
       command: 'git',
-      args: ['fetch'],
+      args: [gitCommand].flat(),
       cwd,
     });
   }

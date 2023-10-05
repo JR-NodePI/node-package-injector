@@ -6,8 +6,7 @@ export type DependencySelectorProps = {
   disabled?: boolean;
   dependency: DependencyPackage;
   isTargetSynchronizable: boolean;
-  onClickRemove?: (dependency: DependencyPackage) => void;
-  onGitPullChange: (dependency: DependencyPackage, checked?: boolean) => void;
+  onClickRemove: (dependency: DependencyPackage) => void;
   onPathChange: (
     dependency: DependencyPackage,
     cwd: string,
