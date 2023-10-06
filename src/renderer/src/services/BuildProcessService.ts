@@ -1,5 +1,4 @@
 import { promiseAllSequentially } from '@renderer/helpers/promisesHelpers';
-import { DependencyMode } from '@renderer/models/DependencyConstants';
 import DependencyPackage from '@renderer/models/DependencyPackage';
 import NodePackage from '@renderer/models/NodePackage';
 import PackageScript from '@renderer/models/PackageScript';
@@ -40,11 +39,7 @@ export default class BuildProcessService {
       ];
     }
 
-    const dependenciesToBuild = sortedRelatedDependencies.filter(
-      ({ dependency }) => dependency.mode === DependencyMode.BUILD
-    );
-
-    const dependenciesPromises = dependenciesToBuild.map(
+    const dependenciesPromises = sortedRelatedDependencies.map(
       relatedDependency => () =>
         BuildProcessService.buildSingleDependency({
           additionalPackageScripts,
@@ -86,54 +81,7 @@ export default class BuildProcessService {
     const depCwd = dependency.cwd ?? '';
     const depName = relatedDependency.dependencyName;
 
-    const handleOnAbort = async (): Promise<void> => {
-      await NodeService.restoreFakePackageVersion(depCwd);
-    };
-    abortController?.signal.addEventListener('abort', handleOnAbort);
-
-    // Inject fake package version
-    const outputFakeVersion = await NodeService.injectFakePackageVersion(
-      depCwd,
-      abortController
-    );
-
-    if (outputFakeVersion.error) {
-      return [
-        {
-          ...outputFakeVersion,
-          title: `Injecting fake package version: "${depName}"`,
-        },
-      ];
-    }
-
-    // Run dependencies scripts
-    const scriptsResponses = await BuildProcessService.runPackageScripts({
-      additionalPackageScripts,
-      packageScripts: dependency.scripts,
-      cwd: depCwd,
-      packageName: depName,
-      abortController,
-    });
-
-    // Restore fake package version
-    const outputRestoreVersion = await NodeService.restoreFakePackageVersion(
-      depCwd,
-      abortController
-    );
-    if (outputRestoreVersion.error) {
-      scriptsResponses.push({
-        ...outputRestoreVersion,
-        title: `Restoring package.json: "${depName}"`,
-      });
-    }
-    abortController?.signal.removeEventListener('abort', handleOnAbort);
-
-    if (hasError(scriptsResponses)) {
-      abortController?.abort();
-      return scriptsResponses;
-    }
-
-    // Inject dependencies
+    // Inject sub-dependencies
     const injectDependenciesResponses =
       await BuildProcessService.injectDependencies({
         targetPackage: dependency,
@@ -147,6 +95,21 @@ export default class BuildProcessService {
       return injectDependenciesResponses;
     }
 
+    // Run dependencies scripts
+    const scriptsResponses = await BuildProcessService.runPackageScripts({
+      additionalPackageScripts,
+      packageScripts: dependency.scripts,
+      cwd: depCwd,
+      packageName: depName,
+      abortController,
+      runScriptsTitle: 'Run dependency scripts',
+    });
+
+    if (hasError(scriptsResponses)) {
+      abortController?.abort();
+      return scriptsResponses;
+    }
+
     return [...scriptsResponses, { title: outputTitle }];
   }
 
@@ -156,37 +119,90 @@ export default class BuildProcessService {
     cwd,
     packageName,
     abortController,
+    runScriptsTitle = 'Run package scripts',
   }: {
     additionalPackageScripts: PackageScript[];
     packageScripts?: PackageScript[];
     cwd: string;
     packageName?: string;
     abortController?: AbortController;
+    runScriptsTitle?: string;
   }): Promise<ProcessServiceResponse[]> {
     if (abortController?.signal.aborted) {
       return [
         {
           error: 'The process was aborted',
-          title: `Run package scripts: "${packageName}"`,
+          title: `${runScriptsTitle}: "${packageName}"`,
         },
       ];
     }
 
-    const scriptsPromises = packageScripts
-      .filter(script => Boolean(script.scriptName.trim()))
-      .map(
-        packageScript => () =>
-          BuildProcessService.runPackageSingleScript({
-            additionalPackageScripts,
-            packageScript,
-            cwd,
-            packageName,
-            abortController,
-          })
+    const filledScripts = packageScripts.filter(script =>
+      Boolean(script.scriptName.trim())
+    );
+    const hasScripts = Boolean(filledScripts?.length);
+
+    let handleOnAbort: (() => Promise<void>) | null = null;
+
+    if (hasScripts) {
+      // eslint-disable-next-line no-console
+      console.log(`>>>----->> ${runScriptsTitle}: `, packageName);
+
+      // Inject fake package version
+      const outputFakeVersion = await NodeService.injectFakePackageVersion(
+        cwd,
+        abortController
       );
+
+      if (outputFakeVersion.error) {
+        return [
+          {
+            ...outputFakeVersion,
+            title: `Injecting fake package version: "${packageName}"`,
+          },
+        ];
+      }
+
+      handleOnAbort = async (): Promise<void> => {
+        await NodeService.restoreFakePackageVersion(cwd);
+      };
+      abortController?.signal.addEventListener('abort', handleOnAbort);
+    }
+
+    const scriptsPromises = filledScripts.map(
+      packageScript => () =>
+        BuildProcessService.runPackageSingleScript({
+          additionalPackageScripts,
+          packageScript,
+          cwd,
+          packageName,
+          abortController,
+        })
+    );
 
     const scriptsResponses =
       await promiseAllSequentially<ProcessServiceResponse>(scriptsPromises);
+
+    let outputRestoreVersion: TerminalResponse | null = null;
+
+    if (hasScripts && !abortController?.signal.aborted) {
+      // Restore fake package version
+      outputRestoreVersion = await NodeService.restoreFakePackageVersion(
+        cwd,
+        abortController
+      );
+    }
+
+    if (outputRestoreVersion?.error) {
+      scriptsResponses.push({
+        ...outputRestoreVersion,
+        title: `Restoring package.json: "${packageName}"`,
+      });
+    }
+
+    if (handleOnAbort != null) {
+      abortController?.signal.removeEventListener('abort', handleOnAbort);
+    }
 
     return scriptsResponses;
   }
@@ -354,6 +370,16 @@ export default class BuildProcessService {
         '/'
       ),
       traceOnTime
+    );
+
+    const targetPackageDirName = PathService.getDirName(targetPackage.cwd);
+
+    // eslint-disable-next-line no-console
+    console.log(
+      '>>>----->> Injecting: ',
+      dependencyName,
+      '->',
+      targetPackageDirName
     );
 
     const injectionOutput = await TerminalService.executeCommand({
