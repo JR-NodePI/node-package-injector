@@ -3,8 +3,11 @@
   position: relative;
   display: flex;
   align-items: center;
-  padding-right: 32px;
   z-index: 2;
+}
+.git_commands a {
+  display: block;
+  padding-right: 32px;
 }
 .git_commands .git_commands_menu {
   margin: 0;
