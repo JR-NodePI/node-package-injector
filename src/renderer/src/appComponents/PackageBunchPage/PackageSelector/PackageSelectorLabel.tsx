@@ -1,4 +1,8 @@
+import { c } from 'fratch-ui/helpers/classNameHelpers';
+
 import LinkButton from '../../../components/linkButton/LinkButton';
+
+import styles from './PackageSelector.module.css';
 
 type PackageSelectorLabelProps = {
   id: string;
@@ -17,7 +21,7 @@ export default function PackageSelectorLabel({
 }: PackageSelectorLabelProps): JSX.Element {
   return (
     <>
-      <label htmlFor={id}>
+      <label className={c(styles.label)} htmlFor={id}>
         {rootPath}
         <b>{lastDirectory}</b>
       </label>
