@@ -11,6 +11,8 @@ import {
   saveWindowRect,
 } from './windowRect';
 
+const isDev = process.env.NODE_ENV === 'development';
+
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
@@ -33,6 +35,10 @@ function createWindow(): void {
       sandbox: false,
     },
   });
+
+  if (isDev) {
+    mainWindow.webContents.openDevTools();
+  }
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show();

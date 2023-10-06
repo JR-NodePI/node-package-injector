@@ -118,12 +118,13 @@ function Dependencies(): JSX.Element {
     changeDependencyProp(dependency, 'scripts', scripts);
   };
 
-  if (!activeTargetPackage?.isValidPackage) {
-    return <></>;
-  }
-
   return (
-    <div className={c(styles.dependencies)}>
+    <div
+      className={c(
+        styles.dependencies,
+        !activeTargetPackage?.isValidPackage ? styles.disabled : ''
+      )}
+    >
       <h2 className={c(styles.title)}>Dependencies</h2>
       {(activeDependencies ?? []).map(dependency => (
         <DependencySelector
