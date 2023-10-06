@@ -6,6 +6,7 @@ import { type TerminalResponse } from '@renderer/services/TerminalService';
 
 import BuildProcessService from './BuildProcessService';
 import NodeService from './NodeService/NodeService';
+import { RelatedDependencyProjection } from './NodeService/NodeServiceTypes';
 import PathService from './PathService';
 
 type ProcessServiceResponse = TerminalResponse & { title: string };
@@ -80,6 +81,7 @@ export default class RunProcessService {
       cwd,
       packageName,
       abortController,
+      runScriptsTitle: 'Run target scripts',
     });
     if (hasError(scriptsResponses)) {
       abortController?.abort();
@@ -93,10 +95,13 @@ export default class RunProcessService {
       onDependenciesBuildStart?.();
     }
 
+    const sortedRelatedDependencies =
+      await NodeService.getDependenciesSortedByHierarchy(dependenciesToBuild);
+
     // Run dependencies in build mode
     const dependenciesResponses = await RunProcessService.runDependencies({
       additionalPackageScripts,
-      dependencies: dependenciesToBuild,
+      sortedRelatedDependencies,
       tmpDir,
       abortController,
     });
@@ -106,10 +111,13 @@ export default class RunProcessService {
     }
 
     // Inject dependencies
+    const targetDependencies = sortedRelatedDependencies.map(
+      ({ dependency }) => dependency
+    );
     const injectDependenciesResponses =
       await BuildProcessService.injectDependencies({
         targetPackage,
-        dependencies: dependenciesToBuild,
+        dependencies: targetDependencies,
         tmpDir,
         abortController,
       });
@@ -128,6 +136,7 @@ export default class RunProcessService {
         cwd,
         packageName,
         abortController,
+        runScriptsTitle: 'Run after build target scripts',
       });
     if (hasError(afterBuildScriptsResponses)) {
       abortController?.abort();
@@ -148,18 +157,15 @@ export default class RunProcessService {
 
   private static async runDependencies({
     additionalPackageScripts,
-    dependencies,
+    sortedRelatedDependencies,
     tmpDir,
     abortController,
   }: {
     additionalPackageScripts: PackageScript[];
-    dependencies: DependencyPackage[];
+    sortedRelatedDependencies: RelatedDependencyProjection[];
     tmpDir: string;
     abortController?: AbortController;
   }): Promise<ProcessServiceResponse[][]> {
-    const sortedRelatedDependencies =
-      await NodeService.getDependenciesSortedByHierarchy(dependencies);
-
     const dependenciesResponses = await BuildProcessService.buildDependencies({
       additionalPackageScripts,
       sortedRelatedDependencies,
