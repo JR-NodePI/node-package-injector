@@ -6,17 +6,13 @@ import TerminalService, {
   type TerminalResponse,
 } from '@renderer/services/TerminalService';
 
-import NodeService from './NodeService/NodeService';
-import { RelatedDependencyProjection } from './NodeService/NodeServiceTypes';
-import PathService from './PathService';
-import WSLService from './WSLService';
+import NodeService from '../NodeService/NodeService';
+import { RelatedDependencyProjection } from '../NodeService/NodeServiceTypes';
+import PathService from '../PathService';
+import WSLService from '../WSLService';
+import RunService, { type ProcessServiceResponse } from './RunService';
 
-type ProcessServiceResponse = TerminalResponse & { title: string };
-
-const hasError = (responses: ProcessServiceResponse[]): boolean =>
-  responses.some(response => Boolean(response.error));
-
-export default class BuildProcessService {
+export default class BuildService {
   public static async buildDependencies({
     additionalPackageScripts,
     sortedRelatedDependencies,
@@ -41,7 +37,7 @@ export default class BuildProcessService {
 
     const dependenciesPromises = sortedRelatedDependencies.map(
       relatedDependency => () =>
-        BuildProcessService.buildSingleDependency({
+        BuildService.buildSingleDependency({
           additionalPackageScripts,
           relatedDependency,
           tmpDir,
@@ -82,21 +78,20 @@ export default class BuildProcessService {
     const depName = relatedDependency.dependencyName;
 
     // Inject sub-dependencies
-    const injectDependenciesResponses =
-      await BuildProcessService.injectDependencies({
-        targetPackage: dependency,
-        dependencies: relatedDependency.subDependencies,
-        tmpDir,
-        abortController,
-      });
+    const injectDependenciesResponses = await BuildService.injectDependencies({
+      targetPackage: dependency,
+      dependencies: relatedDependency.subDependencies,
+      tmpDir,
+      abortController,
+    });
 
-    if (hasError(injectDependenciesResponses)) {
+    if (RunService.hasError(injectDependenciesResponses)) {
       abortController?.abort();
       return injectDependenciesResponses;
     }
 
     // Run dependencies scripts
-    const scriptsResponses = await BuildProcessService.runPackageScripts({
+    const scriptsResponses = await BuildService.runPackageScripts({
       additionalPackageScripts,
       packageScripts: dependency.scripts,
       cwd: depCwd,
@@ -105,7 +100,7 @@ export default class BuildProcessService {
       runScriptsTitle: 'Run dependency scripts',
     });
 
-    if (hasError(scriptsResponses)) {
+    if (RunService.hasError(scriptsResponses)) {
       abortController?.abort();
       return scriptsResponses;
     }
@@ -171,7 +166,7 @@ export default class BuildProcessService {
 
     const scriptsPromises = filledScripts.map(
       packageScript => () =>
-        BuildProcessService.runPackageSingleScript({
+        BuildService.runPackageSingleScript({
           additionalPackageScripts,
           packageScript,
           cwd,
@@ -303,7 +298,7 @@ export default class BuildProcessService {
       const dependencyPackagePath = packageBuildedPathResponse.content ?? '';
 
       if (dependencyPackagePath) {
-        return await BuildProcessService.injectSingleDependency({
+        return await BuildService.injectSingleDependency({
           targetPackage,
           dependencyPackagePath,
           dependencyName,
@@ -321,7 +316,7 @@ export default class BuildProcessService {
     const injectResponses =
       await promiseAllSequentially<ProcessServiceResponse>(injectPromises);
 
-    if (hasError(injectResponses)) {
+    if (RunService.hasError(injectResponses)) {
       abortController?.abort();
       return injectResponses;
     }
