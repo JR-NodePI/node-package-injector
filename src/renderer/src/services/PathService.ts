@@ -2,6 +2,10 @@ import TerminalService from './TerminalService';
 import WSLService, { WSL_DOMAIN } from './WSLService';
 
 export default class PathService {
+  public static get splitPattern(): RegExp {
+    return /\/|\\/g;
+  }
+
   public static isWSL(path?: string): boolean {
     return (
       (path ?? '').startsWith(WSL_DOMAIN) ||
@@ -9,14 +13,19 @@ export default class PathService {
     );
   }
 
-  public static getPath(pathDirectories: string[]): string {
+  public static getPath(
+    pathDirectories: string | string[],
+    isWSLActive?: boolean
+  ): string {
     if (pathDirectories.length === 0) {
       return '';
     }
 
-    let path = window.api.path.join(...pathDirectories, '/');
+    let path = Array.isArray(pathDirectories)
+      ? window.api.path.join(...pathDirectories, '/')
+      : pathDirectories;
 
-    if (window.api.os.platform() !== 'win32') {
+    if (window.api.os.platform() !== 'win32' || isWSLActive) {
       path = window.api.path.join('/', path);
     }
 
@@ -29,7 +38,9 @@ export default class PathService {
 
   public static getPreviousPath(path?: string): string {
     if (path) {
-      return path.split(/\/|\\/).filter(Boolean).slice(0, -1).join('/');
+      return window.api.path.join(
+        ...path.split(PathService.splitPattern).filter(Boolean).slice(0, -1)
+      );
     }
 
     return window.api.os.homedir();

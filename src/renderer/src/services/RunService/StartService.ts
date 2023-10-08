@@ -2,19 +2,15 @@ import { DependencyMode } from '@renderer/models/DependencyConstants';
 import type DependencyPackage from '@renderer/models/DependencyPackage';
 import type NodePackage from '@renderer/models/NodePackage';
 import type PackageScript from '@renderer/models/PackageScript';
-import { type TerminalResponse } from '@renderer/services/TerminalService';
 
-import BuildProcessService from './BuildProcessService';
-import NodeService from './NodeService/NodeService';
-import { RelatedDependencyProjection } from './NodeService/NodeServiceTypes';
-import PathService from './PathService';
+import NodeService from '../NodeService/NodeService';
+import { RelatedDependencyProjection } from '../NodeService/NodeServiceTypes';
+import PathService from '../PathService';
+import BuildService from './BuildService';
+import RunService, { type ProcessServiceResponse } from './RunService';
+import SyncService from './SyncService';
 
-type ProcessServiceResponse = TerminalResponse & { title: string };
-
-const hasError = (responses: ProcessServiceResponse[]): boolean =>
-  responses.some(response => Boolean(response.error));
-
-export default class RunProcessService {
+export default class StartService {
   public static async run({
     additionalPackageScripts,
     targetPackage,
@@ -23,6 +19,7 @@ export default class RunProcessService {
     isWSLActive,
     onTargetBuildStart,
     onDependenciesBuildStart,
+    onDependenciesSyncPrepare,
     onDependenciesSyncStart,
     onAfterBuildStart,
   }: {
@@ -32,6 +29,7 @@ export default class RunProcessService {
     abortController?: AbortController;
     isWSLActive?: boolean;
     onTargetBuildStart?: () => void;
+    onDependenciesSyncPrepare?: () => void;
     onDependenciesBuildStart?: () => void;
     onDependenciesSyncStart?: () => void;
     onAfterBuildStart?: () => void;
@@ -75,7 +73,7 @@ export default class RunProcessService {
     onTargetBuildStart?.();
 
     // Run package scripts
-    const scriptsResponses = await BuildProcessService.runPackageScripts({
+    const scriptsResponses = await BuildService.runPackageScripts({
       additionalPackageScripts,
       packageScripts: targetPackage.scripts,
       cwd,
@@ -83,7 +81,7 @@ export default class RunProcessService {
       abortController,
       runScriptsTitle: 'Run target scripts',
     });
-    if (hasError(scriptsResponses)) {
+    if (RunService.hasError(scriptsResponses)) {
       abortController?.abort();
       return scriptsResponses;
     }
@@ -99,13 +97,13 @@ export default class RunProcessService {
       await NodeService.getDependenciesSortedByHierarchy(dependenciesToBuild);
 
     // Run dependencies in build mode
-    const dependenciesResponses = await RunProcessService.runDependencies({
+    const dependenciesResponses = await StartService.runDependencies({
       additionalPackageScripts,
       sortedRelatedDependencies,
       tmpDir,
       abortController,
     });
-    if (hasError(dependenciesResponses.flat())) {
+    if (RunService.hasError(dependenciesResponses.flat())) {
       abortController?.abort();
       return dependenciesResponses.flat();
     }
@@ -114,33 +112,15 @@ export default class RunProcessService {
     const targetDependencies = sortedRelatedDependencies.map(
       ({ dependency }) => dependency
     );
-    const injectDependenciesResponses =
-      await BuildProcessService.injectDependencies({
-        targetPackage,
-        dependencies: targetDependencies,
-        tmpDir,
-        abortController,
-      });
-    if (hasError(injectDependenciesResponses)) {
+    const injectDependenciesResponses = await BuildService.injectDependencies({
+      targetPackage,
+      dependencies: targetDependencies,
+      tmpDir,
+      abortController,
+    });
+    if (RunService.hasError(injectDependenciesResponses)) {
       abortController?.abort();
       return injectDependenciesResponses;
-    }
-
-    onAfterBuildStart?.();
-
-    // Run after build dependencies package scripts
-    const afterBuildScriptsResponses =
-      await BuildProcessService.runPackageScripts({
-        additionalPackageScripts,
-        packageScripts: targetPackage.afterBuildScripts,
-        cwd,
-        packageName,
-        abortController,
-        runScriptsTitle: 'Run after build target scripts',
-      });
-    if (hasError(afterBuildScriptsResponses)) {
-      abortController?.abort();
-      return afterBuildScriptsResponses;
     }
 
     // Sync dependencies
@@ -148,8 +128,37 @@ export default class RunProcessService {
       ({ mode }) => mode === DependencyMode.SYNC
     );
     if (dependenciesToSync.length) {
+      onDependenciesSyncPrepare?.();
+
+      const syncResponses = await SyncService.prepareSync({
+        targetPackage,
+        dependencies: dependenciesToSync,
+        abortController,
+        isWSLActive,
+      });
+      if (RunService.hasError(syncResponses)) {
+        abortController?.abort();
+        return syncResponses;
+      }
+
       onDependenciesSyncStart?.();
-      // TODO: run sync by SyncProcessService
+    }
+    // TODO:  clear sync files on abort
+
+    onAfterBuildStart?.();
+
+    // Run after build dependencies package scripts
+    const afterBuildScriptsResponses = await BuildService.runPackageScripts({
+      additionalPackageScripts,
+      packageScripts: targetPackage.afterBuildScripts,
+      cwd,
+      packageName,
+      abortController,
+      runScriptsTitle: 'Run after build target scripts',
+    });
+    if (RunService.hasError(afterBuildScriptsResponses)) {
+      abortController?.abort();
+      return afterBuildScriptsResponses;
     }
 
     return dependenciesResponses.flat();
@@ -166,7 +175,7 @@ export default class RunProcessService {
     tmpDir: string;
     abortController?: AbortController;
   }): Promise<ProcessServiceResponse[][]> {
-    const dependenciesResponses = await BuildProcessService.buildDependencies({
+    const dependenciesResponses = await BuildService.buildDependencies({
       additionalPackageScripts,
       sortedRelatedDependencies,
       tmpDir,

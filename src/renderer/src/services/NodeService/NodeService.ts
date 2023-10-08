@@ -162,6 +162,10 @@ export default class NodeService {
     return NodeService.hasFile(cwd, 'pnpm-lock.yaml');
   }
 
+  public static async writeFile(cwd: string, content: string): Promise<void> {
+    return window.api.fs.writeFile(cwd, content, 'utf8');
+  }
+
   public static async runScript(
     cwd: string,
     script: string,
