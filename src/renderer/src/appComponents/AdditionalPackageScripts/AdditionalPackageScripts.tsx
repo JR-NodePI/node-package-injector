@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 
 import PackageScript from '@renderer/models/PackageScript';
-import { Form } from 'fratch-ui';
-import { c } from 'fratch-ui/helpers/classNameHelpers';
+import { InputText } from 'fratch-ui/components';
+import { c } from 'fratch-ui/helpers';
 
 import useGlobalData from '../GlobalDataProvider/useGlobalData';
 import PackageScriptButtons from '../PackageBunchPage/PackageSelector/PackageScripts/components/PackageScriptButtons';
@@ -72,7 +72,7 @@ export default function AdditionalPackageScripts(): JSX.Element {
 
           return (
             <div key={index} className={c(styles.script)}>
-              <Form.InputText
+              <InputText
                 className={c(styles.script_name)}
                 cleanable
                 placeholder="Script name"
@@ -80,7 +80,7 @@ export default function AdditionalPackageScripts(): JSX.Element {
                 onChange={(event): void => handleChangeName(index, event)}
                 title={scriptName}
               />
-              <Form.InputText
+              <InputText
                 className={c(styles.script_value)}
                 cleanable
                 placeholder="Script vale"

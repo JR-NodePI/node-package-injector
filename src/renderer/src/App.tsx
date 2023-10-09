@@ -1,5 +1,9 @@
-import { ColorSchemeProvider, ModalProvider, ToasterProvider } from 'fratch-ui';
-import { c } from 'fratch-ui/helpers/classNameHelpers';
+import {
+  ColorSchemeProvider,
+  ModalProvider,
+  ToasterProvider,
+} from 'fratch-ui/components';
+import { c } from 'fratch-ui/helpers';
 
 import GlobalDataProvider from './appComponents/GlobalDataProvider/GlobalDataProvider';
 import Main from './appComponents/Main';

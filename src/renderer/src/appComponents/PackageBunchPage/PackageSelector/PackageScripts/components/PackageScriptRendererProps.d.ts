@@ -1,5 +1,5 @@
 import PackageScript from '@renderer/models/PackageScript';
-import { Form } from 'fratch-ui';
+import { SelectProps } from 'fratch-ui/components';
 
 export type PackageScriptRendererProps = {
   index: number;
@@ -7,7 +7,7 @@ export type PackageScriptRendererProps = {
   onChange: (index: number, script?: PackageScript) => void;
   onRemove: (index: number) => void;
   script: PackageScript;
-  scriptOptions: Form.SelectProps.SelectOption<PackageScript>[];
+  scriptOptions: SelectProps.SelectOption<PackageScript>[];
   showAddButton: boolean;
 };
 

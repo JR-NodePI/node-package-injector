@@ -13,7 +13,7 @@ import {
   type TabEvent,
   type TabsMenuProps,
 } from 'fratch-ui/components/TabsMenu/TabsMenuProps';
-import getRandomColor from 'fratch-ui/randomColors/getRandomColor';
+import { getRandomColor } from 'fratch-ui/helpers';
 import useDeepCompareEffect from 'use-deep-compare-effect';
 
 import useGlobalData from '../GlobalDataProvider/useGlobalData';

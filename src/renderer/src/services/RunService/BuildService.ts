@@ -356,15 +356,17 @@ export default class BuildService {
     const tmpDependencyDir = PathService.normalizeWin32Path(
       window.api.path.join(tmpDir, dependencyName, '/')
     );
-    const targetPackageDir = await WSLService.cleanSWLRoot(
-      targetPackage.cwd ?? '',
-      window.api.path.join(
+    const targetPackageDir = PathService.normalizeWin32Path(
+      await WSLService.cleanSWLRoot(
         targetPackage.cwd ?? '',
-        '/node_modules/',
-        dependencyName,
-        '/'
-      ),
-      traceOnTime
+        window.api.path.join(
+          targetPackage.cwd ?? '',
+          '/node_modules/',
+          dependencyName,
+          '/'
+        ),
+        traceOnTime
+      )
     );
 
     const targetPackageDirName = PathService.getDirName(targetPackage.cwd);

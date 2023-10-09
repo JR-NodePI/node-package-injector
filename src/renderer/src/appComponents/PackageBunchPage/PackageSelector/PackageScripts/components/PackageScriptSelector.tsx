@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react';
 
 import type PackageScript from '@renderer/models/PackageScript';
-import { Form } from 'fratch-ui';
+import { LeftLabeledField, Select } from 'fratch-ui/components';
 import { SelectOption } from 'fratch-ui/components/Form/Select/SelectProps';
-import { c } from 'fratch-ui/helpers/classNameHelpers';
+import { c } from 'fratch-ui/helpers';
 
 import styles from './PackageScriptSelector.module.css';
 
@@ -44,14 +44,14 @@ export default function PackageScriptSelector({
   const selectorPlaceholder = 'Select script...';
   return (
     <div className={c(styles.mode_scripts)}>
-      <Form.LeftLabeledField
+      <LeftLabeledField
         label={
           <label htmlFor={id} title={title}>
             {label}
           </label>
         }
         field={
-          <Form.Select
+          <Select
             id={id}
             value={selectedScript}
             options={options}

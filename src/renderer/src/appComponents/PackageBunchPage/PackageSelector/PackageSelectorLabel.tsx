@@ -1,4 +1,4 @@
-import { c } from 'fratch-ui/helpers/classNameHelpers';
+import { c } from 'fratch-ui/helpers';
 
 import LinkButton from '../../../components/linkButton/LinkButton';
 

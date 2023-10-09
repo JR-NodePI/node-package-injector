@@ -1,9 +1,9 @@
 import { useState } from 'react';
 
 import GitService from '@renderer/services/GitService';
-import { Button, SettingsModal, Spinner, useModal } from 'fratch-ui';
-import { IconGit } from 'fratch-ui/components/Icons/Icons';
-import { c } from 'fratch-ui/helpers/classNameHelpers';
+import { Button, SettingsModal, Spinner, useModal } from 'fratch-ui/components';
+import { IconGit } from 'fratch-ui/components';
+import { c } from 'fratch-ui/helpers';
 
 import { GIT_COMMANDS } from './PackageGitConstants';
 import type {

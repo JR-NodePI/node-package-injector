@@ -1,5 +1,5 @@
 import { electronApp, is, optimizer } from '@electron-toolkit/utils';
-import { app, BrowserWindow, ipcMain, Menu, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, Menu, session, shell } from 'electron';
 import { join } from 'path';
 
 // import icon from '../../build/icons/png/1024x1024.png?asset';
