@@ -43,8 +43,8 @@ export function loadWindowRect(): InitWindowBounds {
       return {
         width: windowBounds.width,
         height: windowBounds.height,
-        x: windowBounds.x,
-        y: windowBounds.y,
+        x: windowBounds.x ?? 0 < 0 ? 0 : windowBounds.x,
+        y: windowBounds.y ?? 0 < 0 ? 0 : windowBounds.y,
       };
     }
   } catch {

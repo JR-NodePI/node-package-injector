@@ -1,4 +1,4 @@
-import { c } from 'fratch-ui/helpers/classNameHelpers';
+import { c } from 'fratch-ui/helpers';
 
 import ExportConfig from './ExportConfig';
 import ImportConfig from './ImportConfig';

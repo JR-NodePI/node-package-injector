@@ -1,8 +1,14 @@
 import { useContext, useState } from 'react';
 
-import { Button, Icons, Spinner, ToasterListContext } from 'fratch-ui';
+import {
+  Button,
+  IconPause,
+  IconPlay,
+  Spinner,
+  ToasterListContext,
+} from 'fratch-ui/components';
 import { ToasterType } from 'fratch-ui/components/Toaster/ToasterConstants';
-import { c } from 'fratch-ui/helpers/classNameHelpers';
+import { c } from 'fratch-ui/helpers';
 import useDeepCompareEffect from 'use-deep-compare-effect';
 
 import StartService from '../../services/RunService/StartService';
@@ -173,7 +179,7 @@ export default function RunProcess(): JSX.Element {
       {!isRunning ? (
         <Button
           disabled={!isRunEnabled}
-          Icon={Icons.IconPlay}
+          Icon={IconPlay}
           className={c(styles.run_button)}
           label="Run"
           type="primary"
@@ -181,7 +187,7 @@ export default function RunProcess(): JSX.Element {
         />
       ) : (
         <Button
-          Icon={Icons.IconPause}
+          Icon={IconPause}
           className={c(styles.stop_button)}
           label="Pause"
           type={isSyncing ? 'tertiary' : 'secondary'}

@@ -4,7 +4,7 @@ import NodePackage from '@renderer/models/NodePackage';
 import NodeService from '../NodeService/NodeService';
 import PathService from '../PathService';
 import TerminalService from '../TerminalService';
-import RunService, { type ProcessServiceResponse } from './RunService';
+import { type ProcessServiceResponse } from './RunService';
 
 export default class SyncService {
   public static async prepareSync({

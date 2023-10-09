@@ -1,10 +1,10 @@
 import '../../../models/PackageScript';
 
-import { Form } from 'fratch-ui';
+import { SelectProps } from 'fratch-ui/components';
 
 import NodePackage from '../../../models/NodePackage';
 
-export type DirectorySelectOption = Form.SelectProps.SelectOption<string>;
+export type DirectorySelectOption = SelectProps.SelectOption<string>;
 
 export type useDirectorySelectOptionsProps = {
   cwd: string;

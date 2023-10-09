@@ -1,5 +1,5 @@
-import { TabsMenu } from 'fratch-ui';
-import { c } from 'fratch-ui/helpers/classNameHelpers';
+import { TabsMenu } from 'fratch-ui/components';
+import { c } from 'fratch-ui/helpers';
 
 import useTabsFromPackageBunches from './useTabsFromPackageBunches';
 

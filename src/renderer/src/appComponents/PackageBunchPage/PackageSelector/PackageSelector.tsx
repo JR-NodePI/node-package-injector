@@ -3,8 +3,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import GitService from '@renderer/services/GitService';
 import NodeService from '@renderer/services/NodeService/NodeService';
 import PathService from '@renderer/services/PathService';
-import { Form } from 'fratch-ui';
-import { c } from 'fratch-ui/helpers/classNameHelpers';
+import { LeftLabeledField, Select } from 'fratch-ui/components';
+import { c } from 'fratch-ui/helpers';
 
 import PackageGitActions from './PackageGitActions/PackageGitActions';
 import PackageScripts from './PackageScripts/PackageScripts';
@@ -149,7 +149,7 @@ export default function PackageSelector({
 
   return (
     <div className={c(styles.package)}>
-      <Form.LeftLabeledField
+      <LeftLabeledField
         label={
           <PackageSelectorLabel
             id={id}
@@ -160,7 +160,7 @@ export default function PackageSelector({
           />
         }
         field={
-          <Form.Select
+          <Select
             id={id}
             disabled={isDisabled}
             key={cwd}
