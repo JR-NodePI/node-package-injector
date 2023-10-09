@@ -51,6 +51,23 @@ export default class NodeService {
     return true;
   }
 
+  private static async hasFilesByRegexp(
+    cwd: string,
+    filePattern: RegExp
+  ): Promise<boolean> {
+    try {
+      const files = await window.api.fs.readdir(cwd, {
+        withFileTypes: true,
+      });
+      const matchingFiles = files.filter(file => {
+        return file.isFile() && file.name.match(filePattern);
+      });
+      return matchingFiles.length > 0;
+    } catch (error) {
+      return false;
+    }
+  }
+
   public static async getDependenciesNames(cwd: string): Promise<string[]> {
     const packageJson = await NodeService.getPackageJson(cwd);
     if (packageJson != null) {
@@ -139,11 +156,17 @@ export default class NodeService {
   }
 
   public static async checkViteConfig(cwd: string): Promise<boolean> {
-    return NodeService.hasFile(cwd, 'vite.config.js');
+    return NodeService.hasFilesByRegexp(
+      cwd,
+      new RegExp('.*vite\\.config\\.(js|ts)$')
+    );
   }
 
   public static async checkCracoConfig(cwd: string): Promise<boolean> {
-    return NodeService.hasFile(cwd, 'craco.config.js');
+    return NodeService.hasFilesByRegexp(
+      cwd,
+      new RegExp('.*craco\\.config\\.(js|ts)$')
+    );
   }
 
   public static async checkIsSynchronizable(cwd: string): Promise<boolean> {
