@@ -25,11 +25,11 @@ export default class PathService {
       ? window.api.path.join(...pathDirectories, '/')
       : pathDirectories;
 
-    if (window.api.os.platform() !== 'win32' || isWSLActive) {
+    if (window.api.os.platform() !== 'win32') {
       path = window.api.path.join('/', path);
     }
 
-    if (PathService.isWSL(pathDirectories?.[0] ?? '')) {
+    if (PathService.isWSL(pathDirectories?.[0] ?? '') || isWSLActive) {
       path = `\\\\${path}`;
     }
 
