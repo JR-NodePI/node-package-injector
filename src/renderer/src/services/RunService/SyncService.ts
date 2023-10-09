@@ -62,9 +62,12 @@ export default class SyncService {
       workspaces,
     };
 
-    const swd = await PathService.getPath(monoCwd, isWSLActive);
-    const packagePath = PathService.getPath(
-      window.api.path.join(swd, '/package.json'),
+    const cwd = await PathService.getPath(
+      window.api.path.join(monoCwd),
+      isWSLActive
+    );
+    const packagePath = await PathService.getPath(
+      window.api.path.join(monoCwd, '/package.json'),
       isWSLActive
     );
 
@@ -75,16 +78,23 @@ export default class SyncService {
       JSON.stringify(packageJsonContent, null, 2)
     );
 
-    const response = await TerminalService.executeCommand({
-      command: 'bash',
-      args: [
-        PathService.getExtraResourcesScriptPath('npm_run_script.sh'),
-        `${JSON.stringify('npm run install-mono')}`,
-      ],
-      cwd: swd,
-      traceOnTime: true,
-      abortController,
-    });
+    const response = await NodeService.runScript(
+      cwd,
+      'echo "hola"',
+      abortController
+    );
+
+    // const response = await TerminalService.executeCommand({
+    //   command: 'bash',
+    //   args: [
+    //     PathService.getExtraResourcesScriptPath('npm_run_script.sh'),
+    //     `${JSON.stringify('echo "hola"  ')}`,
+    //   ],
+    //   cwd: window.api.path.join(monoCwd),
+    //   traceOnTime: true,
+    //   skipWSL: true,
+    //   abortController,
+    // });
 
     return [{ ...response, title: syncTitle }];
   }
