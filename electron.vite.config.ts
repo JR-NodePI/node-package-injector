@@ -21,7 +21,6 @@ export default defineConfig({
     resolve: {
       alias: {
         '@renderer': resolve('src/renderer/src'),
-        '/@fratch-ui-fonts': resolve('node_modules/fratch-ui/@fratch-ui-fonts'),
       },
     },
     plugins: [react()],

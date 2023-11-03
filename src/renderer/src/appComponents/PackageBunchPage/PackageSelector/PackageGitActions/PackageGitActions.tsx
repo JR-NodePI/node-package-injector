@@ -1,10 +1,10 @@
 import { useCallback, useContext, useEffect, useState } from 'react';
 
 import GitService from '@renderer/services/GitService';
-import { Form } from 'fratch-ui';
+import { LeftLabeledField, Select } from 'fratch-ui/components';
 import { type SelectOption } from 'fratch-ui/components/Form/Select/SelectProps';
 import ToasterListContext from 'fratch-ui/components/Toaster/ToasterListContext';
-import { c } from 'fratch-ui/helpers/classNameHelpers';
+import { c } from 'fratch-ui/helpers';
 
 import PackageGitCommands from './PackageGitCommands/PackageGitCommands';
 
@@ -101,10 +101,10 @@ export default function PackageGitActions({
   return (
     <>
       <div className={c(className)}>
-        <Form.LeftLabeledField
+        <LeftLabeledField
           label={<label htmlFor={id}>Git branch</label>}
           field={
-            <Form.Select
+            <Select
               id={id}
               value={gitBranch}
               placeholder={isLoading ? 'Loading...' : 'Select branch...'}

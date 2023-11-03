@@ -1,6 +1,6 @@
 import useGlobalData from '@renderer/appComponents/GlobalDataProvider/useGlobalData';
-import { Button } from 'fratch-ui';
-import { IconUpload } from 'fratch-ui/components/Icons/Icons';
+import { Button } from 'fratch-ui/components';
+import { IconUpload } from 'fratch-ui/components';
 
 import { downloadTextFile } from './ExportImportBunchHelpers';
 

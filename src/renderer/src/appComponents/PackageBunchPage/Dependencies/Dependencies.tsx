@@ -6,8 +6,8 @@ import DependencyPackage from '@renderer/models/DependencyPackage';
 import PackageScript from '@renderer/models/PackageScript';
 import NodeService from '@renderer/services/NodeService/NodeService';
 import PathService from '@renderer/services/PathService';
-import { Button, Icons } from 'fratch-ui';
-import { c } from 'fratch-ui/helpers/classNameHelpers';
+import { Button, IconPlus } from 'fratch-ui/components';
+import { c } from 'fratch-ui/helpers';
 
 import DependencySelector from './DependencySelector';
 
@@ -118,12 +118,13 @@ function Dependencies(): JSX.Element {
     changeDependencyProp(dependency, 'scripts', scripts);
   };
 
-  if (!activeTargetPackage?.isValidPackage) {
-    return <></>;
-  }
-
   return (
-    <div className={c(styles.dependencies)}>
+    <div
+      className={c(
+        styles.dependencies,
+        !activeTargetPackage?.isValidPackage ? styles.disabled : ''
+      )}
+    >
       <h2 className={c(styles.title)}>Dependencies</h2>
       {(activeDependencies ?? []).map(dependency => (
         <DependencySelector
@@ -142,7 +143,7 @@ function Dependencies(): JSX.Element {
           type="tertiary"
           label="Add new dependency"
           onClick={handleAddDependency}
-          Icon={Icons.IconPlus}
+          Icon={IconPlus}
           isRound
         />
       </div>

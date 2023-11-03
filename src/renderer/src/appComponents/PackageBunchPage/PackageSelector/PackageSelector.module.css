@@ -1,6 +1,5 @@
 .package .label {
-  display: block;
-  margin-bottom: 8px;
+  user-select: text;
 }
 .package .options {
   display: flex;

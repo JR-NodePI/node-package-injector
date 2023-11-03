@@ -1,6 +1,6 @@
 import { type ReactNode } from 'react';
 
-import { c } from 'fratch-ui/helpers/classNameHelpers';
+import { c } from 'fratch-ui/helpers';
 
 import DevToolsOpener from './DevToolsOpener';
 

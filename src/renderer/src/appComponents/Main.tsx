@@ -1,7 +1,7 @@
 import { createPortal } from 'react-dom';
 
-import { Spinner } from 'fratch-ui';
-import { c } from 'fratch-ui/helpers/classNameHelpers';
+import { Spinner } from 'fratch-ui/components';
+import { c } from 'fratch-ui/helpers';
 
 import GlobalError from '../components/GlobalError/GlobalError';
 import useGlobalData from './GlobalDataProvider/useGlobalData';
