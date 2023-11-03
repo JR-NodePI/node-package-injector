@@ -1,11 +1,17 @@
 import { useContext, useState } from 'react';
 
-import { Button, Icons, Spinner, ToasterListContext } from 'fratch-ui';
+import {
+  Button,
+  IconPause,
+  IconPlay,
+  Spinner,
+  ToasterListContext,
+} from 'fratch-ui/components';
 import { ToasterType } from 'fratch-ui/components/Toaster/ToasterConstants';
-import { c } from 'fratch-ui/helpers/classNameHelpers';
+import { c } from 'fratch-ui/helpers';
 import useDeepCompareEffect from 'use-deep-compare-effect';
 
-import RunProcessService from '../../services/RunProcessService';
+import StartService from '../../services/RunService/StartService';
 import useGlobalData from '../GlobalDataProvider/useGlobalData';
 
 import styles from './RunProcess.module.css';
@@ -23,6 +29,10 @@ const STATUSES = {
   SYNCING: {
     value: 'syncing',
     label: 'Syncing',
+  },
+  SYNC_PREPARE: {
+    value: 'sync_prepare',
+    label: 'Preparing for syncing',
   },
   AFTER_BUILD: {
     value: 'after_build',
@@ -64,7 +74,7 @@ export default function RunProcess(): JSX.Element {
 
       setStatus(STATUSES.RUNNING);
 
-      const output = await RunProcessService.run({
+      const output = await StartService.run({
         additionalPackageScripts,
         targetPackage: activeTargetPackage,
         dependencies: activeDependencies,
@@ -79,9 +89,12 @@ export default function RunProcess(): JSX.Element {
         onAfterBuildStart: () => {
           setStatus(STATUSES.AFTER_BUILD);
         },
+        onDependenciesSyncPrepare: () => {
+          setStatus(STATUSES.SYNC_PREPARE);
+          isSyncing = true;
+        },
         onDependenciesSyncStart: () => {
           setStatus(STATUSES.SYNCING);
-          isSyncing = true;
         },
       });
 
@@ -143,7 +156,10 @@ export default function RunProcess(): JSX.Element {
       STATUSES.BUILDING.value,
     ] as string[]
   ).includes(status.value);
-  const isSyncing = status.value === STATUSES.SYNCING.value;
+  const isSyncing =
+    status.value === STATUSES.SYNC_PREPARE.value ||
+    status.value === STATUSES.SYNCING.value;
+
   const isRunning = isBuilding || isSyncing;
 
   const isRunEnabled =
@@ -163,7 +179,7 @@ export default function RunProcess(): JSX.Element {
       {!isRunning ? (
         <Button
           disabled={!isRunEnabled}
-          Icon={Icons.IconPlay}
+          Icon={IconPlay}
           className={c(styles.run_button)}
           label="Run"
           type="primary"
@@ -171,7 +187,7 @@ export default function RunProcess(): JSX.Element {
         />
       ) : (
         <Button
-          Icon={Icons.IconPause}
+          Icon={IconPause}
           className={c(styles.stop_button)}
           label="Pause"
           type={isSyncing ? 'tertiary' : 'secondary'}

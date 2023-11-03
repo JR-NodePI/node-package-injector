@@ -1,4 +1,4 @@
-import { c } from 'fratch-ui/helpers/classNameHelpers';
+import { c } from 'fratch-ui/helpers';
 
 import useGlobalData from '../GlobalDataProvider/useGlobalData';
 import Dependencies from './Dependencies/Dependencies';

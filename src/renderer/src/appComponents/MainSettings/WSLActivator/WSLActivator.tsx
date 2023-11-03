@@ -1,9 +1,9 @@
 import { useRef } from 'react';
 
 import useGlobalData from '@renderer/appComponents/GlobalDataProvider/useGlobalData';
-import { Form, useModal } from 'fratch-ui';
+import { InputCheck, useModal } from 'fratch-ui/components';
 import { type ModalCloseType } from 'fratch-ui/components/Modal/ModalProps';
-import { c } from 'fratch-ui/helpers/classNameHelpers';
+import { c } from 'fratch-ui/helpers';
 
 export default function WSLActivator({
   className,
@@ -46,7 +46,7 @@ export default function WSLActivator({
   }
 
   return (
-    <Form.InputCheck
+    <InputCheck
       ref={ref}
       className={c(className)}
       checked={isWSLActive}

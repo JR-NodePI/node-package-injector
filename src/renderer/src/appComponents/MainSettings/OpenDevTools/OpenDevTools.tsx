@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 
 import usePersistedState from '@renderer/appComponents/GlobalDataProvider/usePersistedState';
-import { Form } from 'fratch-ui';
-import { c } from 'fratch-ui/helpers/classNameHelpers';
+import { InputCheck } from 'fratch-ui/components';
+import { c } from 'fratch-ui/helpers';
 
 export default function OpenDevTools({
   className,
@@ -31,7 +31,7 @@ export default function OpenDevTools({
   }
 
   return (
-    <Form.InputCheck
+    <InputCheck
       checked={openDevTools}
       className={c(className)}
       label="open dev tools"

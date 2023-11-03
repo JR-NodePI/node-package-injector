@@ -1,6 +1,6 @@
 import TerminalService from '@renderer/services/TerminalService';
-import { ColorSchemeSwitcher, SettingsModal } from 'fratch-ui';
-import { c } from 'fratch-ui/helpers/classNameHelpers';
+import { ColorSchemeSwitcher, SettingsModal } from 'fratch-ui/components';
+import { c } from 'fratch-ui/helpers';
 
 import AdditionalPackageScripts from '../AdditionalPackageScripts/AdditionalPackageScripts';
 import ExportImportBunch from './ExportImportBunch/ExportImportBunch';

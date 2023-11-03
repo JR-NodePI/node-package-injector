@@ -1,7 +1,7 @@
 import { DependencyMode } from '@renderer/models/DependencyConstants';
-import { Button } from 'fratch-ui';
-import { Icons } from 'fratch-ui';
-import { c } from 'fratch-ui/helpers/classNameHelpers';
+import { Button } from 'fratch-ui/components';
+import { IconClose } from 'fratch-ui/components';
+import { c } from 'fratch-ui/helpers';
 
 import PackageSelector from '../PackageSelector/PackageSelector';
 import DependencyModeCheck from './DependencyModeCheck';
@@ -32,9 +32,8 @@ export default function DependencySelector({
         additionalComponent={
           <>
             {isTargetSynchronizable && (
-              <span title="Sync mode will be available very soon, stay tuned!">
+              <span title="Inject this dependency in sync mode">
                 <DependencyModeCheck
-                  disabled
                   dependency={dependency}
                   onModeChange={onModeChange}
                 />
@@ -56,7 +55,7 @@ export default function DependencySelector({
           size="small"
           label="Remove dependency"
           onClick={(): void => onClickRemove(dependency)}
-          Icon={Icons.IconClose}
+          Icon={IconClose}
           isRound
         />
       </div>
