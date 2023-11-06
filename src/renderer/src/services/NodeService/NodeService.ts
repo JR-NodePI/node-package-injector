@@ -8,6 +8,8 @@ import { RelatedDependencyProjection } from './NodeServiceTypes';
 type PackageJsonStructure = string | Record<string, string>;
 
 export default class NodeService {
+  public static readonly FAKE_PACKAGE_VERSION = '6.6.6-node-pi';
+
   private static async getPackageJson(
     cwd: string
   ): Promise<Record<string, PackageJsonStructure> | null> {
@@ -205,8 +207,6 @@ export default class NodeService {
       abortController,
     });
   }
-
-  public static readonly FAKE_PACKAGE_VERSION = '6.6.6-node-pi';
 
   public static async injectFakePackageVersion(
     cwd: string,

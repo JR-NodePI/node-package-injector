@@ -5,12 +5,14 @@ import type { RelatedDependencyProjection } from './NodeServiceTypes';
 
 const getDependencyPosition = (
   dependencies: RelatedDependencyProjection[],
-  { dependencyName }: RelatedDependencyProjection,
+  { dependency }: RelatedDependencyProjection,
   currentIndex: number
 ): number =>
   dependencies.reduce<number>(
     (position, { subDependenciesNames }, index) =>
-      subDependenciesNames.includes(dependencyName) ? index : position,
+      subDependenciesNames.includes(dependency.packageName ?? '')
+        ? index
+        : position,
     currentIndex
   );
 
@@ -47,9 +49,6 @@ export default async function getDependenciesSortedByHierarchy(
   const depsWithSubDeps = await Promise.all(
     dependencies.map(
       async (dependency): Promise<RelatedDependencyProjection> => {
-        const dependencyName =
-          (await NodeService.getPackageName(dependency.cwd ?? '')) ?? '';
-
         const allNpmDepNames =
           (await NodeService.getDependenciesNames(dependency.cwd ?? '')) ?? [];
 
@@ -62,7 +61,6 @@ export default async function getDependenciesSortedByHierarchy(
           .map(({ dependency }) => dependency);
 
         return {
-          dependencyName,
           subDependenciesNames,
           dependency,
           subDependencies,

@@ -15,7 +15,11 @@ export type PackageSelectorProps = {
   additionalComponent?: JSX.Element;
   disabled?: boolean;
   disableScripts?: boolean;
-  onPathChange: (cwd: string, isValidPackage: boolean) => void;
+  onPathChange: (
+    cwd: string,
+    isValidPackage: boolean,
+    packageName?: string
+  ) => void;
   onScriptsChange: (scripts: PackageScript[]) => void;
   onAfterBuildScriptsChange?: (scripts: PackageScript[]) => void;
   nodePackage: NodePackage;

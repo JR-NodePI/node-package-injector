@@ -62,7 +62,9 @@ export default class BuildService {
     tmpDir: string;
     abortController?: AbortController;
   }): Promise<ProcessServiceResponse[]> {
-    const outputTitle = `Build dependency: ${relatedDependency.dependencyName}`;
+    const outputTitle = `Build dependency: ${
+      relatedDependency.dependency.packageName ?? ''
+    }`;
 
     if (abortController?.signal.aborted) {
       return [
@@ -75,7 +77,7 @@ export default class BuildService {
 
     const { dependency } = relatedDependency;
     const depCwd = dependency.cwd ?? '';
-    const depName = relatedDependency.dependencyName;
+    const depName = relatedDependency.dependency.packageName ?? '';
 
     // Inject sub-dependencies
     const injectDependenciesResponses = await BuildService.injectDependencies({
@@ -270,8 +272,9 @@ export default class BuildService {
     }
 
     const injectPromises = dependencies.map(dependency => async () => {
-      const depDirName = PathService.getDirName(dependency.cwd);
-      const outputTitle = `Dependency injection: ${depDirName}`;
+      const outputTitle = `Dependency injection: ${
+        dependency.packageName ?? ''
+      }`;
 
       const dependencyName = await NodeService.getPackageName(
         dependency.cwd ?? ''
@@ -369,14 +372,12 @@ export default class BuildService {
       )
     );
 
-    const targetPackageDirName = PathService.getDirName(targetPackage.cwd);
-
     // eslint-disable-next-line no-console
     console.log(
       '>>>----->> Injecting: ',
       dependencyName,
       '->',
-      targetPackageDirName
+      targetPackage.packageName ?? ''
     );
 
     const injectionOutput = await TerminalService.executeCommand({

@@ -53,11 +53,6 @@ export default class PathService {
       .filter(Boolean);
   }
 
-  public static getDirName(path?: string): string {
-    const dirs = PathService.getPathDirectories(path);
-    return dirs.pop() ?? '';
-  }
-
   public static async getHomePath(
     isWSLActive?: boolean,
     traceOnTime?: boolean

@@ -84,10 +84,13 @@ export default function PackageSelector({
 
       (async (): Promise<void> => {
         const isValidPackage = await NodeService.checkPackageJSON(cwd);
+        const packageName = isValidPackage
+          ? await NodeService.getPackageName(cwd)
+          : undefined;
         const branch = await GitService.getCurrentBranch(cwd, abortController);
         const isValid = isValidPackage && branch.length > 0;
         if (!abortController.signal.aborted) {
-          onPathChange(cwd, isValid);
+          onPathChange(cwd, isValid, packageName);
         }
         setIsValidatingPackage(false);
       })();
