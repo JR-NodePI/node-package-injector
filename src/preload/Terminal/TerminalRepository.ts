@@ -1,4 +1,4 @@
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 
 import {
   ExecuteCommandOutputType,
@@ -16,10 +16,22 @@ type TraceConfig = ExecuteCommandOutput & {
   logFn?: typeof console.log | typeof console.warn;
 };
 
-const cleanOutput = (output: string): string =>
-  output
+const cleanOutput = (
+  output: string
+): { cleanMessage: string; outputPid: string } => {
+  let outputPid;
+  let cleanMessage = output
     .replace(/[^a-z0-9-\n\s\r\t{}()"',:_\\/\\*+.|><=@áéíóúÁÉÍÓÚñçü]/gi, '')
     .trim();
+
+  const patternPid = new RegExp('<<PID:([^>]+)>>', 'g');
+  if (patternPid.test(cleanMessage)) {
+    outputPid = cleanMessage.replace(patternPid, '$1');
+    cleanMessage = cleanMessage.replace(patternPid, '');
+  }
+
+  return { cleanMessage, outputPid };
+};
 
 const getConsoleInitColorizedFlag = (
   type: ExecuteCommandOutput['type'],
@@ -147,19 +159,18 @@ export default class TerminalRepository {
       const argsAsString = args.join(' ');
       const commandTrace = `\n   CWD: ${cwd}\n   CMD: ${command} ${argsAsString}`;
       const outputs: ExecuteCommandOutput[] = [];
+
+      let outputTermPid: string;
       let outputStack: ExecuteCommandOutput[] = [];
-      let aborted = false;
 
       abortController?.signal.addEventListener('abort', () => {
-        cmd.kill();
-        aborted = true;
+        if (outputTermPid) {
+          spawnSync('kill', ['-SIGKILL', outputTermPid], { shell: 'bash' });
+        }
+        cmd.kill('SIGKILL');
       });
 
       const enqueueConsoleOutput = (output: ExecuteCommandOutput): void => {
-        if (aborted) {
-          return;
-        }
-
         outputStack.push(output);
 
         const mustDisplay =
@@ -183,19 +194,22 @@ export default class TerminalRepository {
 
       cmd.stdout.on('data', data => {
         const message = data instanceof Buffer ? data.toString() : data;
-        const cleanMessage = cleanOutput(message);
+        const { cleanMessage, outputPid } = cleanOutput(message);
         const output = {
           type: ExecuteCommandOutputType.STDOUT,
           pid: cmd.pid,
           data: cleanMessage,
         };
+        if (outputPid) {
+          outputTermPid = outputPid;
+        }
         outputs.push(output);
         enqueueConsoleOutput(output);
       });
 
       cmd.stderr.on('data', data => {
         const message = data instanceof Buffer ? data.toString() : data;
-        const cleanMessage = cleanOutput(message);
+        const { cleanMessage, outputPid } = cleanOutput(message);
         const isError = [
           new RegExp('fatal: ', 'gi'),
           new RegExp('error ', 'gi'),
@@ -222,6 +236,9 @@ export default class TerminalRepository {
           };
 
           if (!isIgnoredError) {
+            if (outputPid) {
+              outputTermPid = outputPid;
+            }
             outputs.push(output);
           }
 

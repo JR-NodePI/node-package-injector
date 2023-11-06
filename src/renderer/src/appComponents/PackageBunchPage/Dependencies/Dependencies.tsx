@@ -56,7 +56,8 @@ function Dependencies(): JSX.Element {
   const handlePathChange = (
     dependency: DependencyPackage,
     cwd: string,
-    isValidPackage: boolean
+    isValidPackage: boolean,
+    packageName?: string
   ): void => {
     if (!dependency || dependency.cwd === cwd) {
       return;
@@ -74,6 +75,7 @@ function Dependencies(): JSX.Element {
         clonedDependency.scripts = undefined;
         clonedDependency.afterBuildScripts = undefined;
         clonedDependency.isValidPackage = isValidPackage;
+        clonedDependency.packageName = packageName;
 
         return clonedDependency;
       }

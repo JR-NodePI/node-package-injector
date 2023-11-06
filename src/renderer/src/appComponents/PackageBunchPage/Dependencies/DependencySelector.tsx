@@ -18,8 +18,12 @@ export default function DependencySelector({
   onModeChange,
   onScriptsChange,
 }: DependencySelectorProps): JSX.Element {
-  const handlePathChange = (cwd: string, isValidPackage: boolean): void => {
-    onPathChange(dependency, cwd, isValidPackage);
+  const handlePathChange = (
+    cwd: string,
+    isValidPackage: boolean,
+    packageName?: string
+  ): void => {
+    onPathChange(dependency, cwd, isValidPackage, packageName);
   };
 
   const handleScriptsChange = (scripts): void => {
