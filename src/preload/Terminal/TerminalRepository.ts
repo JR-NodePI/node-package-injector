@@ -160,17 +160,35 @@ export default class TerminalRepository {
       const commandTrace = `\n   CWD: ${cwd}\n   CMD: ${command} ${argsAsString}`;
       const outputs: ExecuteCommandOutput[] = [];
 
+      let isAborted = false;
       let outputTermPid: string;
       let outputStack: ExecuteCommandOutput[] = [];
 
       abortController?.signal.addEventListener('abort', () => {
         if (outputTermPid) {
+          enqueueConsoleOutput({
+            type: ExecuteCommandOutputType.CLOSE,
+            pid: cmd.pid,
+            data: `kill ${outputTermPid}`,
+          });
+          enqueueConsoleOutput({
+            type: ExecuteCommandOutputType.CLOSE,
+            pid: cmd.pid,
+            data: `kill -SIGKILL ${outputTermPid}`,
+          });
+          spawnSync('kill', [outputTermPid], { shell: 'bash' });
           spawnSync('kill', ['-SIGKILL', outputTermPid], { shell: 'bash' });
         }
+        cmd.kill();
         cmd.kill('SIGKILL');
+        isAborted = true;
       });
 
       const enqueueConsoleOutput = (output: ExecuteCommandOutput): void => {
+        if (isAborted) {
+          return;
+        }
+
         outputStack.push(output);
 
         const mustDisplay =
