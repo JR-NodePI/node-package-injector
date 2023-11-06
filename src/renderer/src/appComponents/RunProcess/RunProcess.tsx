@@ -43,6 +43,8 @@ const STATUSES = {
 type STATUS = (typeof STATUSES)[keyof typeof STATUSES];
 
 export default function RunProcess(): JSX.Element {
+  const { loading, isValidTerminal } = useGlobalData();
+
   const { addToaster } = useContext(ToasterListContext);
   const {
     additionalPackageScripts,
@@ -165,6 +167,10 @@ export default function RunProcess(): JSX.Element {
   const isRunEnabled =
     activeTargetPackage?.isValidPackage &&
     activeDependencies?.every(d => d.isValidPackage);
+
+  if (loading || !isValidTerminal) {
+    return <></>;
+  }
 
   return (
     <>

@@ -57,7 +57,7 @@ function AllPackageScripts({
 }
 
 export default function PackageSelector({
-  additionalComponent,
+  additionalComponent: additionalActionComponents,
   disabled,
   disableScripts,
   onPathChange,
@@ -183,7 +183,7 @@ export default function PackageSelector({
               className={c(styles.branch)}
               cwd={cwd}
             />
-            {additionalComponent}
+            {additionalActionComponents}
           </div>
           {!disableScripts && (
             <AllPackageScripts

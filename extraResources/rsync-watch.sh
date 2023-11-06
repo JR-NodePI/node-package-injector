@@ -1,11 +1,11 @@
 #!/bin/bash
 
-set -e
+. "$(dirname "$0")/get_pid.sh"
 
 SRC_DIR=$1
 TARGET_DIR=$2
 
-trap "echo -e \"\nExited!\"; exit;" SIGINT SIGTERM
+trap "echo -e \"\nExited!\"; exit;" SIGINT SIGTERM SIGKILL
 
 if [[ -z "$SRC_DIR" ]]; then
   echo "missing \$1 <src-dir>"
@@ -22,7 +22,7 @@ echo "SRC_DIR: $SRC_DIR"
 echo "TARGET_DIR: $TARGET_DIR"
 
 sync_dir() {
-  rsync -avuh --delete "$SRC_DIR" "$TARGET_DIR"
+  rsync -avuh --exclude="node_modules" --exclude=".git" --delete "$SRC_DIR" "$TARGET_DIR"
 }
 
 watch_dir() {

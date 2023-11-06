@@ -131,7 +131,6 @@ export default class NodeService {
       skipWSL: true,
       ignoreStderrErrors: true,
     });
-
     try {
       const data = JSON.parse(output?.content ?? '');
       return data;
