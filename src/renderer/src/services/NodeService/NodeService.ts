@@ -143,7 +143,6 @@ export default class NodeService {
       args: [PathService.getExtraResourcesScriptPath('check_node.sh')],
       cwd: window.api.path.join(window.api.extraResourcesPath),
       skipWSL: true,
-      ignoreStderrErrors: true,
     });
     try {
       const data = JSON.parse(output?.content ?? '');

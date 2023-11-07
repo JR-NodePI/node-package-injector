@@ -255,16 +255,23 @@ export default class TerminalRepository {
       cmd.stderr.on('data', data => {
         const message = data instanceof Buffer ? data.toString() : data;
         const { cleanMessage, outputPid } = cleanOutput(message);
-        const isError = [
-          new RegExp('fatal: ', 'gi'),
-          new RegExp('error ', 'gi'),
-          new RegExp('error: ', 'gi'),
-          new RegExp('command not found', 'gi'),
-          new RegExp('no such file or directory', 'gi'),
-          new RegExp('is not a directory', 'gi'),
-        ].some(regExp => regExp.test(cleanMessage));
+        const isError =
+          !ignoreStderrErrors &&
+          [
+            new RegExp('fatal: ', 'gi'),
+            new RegExp('error ', 'gi'),
+            new RegExp('error: ', 'gi'),
+            new RegExp('command not found', 'gi'),
+            new RegExp('no such file or directory', 'gi'),
+            new RegExp('is not a directory', 'gi'),
+          ].some(regExp => regExp.test(cleanMessage));
 
-        if (isError && !ignoreStderrErrors) {
+        console.log('>>>----->> cleanMessage', cleanMessage, {
+          isError,
+          ignoreStderrErrors,
+        });
+
+        if (isError) {
           const error = new Error(cleanMessage);
           reject(error);
           clearTimeout(resolveAfterFirstOutputId);

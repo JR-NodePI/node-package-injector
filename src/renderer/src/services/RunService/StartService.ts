@@ -149,6 +149,11 @@ export default class StartService {
       runScriptsTitle: 'Run after build target scripts',
       mustRunAfterBuild: true,
     });
+
+    if (!syncAbortController?.signal.aborted) {
+      syncAbortController?.abort();
+    }
+
     if (RunService.hasError(afterBuildScriptsResponses)) {
       abortController?.abort();
       return afterBuildScriptsResponses;
