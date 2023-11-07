@@ -2,6 +2,7 @@
 
 . "$(dirname "$0")/get_pid.sh"
 . "$(dirname "$0")/helpers/check_command.sh"
+. "$(dirname "$0")/helpers/execute_in_mac_os.sh"
 
 SRC_DIR=$1
 TARGET_DIR=$2
@@ -18,7 +19,7 @@ if [[ -z "$TARGET_DIR" ]]; then
   exit 1
 fi
 
-echo "Sincing:"
+echo "Syncing:"
 echo "SRC_DIR: $SRC_DIR"
 echo "TARGET_DIR: $TARGET_DIR"
 
@@ -30,12 +31,10 @@ sync_dir() {
   rsync -avuh --exclude="node_modules" --exclude=".git" --delete "$SRC_DIR" "$TARGET_DIR"
 }
 
-# watch_dir() {
-#   watch --chgexit -n 1 "ls --all -l --recursive --full-time ${SRC_DIR} | shasum -a 256" &>/dev/null
-# }
-
 watch_dir() {
-  watch --chgexit -n 1 "ls -alR -T ${SRC_DIR} | shasum -a 256" &>/dev/null
+  local macOsWatch="watch --chgexit -n 1 \"ls -alR -T ${SRC_DIR} | shasum -a 256\""
+  local linuxWatch="watch --chgexit -n 1 \"ls --all -l --recursive --full-time ${SRC_DIR} | shasum -a 256\""
+  execute_in_mac_os "$macOsWatch" "$linuxWatch" &>/dev/null
 }
 
 sync_dir
@@ -44,5 +43,5 @@ echo -e "\nWatching... ${SRC_DIR}\n"
 
 while true; do
   watch_dir && sync_dir
-  sleep 0.5
+  sleep 0.1
 done
