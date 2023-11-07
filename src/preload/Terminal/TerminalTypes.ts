@@ -14,4 +14,5 @@ export type ExecuteCommandOptions = {
   traceOnTime?: boolean;
   abortController?: AbortController;
   ignoreStderrErrors?: boolean;
+  resolveTimeoutAfterFirstOutput?: number;
 };

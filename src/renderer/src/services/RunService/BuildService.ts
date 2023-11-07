@@ -75,14 +75,11 @@ export default class BuildService {
       ];
     }
 
-    const { dependency } = relatedDependency;
-    const depCwd = dependency.cwd ?? '';
-    const depName = relatedDependency.dependency.packageName ?? '';
-
     // Inject sub-dependencies
+    const { dependency, subDependencies } = relatedDependency;
     const injectDependenciesResponses = await BuildService.injectDependencies({
       targetPackage: dependency,
-      dependencies: relatedDependency.subDependencies,
+      dependencies: subDependencies,
       tmpDir,
       abortController,
     });
@@ -95,9 +92,7 @@ export default class BuildService {
     // Run dependencies scripts
     const scriptsResponses = await BuildService.runPackageScripts({
       additionalPackageScripts,
-      packageScripts: dependency.scripts,
-      cwd: depCwd,
-      packageName: depName,
+      nodePackage: dependency,
       abortController,
       runScriptsTitle: 'Run dependency scripts',
     });
@@ -112,29 +107,34 @@ export default class BuildService {
 
   public static async runPackageScripts({
     additionalPackageScripts,
-    packageScripts = [],
-    cwd,
-    packageName,
+    nodePackage,
     abortController,
     runScriptsTitle = 'Run package scripts',
+    mustRunAfterBuild = false,
   }: {
     additionalPackageScripts: PackageScript[];
-    packageScripts?: PackageScript[];
-    cwd: string;
-    packageName?: string;
+    nodePackage: NodePackage;
     abortController?: AbortController;
     runScriptsTitle?: string;
+    mustRunAfterBuild?: boolean;
   }): Promise<ProcessServiceResponse[]> {
     if (abortController?.signal.aborted) {
       return [
         {
           error: 'The process was aborted',
-          title: `${runScriptsTitle}: "${packageName}"`,
+          title: `${runScriptsTitle}: "${nodePackage.packageName}"`,
         },
       ];
     }
 
-    const filledScripts = packageScripts.filter(script =>
+    const cwd = nodePackage.cwd ?? '';
+    const packageName = nodePackage.packageName ?? ' ';
+
+    const scripts = mustRunAfterBuild
+      ? nodePackage.afterBuildScripts
+      : nodePackage.scripts;
+
+    const filledScripts = (scripts ?? []).filter(script =>
       Boolean(script.scriptName.trim())
     );
     const hasScripts = Boolean(filledScripts?.length);
@@ -143,11 +143,11 @@ export default class BuildService {
 
     if (hasScripts) {
       // eslint-disable-next-line no-console
-      console.log(`>>>----->> ${runScriptsTitle}: `, packageName);
+      console.log(`>>>----->> ${runScriptsTitle}: `, nodePackage.packageName);
 
       // Inject fake package version
       const outputFakeVersion = await NodeService.injectFakePackageVersion(
-        cwd,
+        nodePackage,
         abortController
       );
 
@@ -155,13 +155,13 @@ export default class BuildService {
         return [
           {
             ...outputFakeVersion,
-            title: `Injecting fake package version: "${packageName}"`,
+            title: `Injecting fake package version: "${nodePackage.packageName}"`,
           },
         ];
       }
 
       handleOnAbort = async (): Promise<void> => {
-        await NodeService.restoreFakePackageVersion(cwd);
+        await NodeService.restoreFakePackageVersion(nodePackage.cwd ?? '');
       };
       abortController?.signal.addEventListener('abort', handleOnAbort);
     }
@@ -276,11 +276,7 @@ export default class BuildService {
         dependency.packageName ?? ''
       }`;
 
-      const dependencyName = await NodeService.getPackageName(
-        dependency.cwd ?? ''
-      );
-
-      if (!dependencyName) {
+      if (!dependency.packageName) {
         abortController?.abort();
         return {
           error: 'There is no dependency name in package.json',
@@ -289,7 +285,7 @@ export default class BuildService {
       }
 
       const packageBuildedPathResponse =
-        await NodeService.getPackageBuildedPath(dependency.cwd ?? '');
+        await NodeService.getPackageBuildedPath(dependency);
       if (packageBuildedPathResponse.error) {
         abortController?.abort();
         return {
@@ -304,7 +300,7 @@ export default class BuildService {
         return await BuildService.injectSingleDependency({
           targetPackage,
           dependencyPackagePath,
-          dependencyName,
+          dependencyName: dependency.packageName,
           tmpDir,
           abortController,
         });
