@@ -3,13 +3,16 @@
 check_command() {
   local commandName=$1
   if ! command -v "${commandName}" &>/dev/null; then
-    exitcode=$?
-    printf '%s\n' "Error: ${commandName} command not found: " 1>&2
+
+    local exitcode=$?
+    local installation="sudo apt-get install -y ${commandName}"
+
     if [[ "$(uname)" == "Darwin" ]]; then
-      echo "brew install ${commandName}"
-    else
-      echo "sudo apt-get install -y ${commandName}"
+      installation="brew install ${commandName}"
     fi
+
+    printf '%s\n' "Error: ${commandName} command not found: ${installation}" 1>&2
+
     exit $exitcode
   fi
 }
