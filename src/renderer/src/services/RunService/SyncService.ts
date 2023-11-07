@@ -1,3 +1,4 @@
+import { NODE_PI_FILE_PREFIX } from '@renderer/constants';
 import DependencyPackage from '@renderer/models/DependencyPackage';
 import NodePackage from '@renderer/models/NodePackage';
 
@@ -7,13 +8,10 @@ import WSLService from '../WSLService';
 import { type ProcessServiceResponse } from './RunService';
 
 export default class SyncService {
-  public static readonly SYNC_DIRECTORY_PREFIX = '.node-pi';
-
   public static async prepareSync({
     targetPackage,
     dependencies,
     abortController,
-    isWSLActive,
   }: {
     targetPackage: NodePackage;
     dependencies: DependencyPackage[];
@@ -38,7 +36,7 @@ export default class SyncService {
       const targetPackageDir = PathService.normalizeWin32Path(
         window.api.path.join(
           await WSLService.cleanSWLRoot(cwd, cwd, traceOnTime),
-          `${SyncService.SYNC_DIRECTORY_PREFIX}-${dep.packageName}`
+          `${NODE_PI_FILE_PREFIX}${dep.packageName}`
         )
       );
 
