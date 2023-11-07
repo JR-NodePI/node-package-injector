@@ -4,6 +4,7 @@ import PathService from '../PathService';
 import TerminalService, { type TerminalResponse } from '../TerminalService';
 import getDependenciesSortedByHierarchy from './getBuildModeDependenciesSortedByHierarchy';
 import { RelatedDependencyProjection } from './NodeServiceTypes';
+import { NODE_PI_FILE_PREFIX } from '@renderer/constants';
 
 type PackageJsonStructure = string | Record<string, string>;
 
@@ -214,7 +215,8 @@ export default class NodeService {
     return await TerminalService.executeCommand({
       command: 'bash',
       args: [
-        PathService.getExtraResourcesScriptPath('inject_fake_pkg_version.sh'),
+        PathService.getExtraResourcesScriptPath('fake_pkg_version_inject.sh'),
+        NODE_PI_FILE_PREFIX,
         NodeService.FAKE_PACKAGE_VERSION,
       ],
       cwd,
@@ -230,7 +232,8 @@ export default class NodeService {
     return await TerminalService.executeCommand({
       command: 'bash',
       args: [
-        PathService.getExtraResourcesScriptPath('restore_fake_pkg_version.sh'),
+        PathService.getExtraResourcesScriptPath('fake_pkg_version_restore.sh'),
+        NODE_PI_FILE_PREFIX,
       ],
       cwd,
       traceOnTime: true,
