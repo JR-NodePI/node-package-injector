@@ -1,6 +1,6 @@
 #!/bin/sh
 
-. "$(dirname "$0")/get_pid.sh"
+. "$(dirname "$0")/helpers/print_pid.sh"
 
 NODE_PI_FILE_PREFIX=$1
 

@@ -1,6 +1,7 @@
 #!/bin/bash
 
-. "$(dirname "$0")/get_pid.sh"
+. "$(dirname "$0")/helpers/enable_nvm_node.sh"
+. "$(dirname "$0")/helpers/print_pid.sh"
 . "$(dirname "$0")/helpers/check_command.sh"
 . "$(dirname "$0")/helpers/execute_in_mac_os.sh"
 
@@ -28,13 +29,13 @@ check_command "watch"
 check_command "shasum"
 
 sync_dir() {
-  rsync -avuh --exclude="node_modules" --exclude=".git" --delete "$SRC_DIR" "$TARGET_DIR"
+  $(get_command "rsync") -avuh --exclude="node_modules" --exclude=".git" --delete "$SRC_DIR" "$TARGET_DIR"
 }
 
 watch_dir() {
-  local macOsWatch="watch --chgexit -n 1 \"ls -alR -T ${SRC_DIR} | shasum -a 256\""
-  local linuxWatch="watch --chgexit -n 1 \"ls --all -l --recursive --full-time ${SRC_DIR} | shasum -a 256\""
-  execute_in_mac_os "$macOsWatch" "$linuxWatch" &>/dev/null
+  local macOsLs="ls -alR -T ${SRC_DIR} | grep -v \"node_modules\" | grep -v \".git\""
+  local linuxLs="ls --all -l --recursive --full-time ${SRC_DIR}"
+  $(get_command "watch") --chgexit -n 1 "execute_in_mac_os "$macOsLs" "$linuxLs" | $(get_command "shasum") -a 256" &>/dev/null
 }
 
 sync_dir
@@ -43,5 +44,5 @@ echo -e "\nWatching... ${SRC_DIR}\n"
 
 while true; do
   watch_dir && sync_dir
-  sleep 0.1
+  sleep 1
 done

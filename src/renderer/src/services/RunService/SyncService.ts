@@ -32,6 +32,12 @@ export default class SyncService {
     const traceOnTime = true;
     const cwd = targetPackage.cwd ?? '';
 
+    const hastAfterBuildScripts = (targetPackage.afterBuildScripts ?? []).some(
+      ({ scriptValue }) => Boolean(scriptValue)
+    );
+
+    const resolveTimeoutAfterFirstOutput = hastAfterBuildScripts ? 2000 : 0;
+
     const promises = dependencies.map<
       Promise<{ terminalResponse: TerminalResponse; packageName: string }>
     >(async dep => {
@@ -57,7 +63,7 @@ export default class SyncService {
         traceOnTime: traceOnTime,
         skipWSL: true,
         abortController: syncAbortController,
-        resolveTimeoutAfterFirstOutput: 5000,
+        resolveTimeoutAfterFirstOutput,
       });
 
       return { terminalResponse, packageName: dep.packageName ?? '' };
@@ -67,9 +73,13 @@ export default class SyncService {
 
     return responses.map(response => {
       if (response.status === 'fulfilled') {
+        const { terminalResponse, packageName } = response.value;
+        const hasError = (terminalResponse.error ?? '').includes('Error');
         return {
-          content: 'Sync finished',
-          title: `Sync mode ${response.value.packageName}`,
+          ...(hasError
+            ? { error: terminalResponse.error }
+            : { content: 'Sync finished' }),
+          title: `Sync mode ${packageName}`,
         };
       }
       return { error: response.reason, title: syncTitle };
