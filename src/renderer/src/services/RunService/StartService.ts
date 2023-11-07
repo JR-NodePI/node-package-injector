@@ -16,10 +16,10 @@ export default class StartService {
     targetPackage,
     dependencies,
     abortController,
+    syncAbortController,
     isWSLActive,
     onTargetBuildStart,
     onDependenciesBuildStart,
-    onDependenciesSyncPrepare,
     onDependenciesSyncStart,
     onAfterBuildStart,
   }: {
@@ -27,6 +27,7 @@ export default class StartService {
     targetPackage: NodePackage;
     dependencies: DependencyPackage[];
     abortController?: AbortController;
+    syncAbortController?: AbortController;
     isWSLActive?: boolean;
     onTargetBuildStart?: () => void;
     onDependenciesSyncPrepare?: () => void;
@@ -34,6 +35,8 @@ export default class StartService {
     onDependenciesSyncStart?: () => void;
     onAfterBuildStart?: () => void;
   }): Promise<ProcessServiceResponse[]> {
+    const successResponses: ProcessServiceResponse[] = [];
+
     const tmpDir = await PathService.getTmpDir({
       isWSLActive,
       skipWSLRoot: true,
@@ -57,9 +60,7 @@ export default class StartService {
       return [{ error: 'Package cwd is not valid', title: outputTitle }];
     }
 
-    const cwd = targetPackage.cwd ?? '';
-
-    const packageName = await NodeService.getPackageName(cwd);
+    const packageName = targetPackage.packageName;
     if (!packageName) {
       abortController?.abort();
       return [
@@ -75,9 +76,7 @@ export default class StartService {
     // Run package scripts
     const scriptsResponses = await BuildService.runPackageScripts({
       additionalPackageScripts,
-      packageScripts: targetPackage.scripts,
-      cwd,
-      packageName,
+      nodePackage: targetPackage,
       abortController,
       runScriptsTitle: 'Run target scripts',
     });
@@ -97,7 +96,7 @@ export default class StartService {
       await NodeService.getDependenciesSortedByHierarchy(dependenciesToBuild);
 
     // Run dependencies in build mode
-    const dependenciesResponses = await StartService.runDependencies({
+    const dependenciesResponses = await StartService.runBuildDependencies({
       additionalPackageScripts,
       sortedRelatedDependencies,
       tmpDir,
@@ -107,6 +106,8 @@ export default class StartService {
       abortController?.abort();
       return dependenciesResponses.flat();
     }
+
+    successResponses.push(...dependenciesResponses.flat());
 
     // Inject dependencies
     const targetDependencies = sortedRelatedDependencies.map(
@@ -123,48 +124,89 @@ export default class StartService {
       return injectDependenciesResponses;
     }
 
-    // Sync dependencies
-    const dependenciesToSync = dependencies.filter(
-      ({ mode }) => mode === DependencyMode.SYNC
-    );
-    if (dependenciesToSync.length) {
-      onDependenciesSyncPrepare?.();
-
-      const syncResponses = await SyncService.prepareSync({
-        targetPackage,
-        dependencies: dependenciesToSync,
-        abortController,
-        isWSLActive,
-      });
-      if (RunService.hasError(syncResponses)) {
-        abortController?.abort();
-        return syncResponses;
-      }
-
-      onDependenciesSyncStart?.();
+    // Run run sync dependencies
+    const syncResponses = await StartService.runSyncDependencies({
+      targetPackage,
+      dependencies,
+      abortController,
+      syncAbortController,
+      onDependenciesSyncStart,
+    });
+    if (RunService.hasError(syncResponses)) {
+      abortController?.abort();
+      return syncResponses;
     }
-    // TODO:  clear sync files on abort
+
+    successResponses.push(...syncResponses);
 
     onAfterBuildStart?.();
 
     // Run after build dependencies package scripts
     const afterBuildScriptsResponses = await BuildService.runPackageScripts({
       additionalPackageScripts,
-      packageScripts: targetPackage.afterBuildScripts,
-      cwd,
-      packageName,
+      nodePackage: targetPackage,
       abortController,
       runScriptsTitle: 'Run after build target scripts',
+      mustRunAfterBuild: true,
     });
     if (RunService.hasError(afterBuildScriptsResponses)) {
       abortController?.abort();
       return afterBuildScriptsResponses;
     }
 
-    return dependenciesResponses.flat();
+    return successResponses;
   }
 
-  private static async runDependencies({
+  private static async runSyncDependencies({
+    targetPackage,
+    dependencies,
+    abortController,
+    syncAbortController,
+    onDependenciesSyncStart,
+  }: {
+    targetPackage: NodePackage;
+    dependencies: DependencyPackage[];
+    abortController?: AbortController;
+    syncAbortController?: AbortController;
+    onDependenciesSyncStart?: () => void;
+  }): Promise<ProcessServiceResponse[]> {
+    const dependenciesToSync = dependencies.filter(
+      ({ mode }) => mode === DependencyMode.SYNC
+    );
+
+    if (dependenciesToSync.length) {
+      onDependenciesSyncStart?.();
+
+      const syncResponses = await SyncService.startSync({
+        targetPackage,
+        dependencies: dependenciesToSync,
+        abortController,
+        syncAbortController,
+      });
+
+      syncAbortController?.signal.addEventListener(
+        'abort',
+        async (): Promise<void> => {
+          const cleanSyncResponse = await SyncService.cleanSync({
+            targetPackage,
+          });
+
+          console.log('>>>----->> cleanSyncResponse', cleanSyncResponse);
+
+          // if (cleanSyncResponse.error) {
+          //   abortController?.abort();
+          //   return [cleanSyncResponse];
+          // }
+        }
+      );
+
+      return syncResponses;
+    }
+
+    return [];
+  }
+
+  private static async runBuildDependencies({
     additionalPackageScripts,
     sortedRelatedDependencies,
     tmpDir,
