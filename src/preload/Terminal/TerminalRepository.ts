@@ -5,6 +5,7 @@ import {
   OutputColor,
   OutputIcons,
   OutputTypeToColor,
+  STDERR_OUTPUT_DETECT_ERROR_PATTERNS,
 } from './TerminalConstants';
 import {
   type ExecuteCommandOptions,
@@ -143,14 +144,10 @@ export default class TerminalRepository {
       throw new Error('Process was aborted');
     }
 
-    const soShell = ['win32'].includes(process.platform)
-      ? 'powershell'
-      : 'bash';
-
     const cmd = spawn(command, args, {
       cwd,
       env: process.env,
-      shell: soShell,
+      shell: ['win32'].includes(process.platform) ? 'powershell' : true,
       signal: abortController?.signal,
     });
 
@@ -257,19 +254,9 @@ export default class TerminalRepository {
         const { cleanMessage, outputPid } = cleanOutput(message);
         const isError =
           !ignoreStderrErrors &&
-          [
-            new RegExp('fatal: ', 'gi'),
-            new RegExp('error ', 'gi'),
-            new RegExp('error: ', 'gi'),
-            new RegExp('command not found', 'gi'),
-            new RegExp('no such file or directory', 'gi'),
-            new RegExp('is not a directory', 'gi'),
-          ].some(regExp => regExp.test(cleanMessage));
-
-        console.log('>>>----->> cleanMessage', cleanMessage, {
-          isError,
-          ignoreStderrErrors,
-        });
+          STDERR_OUTPUT_DETECT_ERROR_PATTERNS.some(regExp =>
+            regExp.test(cleanMessage)
+          );
 
         if (isError) {
           const error = new Error(cleanMessage);
@@ -289,10 +276,11 @@ export default class TerminalRepository {
           };
 
           if (!isIgnoredError) {
+            outputs.push(output);
+
             if (outputPid) {
               outputTermPid = outputPid;
             }
-            outputs.push(output);
           }
 
           enqueueConsoleOutput(output);
