@@ -1,7 +1,6 @@
 #!/bin/sh
 
-. "$(dirname "$0")/helpers/enable_nvm_node.sh"
-. "$(dirname "$0")/helpers/print_pid.sh"
+. "$(dirname "$0")/helpers/global.sh"
 
 DEPENDENCY_NAME=$1
 DEPENDENCY_PACKAGE_PATH=$2

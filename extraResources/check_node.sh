@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. "$(dirname "$0")/helpers/enable_nvm_node.sh"
+. "$(dirname "$0")/helpers/global.sh"
 . "$(dirname "$0")/helpers/check_command.sh"
 
 check_command "rsync"

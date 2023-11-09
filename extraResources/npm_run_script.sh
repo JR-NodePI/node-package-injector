@@ -1,6 +1,5 @@
 #!/bin/bash
 
-. "$(dirname "$0")/helpers/enable_nvm_node.sh"
-. "$(dirname "$0")/helpers/print_pid.sh"
+. "$(dirname "$0")/helpers/global.sh"
 
 eval "$1"
