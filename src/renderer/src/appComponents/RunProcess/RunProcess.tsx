@@ -1,5 +1,9 @@
 import { useCallback, useContext, useState } from 'react';
 
+import RunService, {
+  ProcessServiceResponse,
+} from '@renderer/services/RunService/RunService';
+import SyncService from '@renderer/services/RunService/SyncService';
 import {
   Button,
   IconPause,
@@ -15,6 +19,7 @@ import StartService from '../../services/RunService/StartService';
 import useGlobalData from '../GlobalDataProvider/useGlobalData';
 
 import styles from './RunProcess.module.css';
+import BuildService from '@renderer/services/RunService/BuildService';
 
 const STATUSES = {
   IDLE: { value: 'idle', label: 'Idle' } as const,
@@ -56,7 +61,7 @@ export default function RunProcess(): JSX.Element {
     useState<AbortController | null>();
 
   const displayProcessMessages = useCallback(
-    (output): void => {
+    (output: ProcessServiceResponse[]): void => {
       const hasErrors = output.some(({ error }) => !!error);
       output.forEach(({ title, content, error }, index) => {
         const type = error
@@ -84,9 +89,17 @@ export default function RunProcess(): JSX.Element {
   const handleAbort = useCallback((): void => {
     console.log('>>>----->> handleAbort');
   }, []);
-  const handleAbortSync = useCallback((): void => {
-    console.log('>>>----->> handleAbortSync');
-  }, []);
+
+  const handleAbortSync = useCallback(async (): Promise<void> => {
+    const response = await SyncService.cleanSync({
+      targetPackage: activeTargetPackage,
+      abortController: new AbortController(),
+    });
+
+    if (response.error) {
+      displayProcessMessages([response]);
+    }
+  }, [activeTargetPackage, displayProcessMessages]);
 
   useDeepCompareEffect(() => {
     const run = async (): Promise<void> => {

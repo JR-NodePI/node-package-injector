@@ -1,0 +1,6 @@
+.label {
+  user-select: text;
+}
+.label_last_directory {
+  color: var(--ft-color-link);
+}

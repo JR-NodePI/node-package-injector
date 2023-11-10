@@ -8,11 +8,12 @@ export type DirectorySelectOption = SelectProps.SelectOption<string>;
 
 export type useDirectorySelectOptionsProps = {
   cwd: string;
-  onDirectoriesLoad: () => void;
+  onDirectoriesLoad?: (options: SelectProps.SelectOption<string>[]) => void;
 };
 
 export type PackageSelectorProps = {
-  additionalComponent?: JSX.Element;
+  additionalActionComponents?: JSX.Element;
+  children?: JSX.Element;
   disabled?: boolean;
   disableScripts?: boolean;
   onPathChange: (

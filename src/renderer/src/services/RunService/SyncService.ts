@@ -48,8 +48,12 @@ export default class SyncService {
         )
       );
 
+      if (!dep.srcSyncPath) {
+        throw new Error(`${dep.packageName} has no srcSyncPath`);
+      }
+
       const srcPackageDir = PathService.normalizeWin32Path(
-        await WSLService.cleanSWLRoot(cwd, dep.cwd ?? '', traceOnTime)
+        await WSLService.cleanSWLRoot(cwd, dep.srcSyncPath ?? '', traceOnTime)
       );
 
       const terminalResponse = await TerminalService.executeCommand({

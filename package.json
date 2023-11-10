@@ -1,6 +1,6 @@
 {
   "name": "node-package-injector",
-  "version": "1.7.14-alpha",
+  "version": "1.7.15-alpha",
   "description": "Dev tool to simulate npm dependencies",
   "repository": "https://github.com/JorgeRojo/node-package-injector",
   "main": "./out/main/index.js",
