@@ -6,9 +6,9 @@ import PathService from '@renderer/services/PathService';
 import { LeftLabeledField, Select } from 'fratch-ui/components';
 import { c } from 'fratch-ui/helpers';
 
+import DirectoryPathLabel from '../DirectoryPathLabel/DirectoryPathLabel';
 import PackageGitActions from './PackageGitActions/PackageGitActions';
 import PackageScripts from './PackageScripts/PackageScripts';
-import PackageSelectorLabel from './PackageSelectorLabel';
 import { type PackageSelectorProps } from './PackageSelectorProps';
 import { useDirectorySelectOptions } from './useDirectorySelectOptions';
 import useEffectCWD from './useEffectCWD';
@@ -57,7 +57,8 @@ function AllPackageScripts({
 }
 
 export default function PackageSelector({
-  additionalComponent: additionalActionComponents,
+  additionalActionComponents,
+  children,
   disabled,
   disableScripts,
   onPathChange,
@@ -88,7 +89,8 @@ export default function PackageSelector({
           ? await NodeService.getPackageName(cwd)
           : undefined;
         const branch = await GitService.getCurrentBranch(cwd, abortController);
-        const isValid = isValidPackage && branch.length > 0;
+        const isValid =
+          isValidPackage && Boolean(packageName) && branch.length > 0;
         if (!abortController.signal.aborted) {
           onPathChange(cwd, isValid, packageName);
         }
@@ -140,26 +142,17 @@ export default function PackageSelector({
     }
   };
 
-  const rootPath =
-    pathDirectories.length > 1
-      ? PathService.getPath(pathDirectories.slice(0, -1))
-      : '';
-
-  const lastDirectory =
-    pathDirectories.length > 1 ? pathDirectories.slice(-1)[0] : '';
-
   const isDisabled = disabled || isValidatingPackage;
 
   return (
     <div className={c(styles.package)}>
       <LeftLabeledField
         label={
-          <PackageSelectorLabel
+          <DirectoryPathLabel
             id={id}
-            rootPath={rootPath}
-            lastDirectory={lastDirectory}
-            isDirBackEnabled={isDirBackEnabled}
             handleOnClickBack={handleOnClickBack}
+            isDirBackEnabled={isDirBackEnabled}
+            pathDirectories={pathDirectories}
           />
         }
         field={
@@ -194,6 +187,7 @@ export default function PackageSelector({
               findBuildScript={findBuildScript}
             />
           )}
+          {children}
         </>
       )}
     </div>
