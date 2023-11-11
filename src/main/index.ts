@@ -1,12 +1,5 @@
 import { electronApp, is, optimizer } from '@electron-toolkit/utils';
-import {
-  app,
-  BrowserWindow,
-  ipcMain,
-  ipcRenderer,
-  Menu,
-  shell,
-} from 'electron';
+import { app, BrowserWindow, ipcMain, Menu, shell } from 'electron';
 import { join } from 'path';
 
 // import icon from '../../build/icons/png/1024x1024.png?asset';
@@ -134,8 +127,8 @@ ipcMain.on('openDevTools', event => {
 });
 
 ipcMain.on('before-quit-data', (_event, data) => {
-  if (data[0]) {
+  if (data?.[0]?._id) {
     const packageBunch = data[0];
-    console.log('>>>----->> send-persisted-data data', packageBunch);
+    console.log('>>>----->> targetPackage cwd', packageBunch.targetPackage.cwd);
   }
 });
