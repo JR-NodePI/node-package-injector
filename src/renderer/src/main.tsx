@@ -18,3 +18,8 @@ window.electron.ipcRenderer.on('reset', () => {
   PersistService.clear();
   window.electron.ipcRenderer.send('reload');
 });
+
+window.electron.ipcRenderer.on('before-quit', async () => {
+  const data = await PersistService.getItem('packageBunches');
+  window.electron.ipcRenderer.send('before-quit-data', data);
+});

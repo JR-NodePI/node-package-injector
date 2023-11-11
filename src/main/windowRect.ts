@@ -11,10 +11,7 @@ type InitWindowBounds = {
 };
 import packageJson from '../../package.json';
 
-const INIT_STATUS_DIR = join(
-  os.tmpdir(),
-  `${packageJson.name}_${packageJson.version}`
-);
+const INIT_STATUS_DIR = join(os.tmpdir(), `${packageJson.name}`);
 const INIT_STATUS_FILE = 'window_rect.json';
 const INIT_STATUS_PATH = join(INIT_STATUS_DIR, '/', INIT_STATUS_FILE);
 
@@ -40,12 +37,7 @@ export function loadWindowRect(): InitWindowBounds {
     ) {
       throw new Error('initWindowBounds is too small');
     } else {
-      return {
-        width: windowBounds.width,
-        height: windowBounds.height,
-        x: windowBounds.x ?? 0 < 0 ? 0 : windowBounds.x,
-        y: windowBounds.y ?? 0 < 0 ? 0 : windowBounds.y,
-      };
+      return windowBounds;
     }
   } catch {
     return {
@@ -56,6 +48,21 @@ export function loadWindowRect(): InitWindowBounds {
 }
 
 export function saveWindowRect(window: BrowserWindow): void {
-  const initStatusJson = { bounds: window.getBounds() };
-  fs.writeFileSync(INIT_STATUS_PATH, JSON.stringify(initStatusJson));
+  let initStatusJson;
+  try {
+    initStatusJson = { bounds: window.getBounds() };
+  } catch {
+    initStatusJson = null;
+  }
+
+  const areValidBounds =
+    initStatusJson != null &&
+    initStatusJson.bounds.width >= 0 &&
+    initStatusJson.bounds.height >= 0 &&
+    initStatusJson.bounds.x >= 0 &&
+    initStatusJson.bounds.y >= 0;
+
+  if (areValidBounds) {
+    fs.writeFileSync(INIT_STATUS_PATH, JSON.stringify(initStatusJson));
+  }
 }
