@@ -1,5 +1,12 @@
 import { electronApp, is, optimizer } from '@electron-toolkit/utils';
-import { app, BrowserWindow, ipcMain, Menu, shell } from 'electron';
+import {
+  app,
+  BrowserWindow,
+  ipcMain,
+  ipcRenderer,
+  Menu,
+  shell,
+} from 'electron';
 import { join } from 'path';
 
 // import icon from '../../build/icons/png/1024x1024.png?asset';
@@ -44,8 +51,15 @@ function createWindow(): void {
     mainWindow.show();
   });
 
-  mainWindow.on('close', function () {
+  mainWindow.on('move', () => {
     saveWindowRect(mainWindow);
+  });
+  mainWindow.on('resize', () => {
+    saveWindowRect(mainWindow);
+  });
+  mainWindow.on('close', () => {
+    saveWindowRect(mainWindow);
+    mainWindow.webContents.send('before-quit');
   });
 
   mainWindow.webContents.setWindowOpenHandler(details => {
@@ -86,13 +100,8 @@ app.whenReady().then(async () => {
   createWindow();
 });
 
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
+  app.quit();
 });
 
 ipcMain.handle('quit', () => {
@@ -124,7 +133,9 @@ ipcMain.on('openDevTools', event => {
   window?.webContents.openDevTools();
 });
 
-ipcMain.on('closeDevTools', event => {
-  const window = BrowserWindow.fromWebContents(event.sender) ?? undefined;
-  window?.webContents.closeDevTools();
+ipcMain.on('before-quit-data', (_event, data) => {
+  if (data[0]) {
+    const packageBunch = data[0];
+    console.log('>>>----->> send-persisted-data data', packageBunch);
+  }
 });
