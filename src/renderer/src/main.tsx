@@ -1,6 +1,9 @@
 import ReactDOM from 'react-dom/client';
 
 import App from './App';
+import { NODE_PI_FILE_PREFIX } from './constants';
+import PackageBunch from './models/PackageBunch';
+import PathService from './services/PathService';
 import PersistService from './services/PersistService';
 
 import './main.css';
@@ -19,7 +22,27 @@ window.electron.ipcRenderer.on('reset', () => {
   window.electron.ipcRenderer.send('reload');
 });
 
-window.electron.ipcRenderer.on('before-quit', async () => {
-  const data = await PersistService.getItem('packageBunches');
-  window.electron.ipcRenderer.send('before-quit-data', data);
-});
+const killAllOnClose = async (): Promise<void> => {
+  const packageBunches = await PersistService.getItem<PackageBunch[]>(
+    'packageBunches'
+  );
+  const packageBunch = packageBunches.find(bunch => bunch.active);
+
+  if (!packageBunch) {
+    return;
+  }
+
+  window.electron.ipcRenderer.send('kill-all-before-quit', {
+    kill_all_command: PathService.getExtraResourcesScriptPath(
+      'node_pi_kill_all.sh'
+    ),
+    NODE_PI_FILE_PREFIX,
+    targetPackageCwd: packageBunch.targetPackage.cwd,
+    dependenciesCWDs: packageBunch.dependencies
+      .map(({ cwd }) => cwd)
+      .filter(Boolean),
+  });
+};
+
+window.addEventListener('beforeunload', killAllOnClose);
+window.electron.ipcRenderer.on('before-quit', killAllOnClose);

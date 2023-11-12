@@ -1,8 +1,6 @@
 import { useCallback, useContext, useState } from 'react';
 
-import RunService, {
-  ProcessServiceResponse,
-} from '@renderer/services/RunService/RunService';
+import { ProcessServiceResponse } from '@renderer/services/RunService/RunService';
 import SyncService from '@renderer/services/RunService/SyncService';
 import {
   Button,
@@ -19,7 +17,6 @@ import StartService from '../../services/RunService/StartService';
 import useGlobalData from '../GlobalDataProvider/useGlobalData';
 
 import styles from './RunProcess.module.css';
-import BuildService from '@renderer/services/RunService/BuildService';
 
 const STATUSES = {
   IDLE: { value: 'idle', label: 'Idle' } as const,
