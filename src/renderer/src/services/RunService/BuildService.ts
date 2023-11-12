@@ -379,7 +379,7 @@ export default class BuildService {
     const injectionOutput = await TerminalService.executeCommand({
       command: 'bash',
       args: [
-        PathService.getExtraResourcesScriptPath('inject_package.sh'),
+        PathService.getExtraResourcesScriptPath('node_pi_inject_package.sh'),
         `"${dependencyName}"`,
         `"${cleanDependencyPackagePath}"`,
         `"${tmpDependencyDir}"`,

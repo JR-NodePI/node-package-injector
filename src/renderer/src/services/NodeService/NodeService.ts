@@ -140,7 +140,7 @@ export default class NodeService {
   public static async getNodeVersions(): Promise<Record<string, string>> {
     const output = await TerminalService.executeCommand({
       command: 'bash',
-      args: [PathService.getExtraResourcesScriptPath('check_node.sh')],
+      args: [PathService.getExtraResourcesScriptPath('node_pi_check_node.sh')],
       cwd: window.api.path.join(window.api.extraResourcesPath),
       skipWSL: true,
     });
@@ -212,7 +212,7 @@ export default class NodeService {
     return await TerminalService.executeCommand({
       command: 'bash',
       args: [
-        PathService.getExtraResourcesScriptPath('npm_run_script.sh'),
+        PathService.getExtraResourcesScriptPath('node_pi_npm_run_script.sh'),
         `${JSON.stringify(script)}`,
       ],
       cwd,
@@ -228,7 +228,9 @@ export default class NodeService {
     return await TerminalService.executeCommand({
       command: 'bash',
       args: [
-        PathService.getExtraResourcesScriptPath('fake_pkg_version_inject.sh'),
+        PathService.getExtraResourcesScriptPath(
+          'node_pi_fake_pkg_version_inject.sh'
+        ),
         NODE_PI_FILE_PREFIX,
         nodePackage.version,
       ],
@@ -245,7 +247,9 @@ export default class NodeService {
     return await TerminalService.executeCommand({
       command: 'bash',
       args: [
-        PathService.getExtraResourcesScriptPath('fake_pkg_version_restore.sh'),
+        PathService.getExtraResourcesScriptPath(
+          'node_pi_fake_pkg_version_restore.sh'
+        ),
         NODE_PI_FILE_PREFIX,
       ],
       cwd,

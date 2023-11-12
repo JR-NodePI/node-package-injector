@@ -1,8 +1,8 @@
 import { electronApp, is, optimizer } from '@electron-toolkit/utils';
+import { spawnSync } from 'child_process';
 import { app, BrowserWindow, ipcMain, Menu, shell } from 'electron';
 import { join } from 'path';
 
-// import icon from '../../build/icons/png/1024x1024.png?asset';
 import { createAppMenu, getMenuItemsTemplate } from './menu';
 import {
   INI_WINDOW_HEIGHT,
@@ -10,6 +10,7 @@ import {
   loadWindowRect,
   saveWindowRect,
 } from './windowRect';
+import { buffer } from 'stream/consumers';
 
 const isDev = process.env.NODE_ENV === 'development';
 
@@ -50,10 +51,9 @@ function createWindow(): void {
   mainWindow.on('resize', () => {
     saveWindowRect(mainWindow);
   });
-  mainWindow.on('close', () => {
-    saveWindowRect(mainWindow);
-    mainWindow.webContents.send('before-quit');
-  });
+  // mainWindow.on('close', () => {
+  //   mainWindow.webContents.send('before-quit');
+  // });
 
   mainWindow.webContents.setWindowOpenHandler(details => {
     shell.openExternal(details.url);
@@ -126,9 +126,32 @@ ipcMain.on('openDevTools', event => {
   window?.webContents.openDevTools();
 });
 
-ipcMain.on('before-quit-data', (_event, data) => {
-  if (data?.[0]?._id) {
-    const packageBunch = data[0];
-    console.log('>>>----->> targetPackage cwd', packageBunch.targetPackage.cwd);
+ipcMain.on(
+  'kill-all-before-quit',
+  (
+    _event,
+    {
+      kill_all_command,
+      NODE_PI_FILE_PREFIX,
+      targetPackageCwd,
+      dependenciesCWDs,
+    }
+  ) => {
+    const output = spawnSync(
+      'bash',
+      [
+        kill_all_command,
+        NODE_PI_FILE_PREFIX,
+        targetPackageCwd,
+        ...dependenciesCWDs,
+      ],
+      {
+        cwd: targetPackageCwd,
+        shell: ['win32'].includes(process.platform) ? 'powershell' : true,
+      }
+    );
+
+    // eslint-disable-next-line no-console
+    console.log(output.output.map(buffer => buffer?.toString()).join(''));
   }
-});
+);
