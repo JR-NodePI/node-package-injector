@@ -1,8 +1,4 @@
-import {
-  spawn,
-  type SpawnOptionsWithoutStdio,
-  spawnSync,
-} from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 
 import {
   ExecuteCommandOutputType,
@@ -13,9 +9,9 @@ import {
 } from './TerminalConstants';
 import {
   executeCommandAsyncModeOptions,
-  executeCommandSyncModeOptions,
   type ExecuteCommandOptions,
   type ExecuteCommandOutput,
+  executeCommandSyncModeOptions,
 } from './TerminalTypes';
 
 type TraceConfig = ExecuteCommandOutput & {
