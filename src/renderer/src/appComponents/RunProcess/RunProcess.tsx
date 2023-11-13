@@ -1,7 +1,8 @@
 import { useCallback, useContext, useState } from 'react';
 
-import { ProcessServiceResponse } from '@renderer/services/RunService/RunService';
-import SyncService from '@renderer/services/RunService/SyncService';
+import RunService, {
+  ProcessServiceResponse,
+} from '@renderer/services/RunService/RunService';
 import {
   Button,
   IconPause,
@@ -83,22 +84,23 @@ export default function RunProcess(): JSX.Element {
     [addToaster]
   );
 
-  const handleAbort = useCallback((): void => {
-    console.log('>>>----->> handleAbort');
-  }, []);
-
-  const handleAbortSync = useCallback(async (): Promise<void> => {
-    const response = await SyncService.cleanSync({
-      targetPackage: activeTargetPackage,
-      abortController: new AbortController(),
-    });
-
-    if (response.error) {
-      displayProcessMessages([response]);
-    }
-  }, [activeTargetPackage, displayProcessMessages]);
-
   useDeepCompareEffect(() => {
+    const handleAbort = (): void => {
+      console.log('>>>----->> handleAbort');
+    };
+
+    const handleAbortSync = async (): Promise<void> => {
+      const output = await RunService.resetAll({
+        targetPackage: activeTargetPackage,
+        dependencies: activeDependencies,
+        abortController: new AbortController(),
+      });
+
+      if (output.error) {
+        displayProcessMessages([output]);
+      }
+    };
+
     const run = async (): Promise<void> => {
       const mustRun =
         abortController?.signal != null &&
@@ -148,8 +150,6 @@ export default function RunProcess(): JSX.Element {
       abortController?.signal.removeEventListener('abort', handleAbortSync);
     };
   }, [
-    handleAbort,
-    handleAbortSync,
     abortController,
     activeDependencies,
     activeTargetPackage,

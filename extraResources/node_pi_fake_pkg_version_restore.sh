@@ -7,6 +7,4 @@ NODE_PI_FILE_NAME=${NODE_PI_FILE_PREFIX}package.json
 
 if [ -f "$NODE_PI_FILE_NAME" ]; then
   mv -f $NODE_PI_FILE_NAME package.json
-else
-  echo "$NODE_PI_FILE_NAME file does not exist"
 fi
