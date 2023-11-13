@@ -10,7 +10,8 @@ import {
   loadWindowRect,
   saveWindowRect,
 } from './windowRect';
-import { buffer } from 'stream/consumers';
+import TerminalRepository from '../preload/Terminal/TerminalRepository';
+import TerminalService from '../preload/Terminal/TerminalService';
 
 const isDev = process.env.NODE_ENV === 'development';
 
@@ -126,32 +127,33 @@ ipcMain.on('openDevTools', event => {
   window?.webContents.openDevTools();
 });
 
-ipcMain.on(
-  'kill-all-before-quit',
-  (
-    _event,
-    {
-      kill_all_command,
-      NODE_PI_FILE_PREFIX,
-      targetPackageCwd,
-      dependenciesCWDs,
-    }
-  ) => {
-    const output = spawnSync(
-      'bash',
-      [
-        kill_all_command,
-        NODE_PI_FILE_PREFIX,
-        targetPackageCwd,
-        ...dependenciesCWDs,
-      ],
-      {
-        cwd: targetPackageCwd,
-        shell: ['win32'].includes(process.platform) ? 'powershell' : true,
-      }
-    );
+ipcMain.on('kill-all-before-quit', (_event, data) => {
+  // const output = spawnSync(
+  //   'bash',
+  //   [
+  //     data.kill_all_command,
+  //     `"${data.NODE_PI_FILE_PREFIX}"`,
+  //     `"${data.targetPackageCwd}"`,
+  //   ],
+  //   {
+  //     cwd: data.cwd,
+  //     env: process.env,
+  //     shell: ['win32'].includes(process.platform) ? 'powershell' : true,
+  //   }
+  // );
 
-    // eslint-disable-next-line no-console
-    console.log(output.output.map(buffer => buffer?.toString()).join(''));
-  }
-);
+  // eslint-disable-next-line no-console
+  // console.log(output.output.map(buffer => buffer?.toString()).join(''));
+
+  TerminalService.executeCommand({
+    command: 'bash',
+    args: [
+      data.kill_all_command,
+      `"${data.NODE_PI_FILE_PREFIX}"`,
+      `"${data.targetPackageCwd}"`,
+    ],
+    cwd: data.cwd,
+    skipWSL: true,
+    syncMode: true,
+  });
+});
