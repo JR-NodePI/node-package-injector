@@ -2,6 +2,7 @@ import { NODE_PI_FILE_PREFIX } from '@renderer/constants';
 import DependencyPackage from '@renderer/models/DependencyPackage';
 import NodePackage from '@renderer/models/NodePackage';
 
+import GitService from '../GitService';
 import PathService from '../PathService';
 import TerminalService, { TerminalResponse } from '../TerminalService';
 import WSLService from '../WSLService';
@@ -24,6 +25,9 @@ import { type ProcessServiceResponse } from './RunService';
     ),
   },
  */
+
+const getSyncDependencyDirName = (packageName: string): string =>
+  `${NODE_PI_FILE_PREFIX}${packageName}`;
 
 export default class SyncService {
   public static async startSync({
@@ -55,6 +59,24 @@ export default class SyncService {
     );
 
     const resolveTimeoutAfterFirstOutput = hastAfterBuildScripts ? 2000 : 0;
+
+    const syncDependencyDirNames = dependencies.map(({ packageName }) =>
+      getSyncDependencyDirName(packageName ?? '')
+    );
+
+    const gitignoreResponse = await GitService.gitignoreAdd(
+      cwd,
+      syncDependencyDirNames,
+      syncAbortController
+    );
+    if (gitignoreResponse.error) {
+      return [
+        {
+          ...gitignoreResponse,
+          title: syncTitle,
+        },
+      ];
+    }
 
     const dependenciesPromises = dependencies.map(async dependency =>
       SyncService.startSyncDependency({
@@ -101,7 +123,7 @@ export default class SyncService {
     const targetPackageDir = PathService.normalizeWin32Path(
       window.api.path.join(
         await WSLService.cleanSWLRoot(cwd, cwd, traceOnTime),
-        `${NODE_PI_FILE_PREFIX}${dependency.packageName}`
+        getSyncDependencyDirName(dependency.packageName ?? '')
       )
     );
 
@@ -132,36 +154,5 @@ export default class SyncService {
     });
 
     return { terminalResponse, packageName: dependency.packageName ?? '' };
-  }
-
-  public static async cleanSync({
-    targetPackage,
-    abortController,
-  }: {
-    targetPackage: NodePackage;
-    abortController?: AbortController;
-  }): Promise<ProcessServiceResponse> {
-    const syncTitle = 'Stop sync mode';
-    if (abortController?.signal.aborted) {
-      return {
-        error: 'The process was aborted',
-        title: syncTitle,
-      };
-    }
-
-    const cwd = targetPackage.cwd ?? '';
-
-    const response = await TerminalService.executeCommand({
-      command: 'bash',
-      args: [
-        PathService.getExtraResourcesScriptPath('node_pi_rsync_restore.sh'),
-        NODE_PI_FILE_PREFIX,
-      ],
-      cwd,
-      abortController,
-      skipWSL: true,
-    });
-
-    return { ...response, title: syncTitle };
   }
 }

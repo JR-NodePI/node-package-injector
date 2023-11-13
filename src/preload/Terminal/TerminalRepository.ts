@@ -19,21 +19,12 @@ type TraceConfig = ExecuteCommandOutput & {
   logFn?: typeof console.log | typeof console.warn;
 };
 
-const cleanOutput = (
-  output: string
-): { cleanMessage: string; outputPid: string } => {
-  let outputPid;
-  let cleanMessage = output
+const cleanOutput = (output: string): string => {
+  const cleanMessage = output
     .replace(/[^a-z0-9-\n\s\r\t{}()"',:_\\/\\*+.|><=@áéíóúÁÉÍÓÚñçü]/gi, '')
     .trim();
 
-  const patternPid = new RegExp('<<PID:([^>]+)>>', 'g');
-  if (patternPid.test(cleanMessage)) {
-    outputPid = cleanMessage.replace(patternPid, '$1');
-    cleanMessage = cleanMessage.replace(patternPid, '');
-  }
-
-  return { cleanMessage, outputPid };
+  return cleanMessage;
 };
 
 const getConsoleInitColorizedFlag = (
@@ -154,7 +145,7 @@ const executeCommandSyncMode = ({
     const output = {
       type: ExecuteCommandOutputType.STDOUT,
       pid: syncCmd.pid,
-      data: cleanOutput(stdoutString).cleanMessage,
+      data: cleanOutput(stdoutString),
     };
     outputs.push(output);
     enqueueConsoleOutput(output);
@@ -162,7 +153,7 @@ const executeCommandSyncMode = ({
 
   const stderrString = syncCmd.stderr?.toString() ?? '';
   if (stderrString) {
-    const cleanStderrString = cleanOutput(stderrString).cleanMessage;
+    const cleanStderrString = cleanOutput(stderrString);
     const isError =
       !ignoreStderrErrors && containsTerminalError(cleanStderrString);
     const output = {
@@ -203,7 +194,6 @@ const executeCommandAsyncMode = ({
   const cmd = spawn(command, args, childProcessParams);
 
   let isAborted = false;
-  let outputTermPid: string;
   let resolveAfterFirstOutputId;
 
   abortController?.signal.addEventListener('abort', () => {
@@ -211,21 +201,6 @@ const executeCommandAsyncMode = ({
 
     if (resolveAfterFirstOutputId) {
       clearTimeout(resolveAfterFirstOutputId);
-    }
-
-    if (outputTermPid) {
-      enqueueConsoleOutput({
-        type: ExecuteCommandOutputType.CLOSE,
-        pid: cmd.pid,
-        data: `kill ${outputTermPid}`,
-      });
-      enqueueConsoleOutput({
-        type: ExecuteCommandOutputType.CLOSE,
-        pid: cmd.pid,
-        data: `kill -SIGKILL ${outputTermPid}`,
-      });
-      spawnSync('kill', [outputTermPid], { shell: 'bash' });
-      spawnSync('kill', ['-SIGKILL', outputTermPid], { shell: 'bash' });
     }
 
     cmd.kill();
@@ -266,15 +241,13 @@ const executeCommandAsyncMode = ({
 
     cmd.stdout.on('data', data => {
       const message = data instanceof Buffer ? data.toString() : data;
-      const { cleanMessage, outputPid } = cleanOutput(message);
+      const cleanMessage = cleanOutput(message);
       const output = {
         type: ExecuteCommandOutputType.STDOUT,
         pid: cmd.pid,
         data: cleanMessage,
       };
-      if (outputPid) {
-        outputTermPid = outputPid;
-      }
+
       outputs.push(output);
       enqueueConsoleOutput(output, isAborted);
       resolveAfterFirstOutput();
@@ -282,7 +255,7 @@ const executeCommandAsyncMode = ({
 
     cmd.stderr.on('data', data => {
       const message = data instanceof Buffer ? data.toString() : data;
-      const { cleanMessage, outputPid } = cleanOutput(message);
+      const cleanMessage = cleanOutput(message);
       const isError =
         !ignoreStderrErrors && containsTerminalError(cleanMessage);
 
@@ -308,10 +281,6 @@ const executeCommandAsyncMode = ({
 
         if (!isIgnoredError) {
           outputs.push(output);
-
-          if (outputPid) {
-            outputTermPid = outputPid;
-          }
         }
 
         enqueueConsoleOutput(output, isAborted);

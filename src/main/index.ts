@@ -1,8 +1,8 @@
 import { electronApp, is, optimizer } from '@electron-toolkit/utils';
-import { spawnSync } from 'child_process';
 import { app, BrowserWindow, ipcMain, Menu, shell } from 'electron';
 import { join } from 'path';
 
+import TerminalService from '../preload/Terminal/TerminalService';
 import { createAppMenu, getMenuItemsTemplate } from './menu';
 import {
   INI_WINDOW_HEIGHT,
@@ -10,8 +10,6 @@ import {
   loadWindowRect,
   saveWindowRect,
 } from './windowRect';
-import TerminalRepository from '../preload/Terminal/TerminalRepository';
-import TerminalService from '../preload/Terminal/TerminalService';
 
 const isDev = process.env.NODE_ENV === 'development';
 
@@ -38,10 +36,6 @@ function createWindow(): void {
     },
   });
 
-  if (isDev) {
-    mainWindow.webContents.openDevTools();
-  }
-
   mainWindow.on('ready-to-show', () => {
     mainWindow.show();
   });
@@ -52,9 +46,36 @@ function createWindow(): void {
   mainWindow.on('resize', () => {
     saveWindowRect(mainWindow);
   });
-  // mainWindow.on('close', () => {
-  //   mainWindow.webContents.send('before-quit');
-  // });
+
+  let isReadyToClose = false;
+  mainWindow.on('close', event => {
+    saveWindowRect(mainWindow);
+    if (isReadyToClose === false) {
+      event.preventDefault();
+      mainWindow.webContents.send('before-close');
+    }
+  });
+
+  ipcMain.on('reset-all-before-close', async (_event, data) => {
+    await TerminalService.executeCommand({
+      command: 'bash',
+      args: [
+        data.resetAllCommand,
+        `"${data.NODE_PI_FILE_PREFIX}"`,
+        `"${data.targetPackageCwd}"`,
+        ...data.dependenciesCWDs.map(cwd => `"${cwd}"`),
+      ],
+      cwd: data.cwd,
+      syncMode: true,
+      addIcons: false,
+      skipWSL: true,
+    });
+
+    if (!isReadyToClose) {
+      isReadyToClose = true;
+      app.quit();
+    }
+  });
 
   mainWindow.webContents.setWindowOpenHandler(details => {
     shell.openExternal(details.url);
@@ -122,23 +143,15 @@ ipcMain.on('reload', event => {
   window?.reload();
 });
 
-ipcMain.on('openDevTools', event => {
+ipcMain.on('open-dev-tools', event => {
   const window = BrowserWindow.fromWebContents(event.sender) ?? undefined;
-  window?.webContents.openDevTools();
+  window?.webContents.openDevTools({
+    mode: 'bottom',
+    activate: true,
+  });
 });
 
-ipcMain.on('kill-all-before-quit', async (_event, data) => {
-  await TerminalService.executeCommand({
-    command: 'bash',
-    args: [
-      data.resetAllCommand,
-      `"${data.NODE_PI_FILE_PREFIX}"`,
-      `"${data.targetPackageCwd}"`,
-      ...data.dependenciesCWDs.map(cwd => `"${cwd}"`),
-    ],
-    cwd: data.cwd,
-    syncMode: true,
-    addIcons: false,
-    skipWSL: true,
-  });
+ipcMain.on('close-dev-tools', event => {
+  const window = BrowserWindow.fromWebContents(event.sender) ?? undefined;
+  window?.webContents.closeDevTools();
 });

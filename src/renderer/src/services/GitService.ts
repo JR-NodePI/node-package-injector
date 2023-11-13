@@ -1,3 +1,4 @@
+import PathService from './PathService';
 import TerminalService, { type TerminalResponse } from './TerminalService';
 
 const REMOTE_BRANCH_PATTERN = new RegExp(`(.*remotes/origin/)(.*)`);
@@ -71,6 +72,22 @@ export default class GitService {
       .filter(value => value)
       .toSorted();
     return value;
+  }
+
+  static async gitignoreAdd(
+    cwd: string,
+    paths: string[],
+    abortController?: AbortController
+  ): Promise<TerminalResponse> {
+    return await TerminalService.executeCommand({
+      command: 'bash',
+      args: [
+        PathService.getExtraResourcesScriptPath('node_pi_gitignore_add.sh'),
+        ...paths.map(cwd => `"${cwd}"`),
+      ],
+      cwd,
+      abortController,
+    });
   }
 
   static async checkGit(

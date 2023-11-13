@@ -1,7 +1,7 @@
 export default function DevToolsOpener(): JSX.Element {
   const handleOpenDevTools = (event: React.MouseEvent): void => {
     event.preventDefault();
-    window.electron.ipcRenderer.send('openDevTools');
+    window.electron.ipcRenderer.send('open-dev-tools');
   };
 
   return (

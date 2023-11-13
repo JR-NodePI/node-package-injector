@@ -210,7 +210,7 @@ export default class NodeService {
     abortController?: AbortController
   ): Promise<TerminalResponse> {
     return await TerminalService.executeCommand({
-      command: 'zsh',
+      command: 'bash',
       args: [
         PathService.getExtraResourcesScriptPath('node_pi_npm_run_script.sh'),
         `${JSON.stringify(script)}`,
