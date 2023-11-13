@@ -378,6 +378,7 @@ export default class TerminalRepository {
     ignoreStderrErrors,
     resolveTimeoutAfterFirstOutput,
     syncMode,
+    addIcons = true,
   }: ExecuteCommandOptions): Promise<ExecuteCommandOutput[]> {
     if (!cwd) {
       throw new Error('cwd is required');
@@ -394,7 +395,9 @@ export default class TerminalRepository {
       signal: abortController?.signal,
     };
 
-    const icon = OutputIcons[Math.floor(Math.random() * OutputIcons.length)];
+    const icon = addIcons
+      ? OutputIcons[Math.floor(Math.random() * OutputIcons.length)]
+      : '';
 
     const argsAsString = args.join(' ');
     const initCommandOutput = `\n   CWD: ${cwd}\n   CMD: ${command} ${argsAsString}`;
@@ -404,7 +407,7 @@ export default class TerminalRepository {
 
     const enqueueConsoleOutput = (
       output: ExecuteCommandOutput,
-      isAborted: boolean
+      isAborted?: boolean
     ): void => {
       if (isAborted) {
         return;

@@ -127,33 +127,18 @@ ipcMain.on('openDevTools', event => {
   window?.webContents.openDevTools();
 });
 
-ipcMain.on('kill-all-before-quit', (_event, data) => {
-  // const output = spawnSync(
-  //   'bash',
-  //   [
-  //     data.kill_all_command,
-  //     `"${data.NODE_PI_FILE_PREFIX}"`,
-  //     `"${data.targetPackageCwd}"`,
-  //   ],
-  //   {
-  //     cwd: data.cwd,
-  //     env: process.env,
-  //     shell: ['win32'].includes(process.platform) ? 'powershell' : true,
-  //   }
-  // );
-
-  // eslint-disable-next-line no-console
-  // console.log(output.output.map(buffer => buffer?.toString()).join(''));
-
-  TerminalService.executeCommand({
+ipcMain.on('kill-all-before-quit', async (_event, data) => {
+  await TerminalService.executeCommand({
     command: 'bash',
     args: [
-      data.kill_all_command,
+      data.resetAllCommand,
       `"${data.NODE_PI_FILE_PREFIX}"`,
       `"${data.targetPackageCwd}"`,
+      ...data.dependenciesCWDs.map(cwd => `"${cwd}"`),
     ],
     cwd: data.cwd,
-    skipWSL: true,
     syncMode: true,
+    addIcons: false,
+    skipWSL: true,
   });
 });

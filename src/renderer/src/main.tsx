@@ -5,9 +5,9 @@ import { NODE_PI_FILE_PREFIX } from './constants';
 import PackageBunch from './models/PackageBunch';
 import PathService from './services/PathService';
 import PersistService from './services/PersistService';
+import WSLService from './services/WSLService';
 
 import './main.css';
-import WSLService from './services/WSLService';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <App />
@@ -47,8 +47,8 @@ const killAllOnClose = async (): Promise<void> => {
   );
 
   window.electron.ipcRenderer.send('kill-all-before-quit', {
-    kill_all_command: PathService.getExtraResourcesScriptPath(
-      'node_pi_kill_all.sh'
+    resetAllCommand: PathService.getExtraResourcesScriptPath(
+      'node_pi_reset_all.sh'
     ),
     NODE_PI_FILE_PREFIX,
     cwd,
