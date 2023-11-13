@@ -7,6 +7,7 @@ import PathService from './services/PathService';
 import PersistService from './services/PersistService';
 
 import './main.css';
+import WSLService from './services/WSLService';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <App />
@@ -32,15 +33,27 @@ const killAllOnClose = async (): Promise<void> => {
     return;
   }
 
+  const cwd = packageBunch.targetPackage.cwd ?? '';
+  const targetPackageCwd = await WSLService.cleanSWLRoot(
+    packageBunch.targetPackage.cwd ?? '',
+    packageBunch.targetPackage.cwd ?? ''
+  );
+  const dependenciesCWDs = await Promise.all(
+    packageBunch.dependencies
+      .map(
+        async dep => await WSLService.cleanSWLRoot(dep.cwd ?? '', dep.cwd ?? '')
+      )
+      .filter(Boolean)
+  );
+
   window.electron.ipcRenderer.send('kill-all-before-quit', {
     kill_all_command: PathService.getExtraResourcesScriptPath(
       'node_pi_kill_all.sh'
     ),
     NODE_PI_FILE_PREFIX,
-    targetPackageCwd: packageBunch.targetPackage.cwd,
-    dependenciesCWDs: packageBunch.dependencies
-      .map(({ cwd }) => cwd)
-      .filter(Boolean),
+    cwd,
+    targetPackageCwd,
+    dependenciesCWDs,
   });
 };
 

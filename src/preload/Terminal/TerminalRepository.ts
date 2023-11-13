@@ -1,4 +1,8 @@
-import { spawn, spawnSync } from 'node:child_process';
+import {
+  spawn,
+  type SpawnOptionsWithoutStdio,
+  spawnSync,
+} from 'node:child_process';
 
 import {
   ExecuteCommandOutputType,
@@ -8,6 +12,8 @@ import {
   STDERR_OUTPUT_DETECT_ERROR_PATTERNS,
 } from './TerminalConstants';
 import {
+  executeCommandAsyncModeOptions,
+  executeCommandSyncModeOptions,
   type ExecuteCommandOptions,
   type ExecuteCommandOutput,
 } from './TerminalTypes';
@@ -124,8 +130,248 @@ const displayLogs = ({
   });
 };
 
+const containsTerminalError = (output: string): boolean =>
+  STDERR_OUTPUT_DETECT_ERROR_PATTERNS.some(regExp => regExp.test(output));
+
 const exitDelay = 1000;
 let exitTimeoutId: NodeJS.Timeout;
+
+const executeCommandSyncMode = ({
+  childProcessParams,
+  enqueueConsoleOutput,
+  initCommandOutput,
+  outputs,
+  command,
+  args,
+  ignoreStderrErrors,
+}: executeCommandSyncModeOptions): Promise<ExecuteCommandOutput[]> => {
+  const syncCmd = spawnSync(command, args, childProcessParams);
+
+  enqueueConsoleOutput({
+    type: ExecuteCommandOutputType.INIT,
+    pid: syncCmd.pid,
+    data: initCommandOutput,
+  });
+
+  const stdoutString = syncCmd.stdout?.toString() ?? '';
+  if (stdoutString) {
+    const output = {
+      type: ExecuteCommandOutputType.STDOUT,
+      pid: syncCmd.pid,
+      data: cleanOutput(stdoutString).cleanMessage,
+    };
+    outputs.push(output);
+    enqueueConsoleOutput(output);
+  }
+
+  const stderrString = syncCmd.stderr?.toString() ?? '';
+  if (stderrString) {
+    const cleanStderrString = cleanOutput(stderrString).cleanMessage;
+    const isError =
+      !ignoreStderrErrors && containsTerminalError(cleanStderrString);
+    const output = {
+      type: isError
+        ? ExecuteCommandOutputType.STDERR_ERROR
+        : ExecuteCommandOutputType.STDERR_WARN,
+      pid: syncCmd.pid,
+      data: cleanStderrString,
+    };
+    outputs.push(output);
+    enqueueConsoleOutput(output);
+
+    if (isError) {
+      const error = new Error(cleanStderrString);
+      return Promise.reject(error);
+    }
+  }
+
+  enqueueConsoleOutput({
+    type: ExecuteCommandOutputType.CLOSE,
+    pid: syncCmd.pid,
+    data: '',
+  });
+  return Promise.resolve(outputs);
+};
+
+const executeCommandAsyncMode = ({
+  childProcessParams,
+  enqueueConsoleOutput,
+  initCommandOutput,
+  outputs,
+  abortController,
+  args,
+  command,
+  ignoreStderrErrors,
+  resolveTimeoutAfterFirstOutput,
+}: executeCommandAsyncModeOptions): Promise<ExecuteCommandOutput[]> => {
+  const cmd = spawn(command, args, childProcessParams);
+
+  let isAborted = false;
+  let outputTermPid: string;
+  let resolveAfterFirstOutputId;
+
+  abortController?.signal.addEventListener('abort', () => {
+    isAborted = true;
+
+    if (resolveAfterFirstOutputId) {
+      clearTimeout(resolveAfterFirstOutputId);
+    }
+
+    if (outputTermPid) {
+      enqueueConsoleOutput({
+        type: ExecuteCommandOutputType.CLOSE,
+        pid: cmd.pid,
+        data: `kill ${outputTermPid}`,
+      });
+      enqueueConsoleOutput({
+        type: ExecuteCommandOutputType.CLOSE,
+        pid: cmd.pid,
+        data: `kill -SIGKILL ${outputTermPid}`,
+      });
+      spawnSync('kill', [outputTermPid], { shell: 'bash' });
+      spawnSync('kill', ['-SIGKILL', outputTermPid], { shell: 'bash' });
+    }
+
+    cmd.kill();
+    cmd.kill('SIGKILL');
+  });
+
+  enqueueConsoleOutput(
+    {
+      type: ExecuteCommandOutputType.INIT,
+      pid: cmd.pid,
+      data: initCommandOutput,
+    },
+    isAborted
+  );
+
+  return new Promise((resolve, reject) => {
+    const resolveAfterFirstOutput = (): void => {
+      if (!resolveTimeoutAfterFirstOutput) {
+        return;
+      }
+
+      if (resolveAfterFirstOutputId) {
+        return;
+      }
+
+      resolveAfterFirstOutputId = setTimeout(() => {
+        resolve(outputs);
+        enqueueConsoleOutput(
+          {
+            type: ExecuteCommandOutputType.STDOUT,
+            pid: cmd.pid,
+            data: 'Resolve on timeout, still running in background',
+          },
+          isAborted
+        );
+      }, resolveTimeoutAfterFirstOutput);
+    };
+
+    cmd.stdout.on('data', data => {
+      const message = data instanceof Buffer ? data.toString() : data;
+      const { cleanMessage, outputPid } = cleanOutput(message);
+      const output = {
+        type: ExecuteCommandOutputType.STDOUT,
+        pid: cmd.pid,
+        data: cleanMessage,
+      };
+      if (outputPid) {
+        outputTermPid = outputPid;
+      }
+      outputs.push(output);
+      enqueueConsoleOutput(output, isAborted);
+      resolveAfterFirstOutput();
+    });
+
+    cmd.stderr.on('data', data => {
+      const message = data instanceof Buffer ? data.toString() : data;
+      const { cleanMessage, outputPid } = cleanOutput(message);
+      const isError =
+        !ignoreStderrErrors && containsTerminalError(cleanMessage);
+
+      if (isError) {
+        const error = new Error(cleanMessage);
+        reject(error);
+        clearTimeout(resolveAfterFirstOutputId);
+        enqueueConsoleOutput(
+          {
+            type: ExecuteCommandOutputType.STDERR_ERROR,
+            pid: cmd.pid,
+            data: error,
+          },
+          isAborted
+        );
+      } else {
+        const isIgnoredError = isError && ignoreStderrErrors;
+        const output = {
+          type: ExecuteCommandOutputType.STDERR_WARN,
+          pid: cmd.pid,
+          data: cleanMessage,
+        };
+
+        if (!isIgnoredError) {
+          outputs.push(output);
+
+          if (outputPid) {
+            outputTermPid = outputPid;
+          }
+        }
+
+        enqueueConsoleOutput(output, isAborted);
+        resolveAfterFirstOutput();
+      }
+    });
+
+    cmd.on('error', error => {
+      reject(error);
+      clearTimeout(resolveAfterFirstOutputId);
+      enqueueConsoleOutput(
+        {
+          type: ExecuteCommandOutputType.ERROR,
+          pid: cmd.pid,
+          data: error,
+        },
+        isAborted
+      );
+    });
+
+    cmd.on('close', code => {
+      if (exitTimeoutId) {
+        clearTimeout(exitTimeoutId);
+      }
+      resolve(outputs);
+      clearTimeout(resolveAfterFirstOutputId);
+      enqueueConsoleOutput(
+        {
+          type: ExecuteCommandOutputType.CLOSE,
+          pid: cmd.pid,
+          data: code,
+        },
+        isAborted
+      );
+    });
+
+    cmd.on('exit', code => {
+      if (exitTimeoutId) {
+        clearTimeout(exitTimeoutId);
+      }
+      exitTimeoutId = setTimeout(() => {
+        resolve(outputs);
+        clearTimeout(resolveAfterFirstOutputId);
+        enqueueConsoleOutput(
+          {
+            type: ExecuteCommandOutputType.EXIT,
+            pid: cmd.pid,
+            data: code,
+          },
+          isAborted
+        );
+      }, exitDelay);
+    });
+  });
+};
+
 export default class TerminalRepository {
   static executeCommand({
     command,
@@ -135,6 +381,7 @@ export default class TerminalRepository {
     abortController,
     ignoreStderrErrors,
     resolveTimeoutAfterFirstOutput,
+    syncMode,
   }: ExecuteCommandOptions): Promise<ExecuteCommandOutput[]> {
     if (!cwd) {
       throw new Error('cwd is required');
@@ -144,25 +391,25 @@ export default class TerminalRepository {
       throw new Error('Process was aborted');
     }
 
-    const cmd = spawn(command, args, {
+    const childProcessParams = {
       cwd,
       env: process.env,
       shell: ['win32'].includes(process.platform) ? 'powershell' : true,
       signal: abortController?.signal,
-    });
+    };
 
     const icon = OutputIcons[Math.floor(Math.random() * OutputIcons.length)];
 
     const argsAsString = args.join(' ');
-    const commandTrace = `\n   CWD: ${cwd}\n   CMD: ${command} ${argsAsString}`;
+    const initCommandOutput = `\n   CWD: ${cwd}\n   CMD: ${command} ${argsAsString}`;
     const outputs: ExecuteCommandOutput[] = [];
 
-    let isAborted = false;
-    let outputTermPid: string;
     let outputStack: ExecuteCommandOutput[] = [];
-    let resolveAfterFirstOutputId;
 
-    const enqueueConsoleOutput = (output: ExecuteCommandOutput): void => {
+    const enqueueConsoleOutput = (
+      output: ExecuteCommandOutput,
+      isAborted: boolean
+    ): void => {
       if (isAborted) {
         return;
       }
@@ -182,149 +429,27 @@ export default class TerminalRepository {
       }
     };
 
-    enqueueConsoleOutput({
-      type: ExecuteCommandOutputType.INIT,
-      pid: cmd.pid,
-      data: commandTrace,
-    });
-
-    abortController?.signal.addEventListener('abort', () => {
-      if (resolveAfterFirstOutputId) {
-        clearTimeout(resolveAfterFirstOutputId);
-      }
-
-      if (outputTermPid) {
-        enqueueConsoleOutput({
-          type: ExecuteCommandOutputType.CLOSE,
-          pid: cmd.pid,
-          data: `kill ${outputTermPid}`,
-        });
-        enqueueConsoleOutput({
-          type: ExecuteCommandOutputType.CLOSE,
-          pid: cmd.pid,
-          data: `kill -SIGKILL ${outputTermPid}`,
-        });
-        spawnSync('kill', [outputTermPid], { shell: 'bash' });
-        spawnSync('kill', ['-SIGKILL', outputTermPid], { shell: 'bash' });
-      }
-
-      cmd.kill();
-      cmd.kill('SIGKILL');
-      isAborted = true;
-    });
-
-    return new Promise((resolve, reject) => {
-      const resolveAfterFirstOutput = (): void => {
-        if (!resolveTimeoutAfterFirstOutput) {
-          return;
-        }
-
-        if (resolveAfterFirstOutputId) {
-          return;
-        }
-
-        resolveAfterFirstOutputId = setTimeout(() => {
-          resolve(outputs);
-          enqueueConsoleOutput({
-            type: ExecuteCommandOutputType.STDOUT,
-            pid: cmd.pid,
-            data: 'Resolve on timeout, still running in background',
-          });
-        }, resolveTimeoutAfterFirstOutput);
-      };
-
-      cmd.stdout.on('data', data => {
-        const message = data instanceof Buffer ? data.toString() : data;
-        const { cleanMessage, outputPid } = cleanOutput(message);
-        const output = {
-          type: ExecuteCommandOutputType.STDOUT,
-          pid: cmd.pid,
-          data: cleanMessage,
-        };
-        if (outputPid) {
-          outputTermPid = outputPid;
-        }
-        outputs.push(output);
-        enqueueConsoleOutput(output);
-        resolveAfterFirstOutput();
+    if (syncMode) {
+      return executeCommandSyncMode({
+        enqueueConsoleOutput,
+        initCommandOutput,
+        outputs,
+        command,
+        args,
+        childProcessParams,
+        ignoreStderrErrors,
       });
+    }
 
-      cmd.stderr.on('data', data => {
-        const message = data instanceof Buffer ? data.toString() : data;
-        const { cleanMessage, outputPid } = cleanOutput(message);
-        const isError =
-          !ignoreStderrErrors &&
-          STDERR_OUTPUT_DETECT_ERROR_PATTERNS.some(regExp =>
-            regExp.test(cleanMessage)
-          );
-
-        if (isError) {
-          const error = new Error(cleanMessage);
-          reject(error);
-          clearTimeout(resolveAfterFirstOutputId);
-          enqueueConsoleOutput({
-            type: ExecuteCommandOutputType.STDERR_ERROR,
-            pid: cmd.pid,
-            data: error,
-          });
-        } else {
-          const isIgnoredError = isError && ignoreStderrErrors;
-          const output = {
-            type: ExecuteCommandOutputType.STDERR_WARN,
-            pid: cmd.pid,
-            data: cleanMessage,
-          };
-
-          if (!isIgnoredError) {
-            outputs.push(output);
-
-            if (outputPid) {
-              outputTermPid = outputPid;
-            }
-          }
-
-          enqueueConsoleOutput(output);
-          resolveAfterFirstOutput();
-        }
-      });
-
-      cmd.on('error', error => {
-        reject(error);
-        clearTimeout(resolveAfterFirstOutputId);
-        enqueueConsoleOutput({
-          type: ExecuteCommandOutputType.ERROR,
-          pid: cmd.pid,
-          data: error,
-        });
-      });
-
-      cmd.on('close', code => {
-        if (exitTimeoutId) {
-          clearTimeout(exitTimeoutId);
-        }
-        resolve(outputs);
-        clearTimeout(resolveAfterFirstOutputId);
-        enqueueConsoleOutput({
-          type: ExecuteCommandOutputType.CLOSE,
-          pid: cmd.pid,
-          data: code,
-        });
-      });
-
-      cmd.on('exit', code => {
-        if (exitTimeoutId) {
-          clearTimeout(exitTimeoutId);
-        }
-        exitTimeoutId = setTimeout(() => {
-          resolve(outputs);
-          clearTimeout(resolveAfterFirstOutputId);
-          enqueueConsoleOutput({
-            type: ExecuteCommandOutputType.EXIT,
-            pid: cmd.pid,
-            data: code,
-          });
-        }, exitDelay);
-      });
+    return executeCommandAsyncMode({
+      enqueueConsoleOutput,
+      initCommandOutput,
+      outputs,
+      command,
+      args,
+      childProcessParams,
+      ignoreStderrErrors,
+      resolveTimeoutAfterFirstOutput,
     });
   }
 }
