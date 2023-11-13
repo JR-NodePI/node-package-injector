@@ -12,12 +12,12 @@ export type ExecuteCommandOptions = {
   command: string;
   cwd?: string;
   args?: string[];
-  skipWSL?: boolean;
   traceOnTime?: boolean;
   abortController?: AbortController;
   ignoreStderrErrors?: boolean;
   resolveTimeoutAfterFirstOutput?: number;
   syncMode?: boolean;
+  addIcons?: boolean;
 };
 
 export type executeCommandAsyncModeOptions = {
