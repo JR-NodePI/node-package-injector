@@ -8,27 +8,6 @@ import TerminalService, { TerminalResponse } from '../TerminalService';
 import WSLService from '../WSLService';
 import { type ProcessServiceResponse } from './RunService';
 
-/***
- * vite alias injection
-  {
-    find: /^redpoints-front-components-rp10([^/]+\/index(.js)?)?(.*)/,
-    replacement: path.resolve(
-      __dirname,
-      '.node-pi__redpoints-front-components-rp10$3'
-    ),
-  },
-  {
-    find: /^redpoints-front-common-rp10([^/]+\/index(.js)?)?(.*)/,
-    replacement: path.resolve(
-      __dirname,
-      '.node-pi__redpoints-front-common-rp10$3'
-    ),
-  },
- */
-
-const getSyncDependencyDirName = (packageName: string): string =>
-  `${NODE_PI_FILE_PREFIX}${packageName}`;
-
 export default class SyncService {
   public static async startSync({
     targetPackage,
@@ -60,13 +39,16 @@ export default class SyncService {
 
     const resolveTimeoutAfterFirstOutput = hastAfterBuildScripts ? 2000 : 0;
 
-    const syncDependencyDirNames = dependencies.map(({ packageName }) =>
-      getSyncDependencyDirName(packageName ?? '')
-    );
+    const dependencyNames = dependencies
+      .map(({ packageName }) => packageName)
+      .filter(Boolean);
 
+    // Add dependencies to .gitignore
     const gitignoreResponse = await GitService.gitignoreAdd(
       cwd,
-      syncDependencyDirNames,
+      dependencyNames.map(
+        packageName => `${NODE_PI_FILE_PREFIX}${packageName}`
+      ),
       syncAbortController
     );
     if (gitignoreResponse.error) {
@@ -78,6 +60,32 @@ export default class SyncService {
       ];
     }
 
+    // Add vite.config.js dependencies alias
+    const viteSyncResponse = await TerminalService.executeCommand({
+      command: 'bash',
+      args: [
+        PathService.getExtraResourcesScriptPath(
+          'node_pi_vite_config_add_sync_alias.sh'
+        ),
+        NODE_PI_FILE_PREFIX,
+        ...dependencyNames.map(dep => `"${dep}"`),
+      ],
+      cwd,
+      traceOnTime: traceOnTime,
+      skipWSL: true,
+      abortController: syncAbortController,
+      resolveTimeoutAfterFirstOutput,
+    });
+    if (viteSyncResponse.error) {
+      return [
+        {
+          ...viteSyncResponse,
+          title: syncTitle,
+        },
+      ];
+    }
+
+    // copy sync dependencies
     const dependenciesPromises = dependencies.map(async dependency =>
       SyncService.startSyncDependency({
         cwd,
@@ -87,7 +95,6 @@ export default class SyncService {
         resolveTimeoutAfterFirstOutput,
       })
     );
-
     const dependenciesResponses = await Promise.allSettled(
       dependenciesPromises
     );
@@ -123,7 +130,7 @@ export default class SyncService {
     const targetPackageDir = PathService.normalizeWin32Path(
       window.api.path.join(
         await WSLService.cleanSWLRoot(cwd, cwd, traceOnTime),
-        getSyncDependencyDirName(dependency.packageName ?? '')
+        `${NODE_PI_FILE_PREFIX}${dependency.packageName}`
       )
     );
 
