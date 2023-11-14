@@ -189,22 +189,6 @@ export default class StartService {
         syncAbortController,
       });
 
-      syncAbortController?.signal.addEventListener(
-        'abort',
-        async (): Promise<void> => {
-          const cleanSyncResponse = await SyncService.cleanSync({
-            targetPackage,
-          });
-
-          console.log('>>>----->> cleanSyncResponse', cleanSyncResponse);
-
-          // if (cleanSyncResponse.error) {
-          //   abortController?.abort();
-          //   return [cleanSyncResponse];
-          // }
-        }
-      );
-
       return syncResponses;
     }
 

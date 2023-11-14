@@ -13,9 +13,10 @@ echo "NODE_PI_FILE_PREFIX:  $NODE_PI_FILE_PREFIX"
 echo "TARGET_PACKAGE_CWD:   $TARGET_PACKAGE_CWD"
 
 cd $TARGET_PACKAGE_CWD &>/dev/null
+bash ${EXTRA_RESOURCES_DIR}/node_pi_fake_pkg_version_restore.sh ${NODE_PI_FILE_PREFIX}
+bash ${EXTRA_RESOURCES_DIR}/node_pi_vite_config_restore.sh ${NODE_PI_FILE_PREFIX}
 bash ${EXTRA_RESOURCES_DIR}/node_pi_rsync_restore.sh ${NODE_PI_FILE_PREFIX}
 bash ${EXTRA_RESOURCES_DIR}/node_pi_gitignore_reset.sh ${NODE_PI_FILE_PREFIX}
-bash ${EXTRA_RESOURCES_DIR}/node_pi_fake_pkg_version_restore.sh ${NODE_PI_FILE_PREFIX}
 cd - &>/dev/null
 
 for dependencyDir in "$@"; do
