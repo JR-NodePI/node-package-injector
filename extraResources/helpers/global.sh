@@ -8,3 +8,5 @@ export NVM_DIR="$HOME/.nvm"
 if [[ "$(uname)" == "Darwin" ]]; then
   export TERM="xterm-256color"
 fi
+
+echo "<<BASH_PID:$$>>"
