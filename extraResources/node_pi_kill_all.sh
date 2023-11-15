@@ -25,7 +25,6 @@ if [[ -n "$NODE_PI_PIDS" ]]; then
   done
 fi
 
-ALL_NODE_PIDS=()
 getCommandPid() {
   if [[ "$(uname)" == "Darwin" ]]; then
     echo $(ps -A | grep -E -i "node.*$1" | grep -E -i -v $NODE_PI_PIDS_EXC | awk '{ print $1 }')
@@ -36,35 +35,28 @@ getCommandPid() {
 
 setScriptPids() {
   local scriptLine=$1
-  INITIAL_IFS=$IFS
-  IFS="&"
-  local scripts=()
-  read -a scripts <<<$scriptLine
-  for script in ${scripts[@]}; do
+  echo -e "$scriptLine" | tr '&' '\n' | while read -r script; do
     if [[ -n "$script" ]]; then
       cleanScript=$(echo -e $script | sed -e 's/^[[:space:]]*//' | tr -d '"' | tr -d "'")
       PIDS=$(getCommandPid "$cleanScript")
       if [[ -n "$PIDS" ]]; then
-        echo "$cleanScript - PIDS: $PIDS"
-        ALL_NODE_PIDS+=$PIDS
+        echo "$PIDS"
       fi
     fi
   done
-  IFS=$INITIAL_IFS
 }
 
 for scriptLine in "$@"; do
-  setScriptPids "$scriptLine"
+  NODE_PIDS=$(setScriptPids "$scriptLine")
+  if [[ -n "$NODE_PIDS" ]]; then
+    echo ">> NodeJS scripts PIDs ----"
+    for pid in $NODE_PIDS; do
+      echo "kill PID: $pid"
+      kill -SIGKILL $pid
+      kill $pid
+    done
+  fi
 done
-
-if [[ -n "$ALL_NODE_PIDS" ]]; then
-  echo ">> NodeJS scripts PIDs ----"
-  for pid in $ALL_NODE_PIDS; do
-    echo "kill PID: $pid"
-    kill -SIGKILL $pid
-    kill $pid
-  done
-fi
 
 echo ">>------------ KILL ALL FINISHED ---------<<"
 echo ""
