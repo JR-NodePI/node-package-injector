@@ -26,22 +26,5 @@ for dependencyDir in "$@"; do
   cd - &>/dev/null
 done
 
-## kill all ----------------
-NODE_PI_PIDS_INC='node-package-injector.*node_pi_'
-NODE_PI_PIDS_EXC='grep|node_pi_reset_all'
-
-if [[ "$(uname)" == "Darwin" ]]; then
-  NODE_PI_PIDS=$(ps -A | grep -E -i $NODE_PI_PIDS_INC | grep -E -i -v $NODE_PI_PIDS_EXC | awk '{ print $1 }')
-else
-  NODE_PI_PIDS=$(ps aux | grep -E -i $NODE_PI_PIDS_INC | grep -E -i -v $NODE_PI_PIDS_EXC | awk '{ print $2 }')
-fi
-
-if [[ -n "$NODE_PI_PIDS" ]]; then
-  NODE_PI_PIDS_LINE=$(echo "$NODE_PI_PIDS" | tr '\n' ' ')
-  echo "kill NodePi PIDs: $NODE_PI_PIDS_LINE"
-  kill -SIGKILL $NODE_PI_PIDS_LINE
-  kill $NODE_PI_PIDS_LINE
-fi
-
 echo ">>------------ RESET ALL FINISHED ---------<<"
 echo ""
