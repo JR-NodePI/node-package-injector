@@ -21,24 +21,24 @@ type TraceConfig = ExecuteCommandOutput & {
 
 const cleanOutput = (
   output: string
-): { cleanMessage: string; bashPid?: string } => {
-  let bashPid;
+): { cleanMessage: string; shellPid?: string } => {
+  let shellPid;
   let cleanMessage = output
     .replace(/[^a-z0-9-\n\s\r\t{}()"',:_\\/\\*+.|><=@áéíóúÁÉÍÓÚñçü]/gi, '')
     .trim();
 
-  const getBashPidPattern = (): RegExp => /.*(<<BASH_PID:([0-9]+)>>).*/g;
+  const getBashPidPattern = (): RegExp => /.*(<<SHELL_PID:([0-9]+)>>).*/g;
 
   if (getBashPidPattern().test(cleanMessage)) {
     const rawBashPid = cleanMessage.replace(getBashPidPattern(), '$1');
-    bashPid = rawBashPid.replace(getBashPidPattern(), '$2');
+    shellPid = rawBashPid.replace(getBashPidPattern(), '$2');
     cleanMessage = cleanMessage.replace(
       new RegExp(`[\\s\\n]*${rawBashPid}[\\s\\n]*`, 'g'),
       ''
     );
   }
 
-  return { cleanMessage, bashPid };
+  return { cleanMessage, shellPid };
 };
 
 const getConsoleInitColorizedFlag = (
@@ -210,10 +210,10 @@ const executeCommandAsyncMode = ({
   let isAborted = false;
   let resolveAfterFirstOutputId;
 
-  let bashPidToKillOnAbort;
-  const setBashPidToKillOnAbort = (bashPid?: string): void => {
-    if (bashPid != null && bashPidToKillOnAbort == null) {
-      bashPidToKillOnAbort = bashPid;
+  let shellPidToKillOnAbort;
+  const setBashPidToKillOnAbort = (shellPid?: string): void => {
+    if (shellPid != null && shellPidToKillOnAbort == null) {
+      shellPidToKillOnAbort = shellPid;
     }
   };
 
@@ -227,21 +227,21 @@ const executeCommandAsyncMode = ({
     cmd.kill();
     cmd.kill('SIGKILL');
 
-    if (bashPidToKillOnAbort != null) {
+    if (shellPidToKillOnAbort != null) {
       enqueueConsoleOutput({
         type: ExecuteCommandOutputType.CLOSE,
         pid: cmd.pid,
-        data: `kill ${bashPidToKillOnAbort}`,
+        data: `kill ${shellPidToKillOnAbort}`,
       });
       enqueueConsoleOutput({
         type: ExecuteCommandOutputType.CLOSE,
         pid: cmd.pid,
-        data: `kill -SIGKILL ${bashPidToKillOnAbort}`,
+        data: `kill -SIGKILL ${shellPidToKillOnAbort}`,
       });
-      spawnSync('kill', [bashPidToKillOnAbort], {
+      spawnSync('kill', [shellPidToKillOnAbort], {
         shell: childProcessParams.shell,
       });
-      spawnSync('kill', ['-SIGKILL', bashPidToKillOnAbort], {
+      spawnSync('kill', ['-SIGKILL', shellPidToKillOnAbort], {
         shell: childProcessParams.shell,
       });
     }
@@ -281,8 +281,8 @@ const executeCommandAsyncMode = ({
 
     cmd.stdout.on('data', data => {
       const message = data instanceof Buffer ? data.toString() : data;
-      const { cleanMessage, bashPid } = cleanOutput(message);
-      setBashPidToKillOnAbort(bashPid);
+      const { cleanMessage, shellPid } = cleanOutput(message);
+      setBashPidToKillOnAbort(shellPid);
 
       const output = {
         type: ExecuteCommandOutputType.STDOUT,
@@ -297,8 +297,8 @@ const executeCommandAsyncMode = ({
 
     cmd.stderr.on('data', data => {
       const message = data instanceof Buffer ? data.toString() : data;
-      const { cleanMessage, bashPid } = cleanOutput(message);
-      setBashPidToKillOnAbort(bashPid);
+      const { cleanMessage, shellPid } = cleanOutput(message);
+      setBashPidToKillOnAbort(shellPid);
 
       const isError =
         !ignoreStderrErrors && containsTerminalError(cleanMessage);

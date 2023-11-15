@@ -9,4 +9,4 @@ if [[ "$(uname)" == "Darwin" ]]; then
   export TERM="xterm-256color"
 fi
 
-echo "<<BASH_PID:$$>>"
+echo "<<SHELL_PID:$$>>"
