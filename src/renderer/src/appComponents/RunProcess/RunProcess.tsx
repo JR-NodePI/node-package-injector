@@ -60,7 +60,7 @@ export default function RunProcess(): JSX.Element {
 
   const displayProcessMessages = useCallback(
     (output: ProcessServiceResponse[]): void => {
-      const hasErrors = output.some(({ error }) => !!error);
+      const hasErrors = RunService.hasError(output);
       output.forEach(({ title, content, error }, index) => {
         const type = error
           ? ToasterType.ERROR
@@ -96,8 +96,8 @@ export default function RunProcess(): JSX.Element {
         abortController: new AbortController(),
       });
 
-      if (output.error) {
-        displayProcessMessages([output]);
+      if (RunService.hasError(output)) {
+        displayProcessMessages(output);
       }
     };
 
