@@ -231,8 +231,8 @@ export default class NodeService {
         PathService.getExtraResourcesScriptPath(
           'node_pi_fake_pkg_version_inject.sh'
         ),
-        NODE_PI_FILE_PREFIX,
-        nodePackage.version,
+        `"${NODE_PI_FILE_PREFIX}"`,
+        `"${nodePackage.version}"`,
       ],
       cwd: nodePackage.cwd ?? '',
       traceOnTime: true,
@@ -250,7 +250,7 @@ export default class NodeService {
         PathService.getExtraResourcesScriptPath(
           'node_pi_fake_pkg_version_restore.sh'
         ),
-        NODE_PI_FILE_PREFIX,
+        `"${NODE_PI_FILE_PREFIX}"`,
       ],
       cwd,
       traceOnTime: true,

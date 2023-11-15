@@ -19,12 +19,26 @@ type TraceConfig = ExecuteCommandOutput & {
   logFn?: typeof console.log | typeof console.warn;
 };
 
-const cleanOutput = (output: string): string => {
-  const cleanMessage = output
+const cleanOutput = (
+  output: string
+): { cleanMessage: string; bashPid?: string } => {
+  let bashPid;
+  let cleanMessage = output
     .replace(/[^a-z0-9-\n\s\r\t{}()"',:_\\/\\*+.|><=@áéíóúÁÉÍÓÚñçü]/gi, '')
     .trim();
 
-  return cleanMessage;
+  const getBashPidPattern = (): RegExp => /.*(<<BASH_PID:([0-9]+)>>).*/g;
+
+  if (getBashPidPattern().test(cleanMessage)) {
+    const rawBashPid = cleanMessage.replace(getBashPidPattern(), '$1');
+    bashPid = rawBashPid.replace(getBashPidPattern(), '$2');
+    cleanMessage = cleanMessage.replace(
+      new RegExp(`[\\s\\n]*${rawBashPid}[\\s\\n]*`, 'g'),
+      ''
+    );
+  }
+
+  return { cleanMessage, bashPid };
 };
 
 const getConsoleInitColorizedFlag = (
@@ -141,11 +155,12 @@ const executeCommandSyncMode = ({
   });
 
   const stdoutString = syncCmd.stdout?.toString() ?? '';
+  const { cleanMessage } = cleanOutput(stdoutString);
   if (stdoutString) {
     const output = {
       type: ExecuteCommandOutputType.STDOUT,
       pid: syncCmd.pid,
-      data: cleanOutput(stdoutString),
+      data: cleanMessage,
     };
     outputs.push(output);
     enqueueConsoleOutput(output);
@@ -153,21 +168,20 @@ const executeCommandSyncMode = ({
 
   const stderrString = syncCmd.stderr?.toString() ?? '';
   if (stderrString) {
-    const cleanStderrString = cleanOutput(stderrString);
-    const isError =
-      !ignoreStderrErrors && containsTerminalError(cleanStderrString);
+    const { cleanMessage } = cleanOutput(stderrString);
+    const isError = !ignoreStderrErrors && containsTerminalError(cleanMessage);
     const output = {
       type: isError
         ? ExecuteCommandOutputType.STDERR_ERROR
         : ExecuteCommandOutputType.STDERR_WARN,
       pid: syncCmd.pid,
-      data: cleanStderrString,
+      data: cleanMessage,
     };
     outputs.push(output);
     enqueueConsoleOutput(output);
 
     if (isError) {
-      const error = new Error(cleanStderrString);
+      const error = new Error(cleanMessage);
       return Promise.reject(error);
     }
   }
@@ -196,6 +210,13 @@ const executeCommandAsyncMode = ({
   let isAborted = false;
   let resolveAfterFirstOutputId;
 
+  let bashPidToKillOnAbort;
+  const setBashPidToKillOnAbort = (bashPid?: string): void => {
+    if (bashPid != null && bashPidToKillOnAbort == null) {
+      bashPidToKillOnAbort = bashPid;
+    }
+  };
+
   abortController?.signal.addEventListener('abort', () => {
     isAborted = true;
 
@@ -205,6 +226,25 @@ const executeCommandAsyncMode = ({
 
     cmd.kill();
     cmd.kill('SIGKILL');
+
+    if (bashPidToKillOnAbort != null) {
+      enqueueConsoleOutput({
+        type: ExecuteCommandOutputType.CLOSE,
+        pid: cmd.pid,
+        data: `kill ${bashPidToKillOnAbort}`,
+      });
+      enqueueConsoleOutput({
+        type: ExecuteCommandOutputType.CLOSE,
+        pid: cmd.pid,
+        data: `kill -SIGKILL ${bashPidToKillOnAbort}`,
+      });
+      spawnSync('kill', [bashPidToKillOnAbort], {
+        shell: childProcessParams.shell,
+      });
+      spawnSync('kill', ['-SIGKILL', bashPidToKillOnAbort], {
+        shell: childProcessParams.shell,
+      });
+    }
   });
 
   enqueueConsoleOutput(
@@ -241,7 +281,9 @@ const executeCommandAsyncMode = ({
 
     cmd.stdout.on('data', data => {
       const message = data instanceof Buffer ? data.toString() : data;
-      const cleanMessage = cleanOutput(message);
+      const { cleanMessage, bashPid } = cleanOutput(message);
+      setBashPidToKillOnAbort(bashPid);
+
       const output = {
         type: ExecuteCommandOutputType.STDOUT,
         pid: cmd.pid,
@@ -255,7 +297,9 @@ const executeCommandAsyncMode = ({
 
     cmd.stderr.on('data', data => {
       const message = data instanceof Buffer ? data.toString() : data;
-      const cleanMessage = cleanOutput(message);
+      const { cleanMessage, bashPid } = cleanOutput(message);
+      setBashPidToKillOnAbort(bashPid);
+
       const isError =
         !ignoreStderrErrors && containsTerminalError(cleanMessage);
 

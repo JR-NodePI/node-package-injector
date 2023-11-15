@@ -45,7 +45,7 @@ export default class RunService {
       command: 'bash',
       args: [
         PathService.getExtraResourcesScriptPath('node_pi_reset_all.sh'),
-        NODE_PI_FILE_PREFIX,
+        `"${NODE_PI_FILE_PREFIX}"`,
         `"${targetPackageCwd}"`,
         ...dependenciesCWDs,
       ],

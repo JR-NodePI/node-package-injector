@@ -67,7 +67,7 @@ export default class SyncService {
         PathService.getExtraResourcesScriptPath(
           'node_pi_vite_config_add_sync_alias.sh'
         ),
-        NODE_PI_FILE_PREFIX,
+        `"${NODE_PI_FILE_PREFIX}"`,
         ...dependencyNames.map(dep => `"${dep}"`),
       ],
       cwd,
