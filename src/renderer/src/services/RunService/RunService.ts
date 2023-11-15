@@ -21,13 +21,15 @@ export default class RunService {
     targetPackage: NodePackage;
     dependencies: DependencyPackage[];
     abortController?: AbortController;
-  }): Promise<ProcessServiceResponse> {
+  }): Promise<ProcessServiceResponse[]> {
     const outputTitle = 'Reset all';
     if (abortController?.signal.aborted) {
-      return {
-        error: 'The process was aborted',
-        title: outputTitle,
-      };
+      return [
+        {
+          error: 'The process was aborted',
+          title: outputTitle,
+        },
+      ];
     }
 
     const cwd = targetPackage.cwd ?? '';
@@ -54,6 +56,37 @@ export default class RunService {
       skipWSL: true,
     });
 
-    return { ...resetResponse, title: outputTitle };
+    const allScriptValues = [
+      ...(targetPackage.scripts ?? []).map(({ scriptValue }) =>
+        scriptValue ? `"${scriptValue}"` : ``
+      ),
+      ...(targetPackage.afterBuildScripts ?? []).map(({ scriptValue }) =>
+        scriptValue ? `"${scriptValue}"` : ``
+      ),
+      ...dependencies
+        .map(({ scripts }) =>
+          (scripts ?? []).map(({ scriptValue }) =>
+            scriptValue ? `"${scriptValue}"` : ``
+          )
+        )
+        .flat(),
+    ].filter(Boolean);
+
+    const killResponse = await TerminalService.executeCommand({
+      command: 'bash',
+      args: [
+        PathService.getExtraResourcesScriptPath('node_pi_kill_all.sh'),
+        `"${NODE_PI_FILE_PREFIX}"`,
+        ...allScriptValues,
+      ],
+      cwd,
+      abortController,
+      skipWSL: true,
+    });
+
+    return [
+      { ...resetResponse, title: outputTitle },
+      { ...killResponse, title: outputTitle },
+    ];
   }
 }

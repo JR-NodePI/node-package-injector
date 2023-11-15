@@ -37,13 +37,33 @@ window.electron.ipcRenderer.on('before-close', async (): Promise<void> => {
       .filter(Boolean)
   );
 
+  const allScriptValues = [
+    ...(packageBunch.targetPackage.scripts ?? []).map(({ scriptValue }) =>
+      scriptValue ? `"${scriptValue}"` : ``
+    ),
+    ...(packageBunch.targetPackage.afterBuildScripts ?? []).map(
+      ({ scriptValue }) => (scriptValue ? `"${scriptValue}"` : ``)
+    ),
+    ...packageBunch.dependencies
+      .map(({ scripts }) =>
+        (scripts ?? []).map(({ scriptValue }) =>
+          scriptValue ? `"${scriptValue}"` : ``
+        )
+      )
+      .flat(),
+  ].filter(Boolean);
+
   window.electron.ipcRenderer.send('reset-all-before-close', {
     resetAllCommand: PathService.getExtraResourcesScriptPath(
       'node_pi_reset_all.sh'
+    ),
+    killAllCommand: PathService.getExtraResourcesScriptPath(
+      'node_pi_kill_all.sh'
     ),
     NODE_PI_FILE_PREFIX,
     cwd,
     targetPackageCwd,
     dependenciesCWDs,
+    allScriptValues,
   });
 });

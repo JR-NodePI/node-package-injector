@@ -69,6 +69,19 @@ function createWindow(): void {
       skipWSL: true,
     });
 
+    await TerminalService.executeCommand({
+      command: 'bash',
+      args: [
+        data.killAllCommand,
+        `"${data.NODE_PI_FILE_PREFIX}"`,
+        ...data.allScriptValues.map(cwd => `"${cwd}"`),
+      ],
+      cwd: data.cwd,
+      syncMode: true,
+      addIcons: false,
+      skipWSL: true,
+    });
+
     if (!isReadyToClose) {
       isReadyToClose = true;
       app.quit();
