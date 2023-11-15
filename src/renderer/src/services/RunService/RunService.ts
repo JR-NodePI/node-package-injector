@@ -1,11 +1,11 @@
 import { NODE_PI_FILE_PREFIX } from '@renderer/constants';
+import DependencyPackage from '@renderer/models/DependencyPackage';
+import NodePackage from '@renderer/models/NodePackage';
+
 import PathService from '../PathService';
 import type { TerminalResponse } from '../TerminalService';
 import TerminalService from '../TerminalService';
-import NodePackage from '@renderer/models/NodePackage';
-import { DependencyList } from 'react';
 import WSLService from '../WSLService';
-import DependencyPackage from '@renderer/models/DependencyPackage';
 export type ProcessServiceResponse = TerminalResponse & { title: string };
 
 export default class RunService {
