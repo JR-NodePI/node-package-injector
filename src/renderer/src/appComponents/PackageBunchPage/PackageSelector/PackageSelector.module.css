@@ -1,6 +1,3 @@
-.package .label {
-  user-select: text;
-}
 .package .options {
   display: flex;
   gap: 16px;

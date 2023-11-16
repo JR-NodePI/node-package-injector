@@ -6,14 +6,15 @@ import path from 'node:path';
 
 import TerminalService from './Terminal/TerminalService';
 
-const isDev = process.env.NODE_ENV === 'development';
+const isDevMode = process.env.NODE_ENV === 'development';
 
 // Custom APIs for renderer
 const api = {
-  extraResourcesPath: isDev
+  extraResourcesPath: isDevMode
     ? path.join(__dirname, '../../', 'extraResources')
     : path.join(process.resourcesPath ?? '', 'extraResources'),
   fs,
+  isDevMode,
   os,
   path,
   TerminalService,

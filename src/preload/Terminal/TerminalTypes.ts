@@ -1,3 +1,5 @@
+import { SpawnOptionsWithoutStdio } from 'child_process';
+
 import { ExecuteCommandOutputType } from './TerminalConstants';
 
 export type ExecuteCommandOutput = {
@@ -10,8 +12,32 @@ export type ExecuteCommandOptions = {
   command: string;
   cwd?: string;
   args?: string[];
-  skipWSL?: boolean;
   traceOnTime?: boolean;
   abortController?: AbortController;
   ignoreStderrErrors?: boolean;
+  resolveTimeoutAfterFirstOutput?: number;
+  syncMode?: boolean;
+  addIcons?: boolean;
 };
+
+export type executeCommandAsyncModeOptions = {
+  childProcessParams: SpawnOptionsWithoutStdio;
+  enqueueConsoleOutput: (
+    output: ExecuteCommandOutput,
+    isAborted?: boolean
+  ) => void;
+  initCommandOutput: string;
+  outputs: ExecuteCommandOutput[];
+} & Pick<
+  ExecuteCommandOptions,
+  | 'abortController'
+  | 'args'
+  | 'command'
+  | 'ignoreStderrErrors'
+  | 'resolveTimeoutAfterFirstOutput'
+>;
+
+export type executeCommandSyncModeOptions = Omit<
+  executeCommandAsyncModeOptions,
+  'abortController' | 'resolveTimeoutAfterFirstOutput'
+>;

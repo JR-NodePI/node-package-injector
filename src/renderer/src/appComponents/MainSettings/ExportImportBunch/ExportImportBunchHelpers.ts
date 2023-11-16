@@ -1,4 +1,4 @@
-import { packageBunchTemplateValue } from '@renderer/appComponents/GlobalDataProvider/GlobalDataConstants';
+import { packageBunchTemplate } from '@renderer/models/GlobalDataConstants';
 import { parseModel } from '@renderer/helpers/parseHelpers';
 import type PackageBunch from '@renderer/models/PackageBunch';
 
@@ -15,10 +15,7 @@ export function downloadTextFile(text, name): void {
 export function getPackageBunchFromText(text: string): PackageBunch | null {
   const fileData = JSON.parse(text);
 
-  const parsedBunch = parseModel<PackageBunch>(
-    fileData,
-    packageBunchTemplateValue
-  );
+  const parsedBunch = parseModel<PackageBunch>(fileData, packageBunchTemplate);
 
   const isValidTargetPackage =
     parsedBunch.targetPackage.cwd != null &&

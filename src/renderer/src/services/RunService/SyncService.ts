@@ -1,25 +1,26 @@
+import { NODE_PI_FILE_PREFIX } from '@renderer/constants';
 import DependencyPackage from '@renderer/models/DependencyPackage';
 import NodePackage from '@renderer/models/NodePackage';
 
-import NodeService from '../NodeService/NodeService';
+import GitService from '../GitService';
 import PathService from '../PathService';
-import TerminalService from '../TerminalService';
+import TerminalService, { TerminalResponse } from '../TerminalService';
+import WSLService from '../WSLService';
 import { type ProcessServiceResponse } from './RunService';
 
 export default class SyncService {
-  public static async prepareSync({
+  public static async startSync({
     targetPackage,
     dependencies,
     abortController,
-    isWSLActive,
+    syncAbortController,
   }: {
     targetPackage: NodePackage;
     dependencies: DependencyPackage[];
     abortController?: AbortController;
-    isWSLActive?: boolean;
+    syncAbortController?: AbortController;
   }): Promise<ProcessServiceResponse[]> {
-    const syncTitle = 'Creating package.json for monorepo sync';
-
+    const syncTitle = `Sync mode ${targetPackage.packageName}`;
     if (abortController?.signal.aborted) {
       return [
         {
@@ -29,73 +30,136 @@ export default class SyncService {
       ];
     }
 
-    const allPaths = [
-      ...dependencies.map(({ cwd }) => cwd ?? ''),
-      targetPackage.cwd ?? '',
-    ];
+    const traceOnTime = true;
+    const cwd = targetPackage.cwd ?? '';
 
-    const monoCwd = allPaths.reduce((shorterCwd, cwd) => {
-      const prevPath = PathService.getPreviousPath(cwd);
-      const isShorterPath =
-        prevPath.split(PathService.splitPattern).length <
-        shorterCwd.split(PathService.splitPattern).length;
-      if (!shorterCwd || isShorterPath) {
-        return prevPath;
+    const hastAfterBuildScripts = (targetPackage.afterBuildScripts ?? []).some(
+      ({ scriptValue }) => Boolean(scriptValue)
+    );
+
+    const resolveTimeoutAfterFirstOutput = hastAfterBuildScripts ? 2000 : 0;
+
+    const dependencyNames = dependencies
+      .map(({ packageName }) => packageName)
+      .filter(Boolean);
+
+    // Add dependencies to .gitignore
+    const gitignoreResponse = await GitService.gitignoreAdd(
+      cwd,
+      dependencyNames.map(
+        packageName => `${NODE_PI_FILE_PREFIX}${packageName}`
+      ),
+      syncAbortController
+    );
+    if (gitignoreResponse.error) {
+      return [
+        {
+          ...gitignoreResponse,
+          title: syncTitle,
+        },
+      ];
+    }
+
+    // Add vite.config.js dependencies alias
+    const viteSyncResponse = await TerminalService.executeCommand({
+      command: 'bash',
+      args: [
+        PathService.getExtraResourcesScriptPath(
+          'node_pi_vite_config_add_sync_alias.sh'
+        ),
+        `"${NODE_PI_FILE_PREFIX}"`,
+        ...dependencyNames.map(dep => `"${dep}"`),
+      ],
+      cwd,
+      traceOnTime: traceOnTime,
+      skipWSL: true,
+      abortController: syncAbortController,
+      resolveTimeoutAfterFirstOutput,
+    });
+    if (viteSyncResponse.error) {
+      return [
+        {
+          ...viteSyncResponse,
+          title: syncTitle,
+        },
+      ];
+    }
+
+    // copy sync dependencies
+    const dependenciesPromises = dependencies.map(async dependency =>
+      SyncService.startSyncDependency({
+        cwd,
+        dependency,
+        traceOnTime,
+        syncAbortController,
+        resolveTimeoutAfterFirstOutput,
+      })
+    );
+    const dependenciesResponses = await Promise.allSettled(
+      dependenciesPromises
+    );
+
+    return dependenciesResponses.map(result => {
+      if (result.status === 'fulfilled') {
+        const { terminalResponse, packageName } = result.value;
+        const hasError = (terminalResponse.error ?? '').includes('Error');
+        return {
+          ...(hasError
+            ? { error: terminalResponse.error }
+            : { content: 'Sync finished' }),
+          title: `Sync mode ${packageName}`,
+        };
       }
-      return shorterCwd;
-    }, '');
+      return { error: result.reason, title: syncTitle };
+    });
+  }
 
-    const workspaces = allPaths.map(path =>
+  private static async startSyncDependency({
+    cwd,
+    dependency,
+    traceOnTime,
+    syncAbortController,
+    resolveTimeoutAfterFirstOutput,
+  }: {
+    cwd: string;
+    dependency: DependencyPackage;
+    traceOnTime: boolean;
+    syncAbortController?: AbortController;
+    resolveTimeoutAfterFirstOutput: number;
+  }): Promise<{ terminalResponse: TerminalResponse; packageName: string }> {
+    const targetPackageDir = PathService.normalizeWin32Path(
       window.api.path.join(
-        ...path.replace(monoCwd, '').split(PathService.splitPattern)
+        await WSLService.cleanSWLRoot(cwd, cwd, traceOnTime),
+        `${NODE_PI_FILE_PREFIX}${dependency.packageName}`
       )
     );
 
-    const packageJsonContent = {
-      name: 'node-package-injector-monorepo-sync',
-      version: NodeService.FAKE_PACKAGE_VERSION,
-      private: true,
-      scripts: {
-        'install-mono':
-          'npm install --force --no-save --no-fund --no-package-lock --no-update-notifier -s',
-      },
-      workspaces,
-    };
+    if (!dependency.srcSyncPath) {
+      throw new Error(`${dependency.packageName} has no srcSyncPath`);
+    }
 
-    const cwd = await PathService.getPath(
-      window.api.path.join(monoCwd),
-      isWSLActive
-    );
-    const packagePath = await PathService.getPath(
-      window.api.path.join(monoCwd, '/package.json'),
-      isWSLActive
+    const srcPackageDir = PathService.normalizeWin32Path(
+      await WSLService.cleanSWLRoot(
+        cwd,
+        dependency.srcSyncPath ?? '',
+        traceOnTime
+      )
     );
 
-    // TODO: trow error if package.json already exist
-
-    await NodeService.writeFile(
-      packagePath,
-      JSON.stringify(packageJsonContent, null, 2)
-    );
-
-    const response = await NodeService.runScript(
+    const terminalResponse = await TerminalService.executeCommand({
+      command: 'bash',
+      args: [
+        PathService.getExtraResourcesScriptPath('node_pi_rsync_watch.sh'),
+        `"${srcPackageDir}"`,
+        `"${targetPackageDir}"`,
+      ],
       cwd,
-      'echo "hola"',
-      abortController
-    );
+      traceOnTime: traceOnTime,
+      skipWSL: true,
+      abortController: syncAbortController,
+      resolveTimeoutAfterFirstOutput,
+    });
 
-    // const response = await TerminalService.executeCommand({
-    //   command: 'bash',
-    //   args: [
-    //     PathService.getExtraResourcesScriptPath('npm_run_script.sh'),
-    //     `${JSON.stringify('echo "hola"  ')}`,
-    //   ],
-    //   cwd: window.api.path.join(monoCwd),
-    //   traceOnTime: true,
-    //   skipWSL: true,
-    //   abortController,
-    // });
-
-    return [{ ...response, title: syncTitle }];
+    return { terminalResponse, packageName: dependency.packageName ?? '' };
   }
 }

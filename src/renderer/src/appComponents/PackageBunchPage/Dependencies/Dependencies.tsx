@@ -56,7 +56,8 @@ function Dependencies(): JSX.Element {
   const handlePathChange = (
     dependency: DependencyPackage,
     cwd: string,
-    isValidPackage: boolean
+    isValidPackage: boolean,
+    packageName?: string
   ): void => {
     if (!dependency || dependency.cwd === cwd) {
       return;
@@ -71,9 +72,11 @@ function Dependencies(): JSX.Element {
           clonedDependency.mode = DependencyMode.BUILD;
         }
         clonedDependency.cwd = cwd;
+        clonedDependency.srcSyncPath = undefined;
         clonedDependency.scripts = undefined;
         clonedDependency.afterBuildScripts = undefined;
         clonedDependency.isValidPackage = isValidPackage;
+        clonedDependency.packageName = packageName;
 
         return clonedDependency;
       }
@@ -109,6 +112,7 @@ function Dependencies(): JSX.Element {
     mode: typeof dependency.mode
   ): void => {
     changeDependencyProp(dependency, 'mode', mode);
+    changeDependencyProp(dependency, 'srcSyncPath', undefined);
   };
 
   const handleScriptsChange = (
@@ -116,6 +120,13 @@ function Dependencies(): JSX.Element {
     scripts: PackageScript[]
   ): void => {
     changeDependencyProp(dependency, 'scripts', scripts);
+  };
+
+  const handleSrcSyncChange = (
+    dependency: DependencyPackage,
+    srcSyncPath: string
+  ): void => {
+    changeDependencyProp(dependency, 'srcSyncPath', srcSyncPath);
   };
 
   return (
@@ -135,6 +146,7 @@ function Dependencies(): JSX.Element {
           onModeChange={handleModeChange}
           onPathChange={handlePathChange}
           onScriptsChange={handleScriptsChange}
+          onSrcSyncChange={handleSrcSyncChange}
         />
       ))}
       <div className={c(styles.buttons)}>

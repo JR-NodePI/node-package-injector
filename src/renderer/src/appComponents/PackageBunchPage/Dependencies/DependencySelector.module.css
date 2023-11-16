@@ -13,6 +13,13 @@
 .dependency > * {
   width: 100%;
 }
+.dependency .sync_src {
+  position: relative;
+  z-index: 1;
+}
+.dependency .sync_src_title {
+  margin: 0 0 8px 0;
+}
 
 .buttons {
   width: auto;

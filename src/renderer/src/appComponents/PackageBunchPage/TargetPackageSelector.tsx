@@ -6,7 +6,11 @@ import PackageSelector from './PackageSelector/PackageSelector';
 export default function TargetPackageSelector(): JSX.Element {
   const { activeTargetPackage, setActiveTargetPackage } = useGlobalData();
 
-  const handlePathChange = (cwd: string, isValidPackage): void => {
+  const handlePathChange = (
+    cwd: string,
+    isValidPackage: boolean,
+    packageName?: string
+  ): void => {
     if (!activeTargetPackage || activeTargetPackage.cwd === cwd) {
       return;
     }
@@ -17,6 +21,7 @@ export default function TargetPackageSelector(): JSX.Element {
     clonedPackage.scripts = undefined;
     clonedPackage.afterBuildScripts = undefined;
     clonedPackage.isValidPackage = isValidPackage;
+    clonedPackage.packageName = packageName;
 
     setActiveTargetPackage?.(clonedPackage);
   };

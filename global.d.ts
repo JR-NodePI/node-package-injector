@@ -11,6 +11,7 @@ declare global {
     api: {
       extraResourcesPath: string;
       fs: typeof fs;
+      isDevMode: boolean;
       os: typeof os;
       path: typeof path;
       TerminalService: typeof TerminalService;

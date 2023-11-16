@@ -16,9 +16,9 @@ export default function OpenDevTools({
 
   useEffect(() => {
     if (openDevTools) {
-      window.electron.ipcRenderer.send('openDevTools');
+      window.electron.ipcRenderer.send('open-dev-tools');
     } else {
-      window.electron.ipcRenderer.send('closeDevTools');
+      window.electron.ipcRenderer.send('close-dev-tools');
     }
   }, [openDevTools]);
 

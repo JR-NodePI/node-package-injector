@@ -1,6 +1,6 @@
-#!/bin/sh
+#!/bin/bash
 
-. "$(dirname "$0")/enable_node.sh"
+. "$(dirname "$0")/helpers/global.sh"
 
 DEPENDENCY_NAME=$1
 DEPENDENCY_PACKAGE_PATH=$2

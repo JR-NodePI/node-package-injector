@@ -6,6 +6,8 @@ export default class DependencyPackage extends NodePackage {
   public mode: (typeof DependencyMode)[keyof typeof DependencyMode] =
     DependencyMode.BUILD;
 
+  public srcSyncPath?: string;
+
   public clone(): DependencyPackage {
     const dependencyPackage = Object.assign<DependencyPackage, NodePackage>(
       new DependencyPackage(),
@@ -13,6 +15,7 @@ export default class DependencyPackage extends NodePackage {
     ) as DependencyPackage;
 
     dependencyPackage.mode = this.mode;
+    dependencyPackage.srcSyncPath = this.srcSyncPath;
     return dependencyPackage;
   }
 }
