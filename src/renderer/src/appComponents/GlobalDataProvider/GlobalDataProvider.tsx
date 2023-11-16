@@ -7,8 +7,8 @@ import PackageScript from '@renderer/models/PackageScript';
 import { debounce } from 'lodash';
 
 import {
-  packageScriptsTemplate,
   packageBunchesTemplate,
+  packageScriptsTemplate,
 } from '../../models/GlobalDataConstants';
 import GlobalDataContext, { GlobalDataProps } from './GlobalDataContext';
 import useLoadTerminal from './useCheckInitials';

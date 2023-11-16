@@ -38,17 +38,15 @@ window.electron.ipcRenderer.on('before-close', async (): Promise<void> => {
   );
 
   const allScriptValues = [
-    ...(packageBunch.targetPackage.scripts ?? []).map(({ scriptValue }) =>
-      scriptValue ? `"${scriptValue}"` : ``
+    ...(packageBunch.targetPackage.scripts ?? []).map(
+      ({ scriptValue }) => scriptValue ?? ''
     ),
     ...(packageBunch.targetPackage.afterBuildScripts ?? []).map(
-      ({ scriptValue }) => (scriptValue ? `"${scriptValue}"` : ``)
+      ({ scriptValue }) => scriptValue ?? ''
     ),
     ...packageBunch.dependencies
       .map(({ scripts }) =>
-        (scripts ?? []).map(({ scriptValue }) =>
-          scriptValue ? `"${scriptValue}"` : ``
-        )
+        (scripts ?? []).map(({ scriptValue }) => scriptValue ?? '')
       )
       .flat(),
   ].filter(Boolean);

@@ -19,27 +19,10 @@ type TraceConfig = ExecuteCommandOutput & {
   logFn?: typeof console.log | typeof console.warn;
 };
 
-const cleanOutput = (
-  output: string
-): { cleanMessage: string; shellPid?: string } => {
-  let shellPid;
-  let cleanMessage = output
+const cleanOutput = (output: string): string =>
+  output
     .replace(/[^a-z0-9-\n\s\r\t{}()"',:_\\/\\*+.|><=@áéíóúÁÉÍÓÚñçü]/gi, '')
     .trim();
-
-  const getBashPidPattern = (): RegExp => /.*(<<SHELL_PID:([0-9]+)>>).*/g;
-
-  if (getBashPidPattern().test(cleanMessage)) {
-    const rawBashPid = cleanMessage.replace(getBashPidPattern(), '$1');
-    shellPid = rawBashPid.replace(getBashPidPattern(), '$2');
-    cleanMessage = cleanMessage.replace(
-      new RegExp(`[\\s\\n]*${rawBashPid}[\\s\\n]*`, 'g'),
-      ''
-    );
-  }
-
-  return { cleanMessage, shellPid };
-};
 
 const getConsoleInitColorizedFlag = (
   type: ExecuteCommandOutput['type'],
@@ -155,7 +138,7 @@ const executeCommandSyncMode = ({
   });
 
   const stdoutString = syncCmd.stdout?.toString() ?? '';
-  const { cleanMessage } = cleanOutput(stdoutString);
+  const cleanMessage = cleanOutput(stdoutString);
   if (stdoutString) {
     const output = {
       type: ExecuteCommandOutputType.STDOUT,
@@ -168,7 +151,7 @@ const executeCommandSyncMode = ({
 
   const stderrString = syncCmd.stderr?.toString() ?? '';
   if (stderrString) {
-    const { cleanMessage } = cleanOutput(stderrString);
+    const cleanMessage = cleanOutput(stderrString);
     const isError = !ignoreStderrErrors && containsTerminalError(cleanMessage);
     const output = {
       type: isError
@@ -210,13 +193,6 @@ const executeCommandAsyncMode = ({
   let isAborted = false;
   let resolveAfterFirstOutputId;
 
-  let shellPidToKillOnAbort;
-  const setBashPidToKillOnAbort = (shellPid?: string): void => {
-    if (shellPid != null && shellPidToKillOnAbort == null) {
-      shellPidToKillOnAbort = shellPid;
-    }
-  };
-
   abortController?.signal.addEventListener('abort', () => {
     isAborted = true;
 
@@ -226,25 +202,6 @@ const executeCommandAsyncMode = ({
 
     cmd.kill();
     cmd.kill('SIGKILL');
-
-    if (shellPidToKillOnAbort != null) {
-      enqueueConsoleOutput({
-        type: ExecuteCommandOutputType.CLOSE,
-        pid: cmd.pid,
-        data: `kill ${shellPidToKillOnAbort}`,
-      });
-      enqueueConsoleOutput({
-        type: ExecuteCommandOutputType.CLOSE,
-        pid: cmd.pid,
-        data: `kill -SIGKILL ${shellPidToKillOnAbort}`,
-      });
-      spawnSync('kill', [shellPidToKillOnAbort], {
-        shell: childProcessParams.shell,
-      });
-      spawnSync('kill', ['-SIGKILL', shellPidToKillOnAbort], {
-        shell: childProcessParams.shell,
-      });
-    }
   });
 
   enqueueConsoleOutput(
@@ -281,8 +238,7 @@ const executeCommandAsyncMode = ({
 
     cmd.stdout.on('data', data => {
       const message = data instanceof Buffer ? data.toString() : data;
-      const { cleanMessage, shellPid } = cleanOutput(message);
-      setBashPidToKillOnAbort(shellPid);
+      const cleanMessage = cleanOutput(message);
 
       const output = {
         type: ExecuteCommandOutputType.STDOUT,
@@ -297,8 +253,7 @@ const executeCommandAsyncMode = ({
 
     cmd.stderr.on('data', data => {
       const message = data instanceof Buffer ? data.toString() : data;
-      const { cleanMessage, shellPid } = cleanOutput(message);
-      setBashPidToKillOnAbort(shellPid);
+      const cleanMessage = cleanOutput(message);
 
       const isError =
         !ignoreStderrErrors && containsTerminalError(cleanMessage);
