@@ -88,7 +88,10 @@ export default function PackageSelector({
         const packageName = isValidPackage
           ? await NodeService.getPackageName(cwd)
           : undefined;
-        const branch = await GitService.getCurrentBranch(cwd, abortController);
+        const branch = await GitService.getCurrentBranch({
+          cwd,
+          abortController,
+        });
         const isValid =
           isValidPackage && Boolean(packageName) && branch.length > 0;
         if (!abortController.signal.aborted) {

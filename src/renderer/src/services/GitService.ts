@@ -40,11 +40,15 @@ export default class GitService {
     });
   }
 
-  static async getCurrentBranch(
-    cwd: string,
-    abortController?: AbortController,
-    ignoreStderrErrors?: boolean
-  ): Promise<string> {
+  static async getCurrentBranch({
+    cwd,
+    abortController,
+    ignoreStderrErrors,
+  }: {
+    cwd: string;
+    abortController?: AbortController;
+    ignoreStderrErrors?: boolean;
+  }): Promise<string> {
     const { content } = await TerminalService.executeCommand({
       command: 'git',
       args: ['rev-parse', '--abbrev-ref', 'HEAD'],
@@ -95,11 +99,11 @@ export default class GitService {
     abortController?: AbortController
   ): Promise<boolean> {
     try {
-      const branch = await GitService.getCurrentBranch(
+      const branch = await GitService.getCurrentBranch({
         cwd,
         abortController,
-        true
-      );
+        ignoreStderrErrors: true,
+      });
       return Boolean(branch);
     } catch (error) {
       // eslint-disable-next-line no-console
