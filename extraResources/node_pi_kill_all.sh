@@ -18,7 +18,7 @@ getNodeScriptChunkPids() {
   if [[ "$(uname)" == "Darwin" ]]; then
     ps -A | grep -E -i "node.*$1" | grep -v "grep" | grep -v "&&" | awk "{ print \$1 }"
   else
-    ps aux | grep -E -i "nsde.*$1" | grep -v "grep" | grep -v "&&" | awk "{ print \$2 }"
+    ps aux | grep -E -i "node.*$1" | grep -v "grep" | grep -v "&&" | awk "{ print \$2 }"
   fi
 }
 
