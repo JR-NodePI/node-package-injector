@@ -11,7 +11,7 @@ get_version() {
   local commandName=$1
   local commandAlias=$(command -v "${commandName}")
   if [[ -n "${commandAlias}" ]]; then
-    eval "$commandName -v"
+    eval "$commandName --version"
   else
     echo ""
   fi
