@@ -59,3 +59,12 @@ export const OutputIcons = [
   '⛺',
   '🛎️',
 ];
+
+export const STDERR_OUTPUT_DETECT_ERROR_PATTERNS = [
+  new RegExp('fatal: ', 'gi'),
+  new RegExp('error ', 'gi'),
+  new RegExp('error: ', 'gi'),
+  new RegExp('command not found', 'gi'),
+  new RegExp('no such file or directory', 'gi'),
+  new RegExp('is not a directory', 'gi'),
+];

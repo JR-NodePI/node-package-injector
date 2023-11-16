@@ -6,6 +6,7 @@ import { c } from 'fratch-ui/helpers';
 import PackageSelector from '../PackageSelector/PackageSelector';
 import DependencyModeCheck from './DependencyModeCheck';
 import type { DependencySelectorProps } from './DependencySelectorProps';
+import DependencySyncSrcDirectory from './DependencySyncSrcDirectory';
 
 import styles from './DependencySelector.module.css';
 
@@ -17,9 +18,14 @@ export default function DependencySelector({
   onPathChange,
   onModeChange,
   onScriptsChange,
+  onSrcSyncChange,
 }: DependencySelectorProps): JSX.Element {
-  const handlePathChange = (cwd: string, isValidPackage: boolean): void => {
-    onPathChange(dependency, cwd, isValidPackage);
+  const handlePathChange = (
+    cwd: string,
+    isValidPackage: boolean,
+    packageName?: string
+  ): void => {
+    onPathChange(dependency, cwd, isValidPackage, packageName);
   };
 
   const handleScriptsChange = (scripts): void => {
@@ -29,7 +35,7 @@ export default function DependencySelector({
   return (
     <div className={c(styles.dependency)}>
       <PackageSelector
-        additionalComponent={
+        additionalActionComponents={
           <>
             {isTargetSynchronizable && (
               <span title="Inject this dependency in sync mode">
@@ -48,7 +54,16 @@ export default function DependencySelector({
         onScriptsChange={handleScriptsChange}
         findInstallScript
         findBuildScript
-      />
+      >
+        <>
+          {dependency.mode === DependencyMode.SYNC && (
+            <DependencySyncSrcDirectory
+              dependency={dependency}
+              onSrcSyncChange={onSrcSyncChange}
+            />
+          )}
+        </>
+      </PackageSelector>
       <div className={c(styles.buttons)}>
         <Button
           disabled={disabled}

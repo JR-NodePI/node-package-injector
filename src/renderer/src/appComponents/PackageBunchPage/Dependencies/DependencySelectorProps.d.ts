@@ -10,7 +10,8 @@ export type DependencySelectorProps = {
   onPathChange: (
     dependency: DependencyPackage,
     cwd: string,
-    isValidPackage: boolean
+    isValidPackage: boolean,
+    packageName?: string
   ) => void;
   onModeChange: (
     dependency: DependencyPackage,
@@ -20,4 +21,5 @@ export type DependencySelectorProps = {
     dependency: DependencyPackage,
     scripts: PackageScript[]
   ) => void;
+  onSrcSyncChange: (dependency: DependencyPackage, srcSyncPath: string) => void;
 };

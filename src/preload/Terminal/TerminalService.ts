@@ -13,7 +13,11 @@ export default class TerminalService {
   private static isTerminalInitialized: boolean;
   public static isWSLAvailable: boolean;
 
-  private static async checkWSL(cwd: string): Promise<boolean> {
+  private static async checkWSL(
+    cwd: string,
+    syncMode?: boolean,
+    addIcons?: boolean
+  ): Promise<boolean> {
     const isSWLCompatible = ['win32', 'cygwin'].includes(process.platform);
 
     if (!isSWLCompatible) {
@@ -25,6 +29,8 @@ export default class TerminalService {
         command: 'wsl',
         args: ['-e', 'bash', '--version'],
         cwd,
+        syncMode,
+        addIcons,
       });
 
       return (content ?? '').includes('GNU bash');
@@ -45,7 +51,12 @@ export default class TerminalService {
     traceOnTime = false,
     abortController,
     ignoreStderrErrors = false,
-  }: ExecuteCommandOptions): Promise<TerminalResponse> {
+    resolveTimeoutAfterFirstOutput,
+    syncMode,
+    addIcons,
+  }: ExecuteCommandOptions & {
+    skipWSL?: boolean;
+  }): Promise<TerminalResponse> {
     if (TerminalService.isTerminalInitialized === false) {
       throw new Error('Terminal is not enabled');
     }
@@ -53,7 +64,9 @@ export default class TerminalService {
     if (TerminalService.isWSLAvailable == null) {
       TerminalService.isWSLAvailable = false;
       TerminalService.isWSLAvailable = await TerminalService.checkWSL(
-        cwd ?? ''
+        cwd ?? '',
+        syncMode,
+        addIcons
       );
     }
 
@@ -69,6 +82,7 @@ export default class TerminalService {
     let promise = TerminalService.cacheExecuteCommand.get(
       `${cwd}-${finalCommand}-${finalArgs.join('-')}`
     );
+
     if (!promise) {
       promise = TerminalRepository.executeCommand({
         command: finalCommand,
@@ -77,6 +91,9 @@ export default class TerminalService {
         traceOnTime,
         abortController,
         ignoreStderrErrors,
+        resolveTimeoutAfterFirstOutput,
+        syncMode,
+        addIcons,
       });
     }
 
@@ -114,7 +131,6 @@ export default class TerminalService {
         command: 'echo',
         args: [`${expectedOutput}`],
         cwd,
-        skipWSL: true,
       });
 
       const output = (outputs[0]?.data ?? '').toString().trim();

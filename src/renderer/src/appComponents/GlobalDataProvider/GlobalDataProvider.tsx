@@ -7,9 +7,9 @@ import PackageScript from '@renderer/models/PackageScript';
 import { debounce } from 'lodash';
 
 import {
-  additionalPackageScriptsTemplateValue,
-  packageBunchesTemplateValue,
-} from './GlobalDataConstants';
+  packageScriptsTemplate,
+  packageBunchesTemplate,
+} from '../../models/GlobalDataConstants';
 import GlobalDataContext, { GlobalDataProps } from './GlobalDataContext';
 import useLoadTerminal from './useCheckInitials';
 import usePersistedState from './usePersistedState';
@@ -29,7 +29,7 @@ export default function GlobalDataProvider({
   ] = usePersistedState<PackageScript[]>(
     'additionalPackageScripts',
     [],
-    additionalPackageScriptsTemplateValue
+    packageScriptsTemplate
   );
 
   const [isWSLActive, setIsWSLActive, isWSLActiveLoading] =
@@ -39,7 +39,7 @@ export default function GlobalDataProvider({
     usePersistedState<PackageBunch[]>(
       'packageBunches',
       [],
-      packageBunchesTemplateValue
+      packageBunchesTemplate
     );
 
   const setPackageBunchActive = useCallback(

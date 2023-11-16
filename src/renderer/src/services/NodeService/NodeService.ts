@@ -1,4 +1,6 @@
+import { NODE_PI_FILE_PREFIX } from '@renderer/constants';
 import type DependencyPackage from '@renderer/models/DependencyPackage';
+import NodePackage from '@renderer/models/NodePackage';
 
 import PathService from '../PathService';
 import TerminalService, { type TerminalResponse } from '../TerminalService';
@@ -8,6 +10,8 @@ import { RelatedDependencyProjection } from './NodeServiceTypes';
 type PackageJsonStructure = string | Record<string, string>;
 
 export default class NodeService {
+  public static readonly FAKE_PACKAGE_VERSION = '6.6.6-node-pi';
+
   private static async getPackageJson(
     cwd: string
   ): Promise<Record<string, PackageJsonStructure> | null> {
@@ -101,35 +105,45 @@ export default class NodeService {
   }
 
   public static async getPackageBuildedPath(
-    cwd: string
+    nodePackage: NodePackage
   ): Promise<TerminalResponse> {
-    const packageName = await NodeService.getPackageName(cwd);
-
-    if (!packageName) {
+    if (!nodePackage.packageName) {
       return { error: 'There is no package name' };
     }
 
-    const fileName = `${packageName}-v${NodeService.FAKE_PACKAGE_VERSION}.tgz`;
+    if (!nodePackage.version) {
+      return { error: 'There is no package version' };
+    }
+
+    if (!nodePackage.cwd) {
+      return { error: 'There is no package cwd' };
+    }
+
+    const fileName = `${nodePackage.packageName}-v${nodePackage.version}.tgz`;
 
     for (const dir of ['', 'dist', '.dist', 'build', '.build', 'out', '.out']) {
-      if (await NodeService.hasFile(cwd, dir, fileName)) {
-        const builtPackagePath = window.api.path.join(cwd, dir, fileName);
+      if (await NodeService.hasFile(nodePackage.cwd, dir, fileName)) {
+        const builtPackagePath = window.api.path.join(
+          nodePackage.cwd,
+          dir,
+          fileName
+        );
         return { content: builtPackagePath };
       }
     }
 
-    return { error: `There is no built package for ${packageName}` };
+    return {
+      error: `There is no built package for ${nodePackage.packageName}`,
+    };
   }
 
   public static async getNodeVersions(): Promise<Record<string, string>> {
     const output = await TerminalService.executeCommand({
       command: 'bash',
-      args: [PathService.getExtraResourcesScriptPath('check_node.sh')],
+      args: [PathService.getExtraResourcesScriptPath('node_pi_check_node.sh')],
       cwd: window.api.path.join(window.api.extraResourcesPath),
       skipWSL: true,
-      ignoreStderrErrors: true,
     });
-
     try {
       const data = JSON.parse(output?.content ?? '');
       return data;
@@ -171,8 +185,9 @@ export default class NodeService {
 
   public static async checkIsSynchronizable(cwd: string): Promise<boolean> {
     return (
-      (await NodeService.checkViteConfig(cwd)) ||
-      (await NodeService.checkCracoConfig(cwd))
+      // window.api.isDevMode && // TODO: remove when feature "sync mode" will be ready
+      await NodeService.checkViteConfig(cwd)
+      // ||   (await NodeService.checkCracoConfig(cwd)) //TODO: pending feature
     );
   }
 
@@ -197,7 +212,7 @@ export default class NodeService {
     return await TerminalService.executeCommand({
       command: 'bash',
       args: [
-        PathService.getExtraResourcesScriptPath('npm_run_script.sh'),
+        PathService.getExtraResourcesScriptPath('node_pi_npm_run_script.sh'),
         `${JSON.stringify(script)}`,
       ],
       cwd,
@@ -206,19 +221,20 @@ export default class NodeService {
     });
   }
 
-  public static readonly FAKE_PACKAGE_VERSION = '6.6.6-node-pi';
-
   public static async injectFakePackageVersion(
-    cwd: string,
+    nodePackage: NodePackage,
     abortController?: AbortController
   ): Promise<TerminalResponse> {
     return await TerminalService.executeCommand({
       command: 'bash',
       args: [
-        PathService.getExtraResourcesScriptPath('inject_fake_pkg_version.sh'),
-        NodeService.FAKE_PACKAGE_VERSION,
+        PathService.getExtraResourcesScriptPath(
+          'node_pi_fake_pkg_version_inject.sh'
+        ),
+        `"${NODE_PI_FILE_PREFIX}"`,
+        `"${nodePackage.version}"`,
       ],
-      cwd,
+      cwd: nodePackage.cwd ?? '',
       traceOnTime: true,
       abortController,
     });
@@ -231,7 +247,10 @@ export default class NodeService {
     return await TerminalService.executeCommand({
       command: 'bash',
       args: [
-        PathService.getExtraResourcesScriptPath('restore_fake_pkg_version.sh'),
+        PathService.getExtraResourcesScriptPath(
+          'node_pi_fake_pkg_version_restore.sh'
+        ),
+        `"${NODE_PI_FILE_PREFIX}"`,
       ],
       cwd,
       traceOnTime: true,

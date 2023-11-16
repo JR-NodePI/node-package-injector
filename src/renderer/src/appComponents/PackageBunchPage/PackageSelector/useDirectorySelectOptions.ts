@@ -8,6 +8,8 @@ import type {
   useDirectorySelectOptionsProps,
 } from './PackageSelectorProps';
 
+const EXCLUDED_DIRECTORIES_NAMES = ['node_modules', 'dist', 'build'];
+
 const getDirectorySelectOptions = async (
   cwd: string,
   excludedDirectories?: string[]
@@ -16,7 +18,12 @@ const getDirectorySelectOptions = async (
     withFileTypes: true,
   });
   const filteredDirectories = directories
-    .filter(dirent => dirent.isDirectory() && dirent.name[0] !== '.')
+    .filter(
+      dirent =>
+        dirent.isDirectory() &&
+        !/^(\.|_)/.test(dirent.name) &&
+        !EXCLUDED_DIRECTORIES_NAMES.includes(dirent.name)
+    )
     .filter(dirent => {
       const path = window.api.path.join(cwd, dirent.name, '/');
       return (excludedDirectories ?? []).includes(path) === false;
@@ -41,7 +48,9 @@ export function useDirectorySelectOptions({
 
     (async (): Promise<void> => {
       const options = await getDirectorySelectOptions(cwd, excludedDirectories);
-      const timerId = setTimeout(onDirectoriesLoad, 100);
+      const timerId = setTimeout(() => {
+        onDirectoriesLoad?.(options);
+      }, 100);
       if (!abortController.signal.aborted) {
         setDirectoryOptions(options);
       } else {

@@ -1,5 +1,8 @@
-import { useContext, useState } from 'react';
+import { useCallback, useContext, useState } from 'react';
 
+import RunService, {
+  ProcessServiceResponse,
+} from '@renderer/services/RunService/RunService';
 import {
   Button,
   IconPause,
@@ -30,10 +33,6 @@ const STATUSES = {
     value: 'syncing',
     label: 'Syncing',
   },
-  SYNC_PREPARE: {
-    value: 'sync_prepare',
-    label: 'Preparing for syncing',
-  },
   AFTER_BUILD: {
     value: 'after_build',
     label: 'Running after build',
@@ -43,6 +42,8 @@ const STATUSES = {
 type STATUS = (typeof STATUSES)[keyof typeof STATUSES];
 
 export default function RunProcess(): JSX.Element {
+  const { loading, isValidTerminal } = useGlobalData();
+
   const { addToaster } = useContext(ToasterListContext);
   const {
     additionalPackageScripts,
@@ -54,51 +55,12 @@ export default function RunProcess(): JSX.Element {
   const [status, setStatus] = useState<STATUS>(STATUSES.IDLE);
   const [abortController, setAbortController] =
     useState<AbortController | null>();
+  const [syncAbortController, setSyncAbortController] =
+    useState<AbortController | null>();
 
-  useDeepCompareEffect(() => {
-    let isSyncing = false;
-    const handleAbort = (): void => {
-      console.log('>>>----->> handleAbort', { isSyncing });
-      // TODO: stop sync by SyncProcessService
-    };
-
-    const run = async (): Promise<void> => {
-      const mustRun =
-        abortController?.signal != null && !abortController.signal.aborted;
-
-      if (!mustRun) {
-        return;
-      }
-
-      abortController.signal.addEventListener('abort', handleAbort);
-
-      setStatus(STATUSES.RUNNING);
-
-      const output = await StartService.run({
-        additionalPackageScripts,
-        targetPackage: activeTargetPackage,
-        dependencies: activeDependencies,
-        abortController,
-        isWSLActive,
-        onTargetBuildStart: () => {
-          setStatus(STATUSES.BUILDING);
-        },
-        onDependenciesBuildStart: () => {
-          setStatus(STATUSES.BUILDING_DEPENDENCIES);
-        },
-        onAfterBuildStart: () => {
-          setStatus(STATUSES.AFTER_BUILD);
-        },
-        onDependenciesSyncPrepare: () => {
-          setStatus(STATUSES.SYNC_PREPARE);
-          isSyncing = true;
-        },
-        onDependenciesSyncStart: () => {
-          setStatus(STATUSES.SYNCING);
-        },
-      });
-
-      const hasErrors = output.some(({ error }) => !!error);
+  const displayProcessMessages = useCallback(
+    (output: ProcessServiceResponse[]): void => {
+      const hasErrors = RunService.hasError(output);
       output.forEach(({ title, content, error }, index) => {
         const type = error
           ? ToasterType.ERROR
@@ -117,34 +79,103 @@ export default function RunProcess(): JSX.Element {
         });
       });
 
-      if (!isSyncing) {
-        setStatus(hasErrors ? STATUSES.FAILURE : STATUSES.SUCCESS);
-        setAbortController(null);
+      setStatus(hasErrors ? STATUSES.FAILURE : STATUSES.SUCCESS);
+    },
+    [addToaster]
+  );
+
+  useDeepCompareEffect(() => {
+    const handleAbort = (): void => {
+      console.log('>>>----->> handleAbort');
+    };
+
+    const handleAbortSync = async (): Promise<void> => {
+      const output = await RunService.resetAll({
+        targetPackage: activeTargetPackage,
+        dependencies: activeDependencies,
+        abortController: new AbortController(),
+      });
+
+      if (RunService.hasError(output)) {
+        displayProcessMessages(output);
       }
+    };
+
+    const run = async (): Promise<void> => {
+      const mustRun =
+        abortController?.signal != null &&
+        !abortController.signal.aborted &&
+        syncAbortController?.signal != null &&
+        !syncAbortController.signal.aborted;
+
+      if (!mustRun) {
+        return;
+      }
+
+      abortController.signal.addEventListener('abort', handleAbort);
+      syncAbortController.signal.addEventListener('abort', handleAbortSync);
+
+      setStatus(STATUSES.RUNNING);
+
+      const output = await StartService.run({
+        additionalPackageScripts,
+        targetPackage: activeTargetPackage,
+        dependencies: activeDependencies,
+        abortController,
+        syncAbortController,
+        isWSLActive,
+        onTargetBuildStart: () => {
+          setStatus(STATUSES.BUILDING);
+        },
+        onDependenciesBuildStart: () => {
+          setStatus(STATUSES.BUILDING_DEPENDENCIES);
+        },
+        onAfterBuildStart: () => {
+          setStatus(STATUSES.AFTER_BUILD);
+        },
+        onDependenciesSyncStart: () => {
+          setStatus(STATUSES.SYNCING);
+        },
+      });
+
+      displayProcessMessages(output);
+      setAbortController(null);
+      setSyncAbortController(null);
     };
 
     run();
 
     return (): void => {
       abortController?.signal.removeEventListener('abort', handleAbort);
+      abortController?.signal.removeEventListener('abort', handleAbortSync);
     };
   }, [
-    additionalPackageScripts,
-    addToaster,
-    activeTargetPackage,
-    activeDependencies,
     abortController,
+    activeDependencies,
+    activeTargetPackage,
+    additionalPackageScripts,
+    displayProcessMessages,
     isWSLActive,
+    syncAbortController,
   ]);
 
   const handleRunClick = (): void => {
     setAbortController(new AbortController());
+    setSyncAbortController(new AbortController());
   };
 
   const handleStopClick = (): void => {
     abortController?.abort();
+    syncAbortController?.abort();
     setStatus(STATUSES.IDLE);
     setAbortController(null);
+    setSyncAbortController(null);
+  };
+
+  const handleStopSyncClick = (): void => {
+    syncAbortController?.abort();
+    setStatus(STATUSES.AFTER_BUILD);
+    setSyncAbortController(null);
   };
 
   const processMsg = status.label;
@@ -156,15 +187,17 @@ export default function RunProcess(): JSX.Element {
       STATUSES.BUILDING.value,
     ] as string[]
   ).includes(status.value);
-  const isSyncing =
-    status.value === STATUSES.SYNC_PREPARE.value ||
-    status.value === STATUSES.SYNCING.value;
+  const isSyncing = status.value === STATUSES.SYNCING.value;
 
   const isRunning = isBuilding || isSyncing;
 
   const isRunEnabled =
     activeTargetPackage?.isValidPackage &&
     activeDependencies?.every(d => d.isValidPackage);
+
+  if (loading || !isValidTerminal) {
+    return <></>;
+  }
 
   return (
     <>
@@ -191,7 +224,7 @@ export default function RunProcess(): JSX.Element {
           className={c(styles.stop_button)}
           label="Pause"
           type={isSyncing ? 'tertiary' : 'secondary'}
-          onClick={handleStopClick}
+          onClick={isSyncing ? handleStopSyncClick : handleStopClick}
         />
       )}
     </>

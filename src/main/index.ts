@@ -1,8 +1,8 @@
 import { electronApp, is, optimizer } from '@electron-toolkit/utils';
-import { app, BrowserWindow, ipcMain, Menu, session, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, Menu, shell } from 'electron';
 import { join } from 'path';
 
-// import icon from '../../build/icons/png/1024x1024.png?asset';
+import TerminalService from '../preload/Terminal/TerminalService';
 import { createAppMenu, getMenuItemsTemplate } from './menu';
 import {
   INI_WINDOW_HEIGHT,
@@ -10,8 +10,6 @@ import {
   loadWindowRect,
   saveWindowRect,
 } from './windowRect';
-
-const isDev = process.env.NODE_ENV === 'development';
 
 function createWindow(): void {
   // Create the browser window.
@@ -36,16 +34,58 @@ function createWindow(): void {
     },
   });
 
-  if (isDev) {
-    mainWindow.webContents.openDevTools();
-  }
-
   mainWindow.on('ready-to-show', () => {
     mainWindow.show();
   });
 
-  mainWindow.on('close', function () {
+  mainWindow.on('move', () => {
     saveWindowRect(mainWindow);
+  });
+  mainWindow.on('resize', () => {
+    saveWindowRect(mainWindow);
+  });
+
+  let isReadyToClose = false;
+  mainWindow.on('close', event => {
+    saveWindowRect(mainWindow);
+    if (isReadyToClose === false) {
+      event.preventDefault();
+      mainWindow.webContents.send('before-close');
+    }
+  });
+
+  ipcMain.on('reset-all-before-close', async (_event, data) => {
+    await TerminalService.executeCommand({
+      command: 'bash',
+      args: [
+        data.resetAllCommand,
+        `"${data.NODE_PI_FILE_PREFIX}"`,
+        `"${data.targetPackageCwd}"`,
+        ...data.dependenciesCWDs.map(cwd => `"${cwd}"`),
+      ],
+      cwd: data.cwd,
+      syncMode: true,
+      addIcons: false,
+      skipWSL: true,
+    });
+
+    await TerminalService.executeCommand({
+      command: 'bash',
+      args: [
+        data.killAllCommand,
+        `"${data.NODE_PI_FILE_PREFIX}"`,
+        ...data.allScriptValues.map(cwd => `"${cwd}"`),
+      ],
+      cwd: data.cwd,
+      syncMode: true,
+      addIcons: false,
+      skipWSL: true,
+    });
+
+    if (!isReadyToClose) {
+      isReadyToClose = true;
+      app.quit();
+    }
   });
 
   mainWindow.webContents.setWindowOpenHandler(details => {
@@ -86,13 +126,8 @@ app.whenReady().then(async () => {
   createWindow();
 });
 
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
+  app.quit();
 });
 
 ipcMain.handle('quit', () => {
@@ -119,12 +154,15 @@ ipcMain.on('reload', event => {
   window?.reload();
 });
 
-ipcMain.on('openDevTools', event => {
+ipcMain.on('open-dev-tools', event => {
   const window = BrowserWindow.fromWebContents(event.sender) ?? undefined;
-  window?.webContents.openDevTools();
+  window?.webContents.openDevTools({
+    mode: 'bottom',
+    activate: true,
+  });
 });
 
-ipcMain.on('closeDevTools', event => {
+ipcMain.on('close-dev-tools', event => {
   const window = BrowserWindow.fromWebContents(event.sender) ?? undefined;
   window?.webContents.closeDevTools();
 });
