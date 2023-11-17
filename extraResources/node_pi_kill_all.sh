@@ -10,11 +10,11 @@ echo ">>------------ KILL ALL START ------------<<"
 
 ## ---- kill node open processes ----
 
-getCleanScriptChunk() {
-  echo -e $1 | sed -e 's/^[[:space:]]*//' | tr -d '"' | tr -d "'"
+getSubScriptClean() {
+  echo "$1" | sed -e "s/^[[:space:]]*//" | tr -d '"' | tr -d "'"
 }
 
-getNodeScriptChunkPids() {
+getSubScriptPIDs() {
   if [[ "$(uname)" == "Darwin" ]]; then
     ps -A | grep -E -i "node.*$1" | grep -v "grep" | grep -v "&&" | awk "{ print \$1 }"
   else
@@ -22,29 +22,19 @@ getNodeScriptChunkPids() {
   fi
 }
 
-getNodeScriptPids() {
-  local script=$1
-  echo -e "$script" | tr '&&' '\n' | while read -r scriptChunk; do
-    if [[ -n "$scriptChunk" ]]; then
-      cleanScriptChunk=$(getCleanScriptChunk "$scriptChunk")
-      pids=$(getNodeScriptChunkPids "$cleanScriptChunk")
-      if [[ -n "$pids" ]]; then
-        echo -e "$pids"
-      fi
-    fi
-  done
-}
-
 for script in "$@"; do
-  nodePids=$(getNodeScriptPids "$script")
-  if [[ -n "$nodePids" ]]; then
-    echo ">> NodeJS script PIDs ---- $script"
-    for pid in $nodePids; do
-      echo "kill PID: $pid"
-      kill -SIGKILL $pid &>/dev/null
-      kill $pid &>/dev/null
-    done
-  fi
+  while IFS= read -r subScript; do
+    cleanSubScript=$(getSubScriptClean "$subScript")
+    nodePids=$(getSubScriptPIDs "$cleanSubScript")
+    if [[ -n "$nodePids" ]]; then
+      echo ">> NodeJS script PIDs ---- $script"
+      for pid in $nodePids; do
+        echo "kill PID: $pid"
+        kill -SIGKILL $pid &>/dev/null
+        kill $pid &>/dev/null
+      done
+    fi
+  done <<<"$(echo "$script" | sed -e "s/&&/\n/g")"
 done
 
 ## ---- kill bash open processes ----
