@@ -224,7 +224,6 @@ const executeCommandAsyncMode = ({
       }
 
       resolveAfterFirstOutputId = setTimeout(() => {
-        resolve(outputs);
         enqueueConsoleOutput(
           {
             type: ExecuteCommandOutputType.STDOUT,
@@ -233,6 +232,7 @@ const executeCommandAsyncMode = ({
           },
           isAborted
         );
+        resolve(outputs);
       }, resolveTimeoutAfterFirstOutput);
     };
 
