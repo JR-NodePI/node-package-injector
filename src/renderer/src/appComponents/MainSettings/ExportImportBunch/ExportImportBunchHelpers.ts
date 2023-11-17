@@ -1,5 +1,5 @@
-import { packageBunchTemplate } from '@renderer/models/GlobalDataConstants';
 import { parseModel } from '@renderer/helpers/parseHelpers';
+import { packageBunchTemplate } from '@renderer/models/GlobalDataConstants';
 import type PackageBunch from '@renderer/models/PackageBunch';
 
 export function downloadTextFile(text, name): void {

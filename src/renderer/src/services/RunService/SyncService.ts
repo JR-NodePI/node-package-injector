@@ -74,7 +74,6 @@ export default class SyncService {
       traceOnTime: traceOnTime,
       skipWSL: true,
       abortController: syncAbortController,
-      resolveTimeoutAfterFirstOutput,
     });
     if (viteSyncResponse.error) {
       return [

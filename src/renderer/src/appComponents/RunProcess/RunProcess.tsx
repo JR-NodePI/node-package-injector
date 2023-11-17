@@ -5,7 +5,7 @@ import RunService, {
 } from '@renderer/services/RunService/RunService';
 import {
   Button,
-  IconPause,
+  IconClose,
   IconPlay,
   Spinner,
   ToasterListContext,
@@ -62,11 +62,18 @@ export default function RunProcess(): JSX.Element {
     (output: ProcessServiceResponse[]): void => {
       const hasErrors = RunService.hasError(output);
       output.forEach(({ title, content, error }, index) => {
-        const type = error
+        const isAbort = `${title ?? ''}${content ?? ''}${error ?? ''}`
+          .toLowerCase()
+          .includes('aborted');
+
+        const type = isAbort
+          ? ToasterType.WARNING
+          : error
           ? ToasterType.ERROR
           : hasErrors
           ? ToasterType.INFO
           : ToasterType.SUCCESS;
+
         const isError = type === ToasterType.ERROR;
         const duration = isError ? 15000 : 3000;
         addToaster({
@@ -85,11 +92,7 @@ export default function RunProcess(): JSX.Element {
   );
 
   useDeepCompareEffect(() => {
-    const handleAbort = (): void => {
-      console.log('>>>----->> handleAbort');
-    };
-
-    const handleAbortSync = async (): Promise<void> => {
+    const handleAbort = async (): Promise<void> => {
       const output = await RunService.resetAll({
         targetPackage: activeTargetPackage,
         dependencies: activeDependencies,
@@ -113,7 +116,6 @@ export default function RunProcess(): JSX.Element {
       }
 
       abortController.signal.addEventListener('abort', handleAbort);
-      syncAbortController.signal.addEventListener('abort', handleAbortSync);
 
       setStatus(STATUSES.RUNNING);
 
@@ -130,24 +132,24 @@ export default function RunProcess(): JSX.Element {
         onDependenciesBuildStart: () => {
           setStatus(STATUSES.BUILDING_DEPENDENCIES);
         },
-        onAfterBuildStart: () => {
-          setStatus(STATUSES.AFTER_BUILD);
-        },
         onDependenciesSyncStart: () => {
           setStatus(STATUSES.SYNCING);
+        },
+        onAfterBuildStart: () => {
+          setStatus(STATUSES.AFTER_BUILD);
         },
       });
 
       displayProcessMessages(output);
       setAbortController(null);
       setSyncAbortController(null);
+      setStatus(STATUSES.IDLE);
     };
 
     run();
 
     return (): void => {
       abortController?.signal.removeEventListener('abort', handleAbort);
-      abortController?.signal.removeEventListener('abort', handleAbortSync);
     };
   }, [
     abortController,
@@ -167,29 +169,22 @@ export default function RunProcess(): JSX.Element {
   const handleStopClick = (): void => {
     abortController?.abort();
     syncAbortController?.abort();
-    setStatus(STATUSES.IDLE);
     setAbortController(null);
-    setSyncAbortController(null);
-  };
-
-  const handleStopSyncClick = (): void => {
-    syncAbortController?.abort();
-    setStatus(STATUSES.AFTER_BUILD);
     setSyncAbortController(null);
   };
 
   const processMsg = status.label;
   const isBuilding = (
     [
-      STATUSES.AFTER_BUILD.value,
       STATUSES.BUILDING_DEPENDENCIES.value,
       STATUSES.RUNNING.value,
       STATUSES.BUILDING.value,
     ] as string[]
   ).includes(status.value);
+  const isAfterBuilding = status.value === STATUSES.AFTER_BUILD.value;
   const isSyncing = status.value === STATUSES.SYNCING.value;
 
-  const isRunning = isBuilding || isSyncing;
+  const isRunning = isAfterBuilding || isBuilding || isSyncing;
 
   const isRunEnabled =
     activeTargetPackage?.isValidPackage &&
@@ -220,11 +215,11 @@ export default function RunProcess(): JSX.Element {
         />
       ) : (
         <Button
-          Icon={IconPause}
+          Icon={IconClose}
           className={c(styles.stop_button)}
-          label="Pause"
+          label="Stop"
           type={isSyncing ? 'tertiary' : 'secondary'}
-          onClick={isSyncing ? handleStopSyncClick : handleStopClick}
+          onClick={handleStopClick}
         />
       )}
     </>

@@ -1,3 +1,4 @@
+import useGlobalData from '@renderer/appComponents/GlobalDataProvider/useGlobalData';
 import PathService from '@renderer/services/PathService';
 import { c } from 'fratch-ui/helpers';
 
@@ -18,6 +19,8 @@ export default function DirectoryPathLabel({
   isDirBackEnabled,
   pathDirectories,
 }: PackageSelectorLabelProps): JSX.Element {
+  const { homePath } = useGlobalData();
+
   const rootPath =
     pathDirectories.length > 1
       ? PathService.getPath(pathDirectories.slice(0, -1))
@@ -26,10 +29,12 @@ export default function DirectoryPathLabel({
   const lastDirectory =
     pathDirectories.length > 1 ? pathDirectories.slice(-1)[0] : '';
 
+  const shortRootPath = rootPath.replace(homePath, '~');
+
   return (
     <>
       <label className={c(styles.label)} htmlFor={id}>
-        {rootPath}
+        {PathService.normalizeWin32Path(shortRootPath)}
         {isDirBackEnabled ? (
           <b className={c(styles.label_last_directory)}>{lastDirectory}</b>
         ) : (

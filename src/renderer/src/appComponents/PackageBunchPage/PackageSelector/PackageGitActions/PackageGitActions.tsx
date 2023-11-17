@@ -35,7 +35,9 @@ export default function PackageGitActions({
 
     (async (): Promise<void> => {
       if (isValidDirectory(cwd)) {
-        setGitBranch(await GitService.getCurrentBranch(cwd, abortController));
+        setGitBranch(
+          await GitService.getCurrentBranch({ cwd, abortController })
+        );
       }
     })();
 

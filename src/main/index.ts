@@ -64,8 +64,8 @@ function createWindow(): void {
         ...data.dependenciesCWDs.map(cwd => `"${cwd}"`),
       ],
       cwd: data.cwd,
-      syncMode: true,
       addIcons: false,
+      syncMode: true,
       skipWSL: true,
     });
 
@@ -77,8 +77,8 @@ function createWindow(): void {
         ...data.allScriptValues.map(cwd => `"${cwd}"`),
       ],
       cwd: data.cwd,
-      syncMode: true,
       addIcons: false,
+      syncMode: true,
       skipWSL: true,
     });
 

@@ -1,4 +1,5 @@
 #!/bin/bash
+
 . "$(dirname "$0")/helpers/global.sh"
 
 EXTRA_RESOURCES_DIR=$(dirname "$0")

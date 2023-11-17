@@ -7,13 +7,14 @@ const useExcludedDirectories = (): string[] => {
   const activeTargetPackage = activeBunch?.targetPackage;
   const activeDependencies = activeBunch?.dependencies;
 
-  const dependenciesDirectories =
-    activeDependencies?.map(({ cwd }) => cwd ?? '').filter(Boolean) ?? [];
+  const dependenciesDirectories = (activeDependencies ?? []).map(
+    ({ cwd, isValidPackage }) => (isValidPackage ? cwd : '') ?? ''
+  );
 
   const excludedDirectories = [
-    activeTargetPackage?.cwd ?? '',
+    (activeTargetPackage?.isValidPackage ? activeTargetPackage?.cwd : '') ?? '',
     ...dependenciesDirectories,
-  ];
+  ].filter(Boolean);
 
   return excludedDirectories;
 };
