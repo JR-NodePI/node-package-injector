@@ -12,6 +12,7 @@ import {
 } from '../../models/GlobalDataConstants';
 import GlobalDataContext, { GlobalDataProps } from './GlobalDataContext';
 import useLoadTerminal from './useCheckInitials';
+import useLoadHomePath from './useLoadHomePath';
 import usePersistedState from './usePersistedState';
 
 export default function GlobalDataProvider({
@@ -34,6 +35,8 @@ export default function GlobalDataProvider({
 
   const [isWSLActive, setIsWSLActive, isWSLActiveLoading] =
     usePersistedState<boolean>('isWSLActive', false);
+
+  const { homePath, isHomePathLoading } = useLoadHomePath({ isWSLActive });
 
   const [packageBunches, setPackageBunches, packageBunchesLoading] =
     usePersistedState<PackageBunch[]>(
@@ -87,6 +90,7 @@ export default function GlobalDataProvider({
       isAdditionalPackageScriptsLoading ||
       isGlobalLoading ||
       isWSLActiveLoading ||
+      isHomePathLoading ||
       packageBunchesLoading;
 
     return {
@@ -94,6 +98,7 @@ export default function GlobalDataProvider({
       activePackageBunch,
       activeTargetPackage,
       additionalPackageScripts,
+      homePath,
       isValidTerminal,
       isWSLActive,
       loading,
@@ -108,8 +113,10 @@ export default function GlobalDataProvider({
     };
   }, [
     additionalPackageScripts,
+    homePath,
     isAdditionalPackageScriptsLoading,
     isGlobalLoading,
+    isHomePathLoading,
     isValidTerminal,
     isWSLActive,
     isWSLActiveLoading,
