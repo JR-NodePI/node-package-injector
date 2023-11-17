@@ -10,6 +10,7 @@ export type GlobalDataProps = {
   activePackageBunch: PackageBunch;
   activeTargetPackage: NodePackage;
   additionalPackageScripts: PackageScript[];
+  homePath: string;
   isValidTerminal: boolean;
   isWSLActive?: boolean;
   loading?: boolean;
@@ -26,13 +27,14 @@ export type GlobalDataProps = {
 };
 const GlobalDataContext = React.createContext<GlobalDataProps>({
   activeDependencies: [],
-  additionalPackageScripts: [],
-  activeTargetPackage: new NodePackage(),
   activePackageBunch: new PackageBunch(),
+  activeTargetPackage: new NodePackage(),
+  additionalPackageScripts: [],
+  homePath: '',
   isValidTerminal: false,
   loading: true,
-  packageBunches: [],
   nodeData: {},
+  packageBunches: [],
 });
 
 export default GlobalDataContext;
