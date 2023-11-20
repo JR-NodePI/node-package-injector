@@ -46,9 +46,7 @@ export default class SyncService {
     // Add dependencies to .gitignore
     const gitignoreResponse = await GitService.gitignoreAdd(
       cwd,
-      dependencyNames.map(
-        packageName => `${NODE_PI_FILE_PREFIX}${packageName}`
-      ),
+      [`${NODE_PI_FILE_PREFIX}/`],
       syncAbortController
     );
     if (gitignoreResponse.error) {
@@ -127,17 +125,14 @@ export default class SyncService {
     resolveTimeoutAfterFirstOutput: number;
   }): Promise<{ terminalResponse: TerminalResponse; packageName: string }> {
     const targetPackageDir = PathService.normalizeWin32Path(
-      window.api.path.join(
-        await WSLService.cleanSWLRoot(cwd, cwd, traceOnTime),
-        `${NODE_PI_FILE_PREFIX}${dependency.packageName}`
-      )
+      window.api.path.join(await WSLService.cleanSWLRoot(cwd, cwd, traceOnTime))
     );
 
     if (!dependency.srcSyncPath) {
       throw new Error(`${dependency.packageName} has no srcSyncPath`);
     }
 
-    const srcPackageDir = PathService.normalizeWin32Path(
+    const srcDependencyDir = PathService.normalizeWin32Path(
       await WSLService.cleanSWLRoot(
         cwd,
         dependency.srcSyncPath ?? '',
@@ -149,8 +144,10 @@ export default class SyncService {
       command: 'bash',
       args: [
         PathService.getExtraResourcesScriptPath('node_pi_rsync_watch.sh'),
-        `"${srcPackageDir}"`,
+        `"${NODE_PI_FILE_PREFIX}"`,
         `"${targetPackageDir}"`,
+        `"${srcDependencyDir}"`,
+        `"${dependency.packageName}"`,
       ],
       cwd,
       traceOnTime: traceOnTime,
