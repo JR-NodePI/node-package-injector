@@ -139,8 +139,6 @@ export default class BuildService {
     );
     const hasScripts = Boolean(filledScripts?.length);
 
-    let handleOnAbort: (() => Promise<void>) | null = null;
-
     if (hasScripts) {
       // eslint-disable-next-line no-console
       console.log(`>>>----->> ${runScriptsTitle}: `, nodePackage.packageName);
@@ -159,11 +157,6 @@ export default class BuildService {
           },
         ];
       }
-
-      handleOnAbort = async (): Promise<void> => {
-        await NodeService.restoreFakePackageVersion(nodePackage.cwd ?? '');
-      };
-      abortController?.signal.addEventListener('abort', handleOnAbort);
     }
 
     const scriptsPromises = filledScripts.map(
@@ -179,27 +172,6 @@ export default class BuildService {
 
     const scriptsResponses =
       await promiseAllSequentially<ProcessServiceResponse>(scriptsPromises);
-
-    let outputRestoreVersion: TerminalResponse | null = null;
-
-    if (hasScripts && !abortController?.signal.aborted) {
-      // Restore fake package version
-      outputRestoreVersion = await NodeService.restoreFakePackageVersion(
-        cwd,
-        abortController
-      );
-    }
-
-    if (outputRestoreVersion?.error) {
-      scriptsResponses.push({
-        ...outputRestoreVersion,
-        title: `Restoring package.json: "${packageName}"`,
-      });
-    }
-
-    if (handleOnAbort != null) {
-      abortController?.signal.removeEventListener('abort', handleOnAbort);
-    }
 
     return scriptsResponses;
   }

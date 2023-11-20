@@ -239,22 +239,4 @@ export default class NodeService {
       abortController,
     });
   }
-
-  public static async restoreFakePackageVersion(
-    cwd: string,
-    abortController?: AbortController
-  ): Promise<TerminalResponse> {
-    return await TerminalService.executeCommand({
-      command: 'bash',
-      args: [
-        PathService.getExtraResourcesScriptPath(
-          'node_pi_fake_pkg_version_restore.sh'
-        ),
-        `"${NODE_PI_FILE_PREFIX}"`,
-      ],
-      cwd,
-      traceOnTime: true,
-      abortController,
-    });
-  }
 }

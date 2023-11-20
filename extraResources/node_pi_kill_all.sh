@@ -39,7 +39,7 @@ done
 
 ## ---- kill bash open processes ----
 
-NODE_PI_PIDS_INC="(node-package-injector|NodePI).*$NODE_PI_FILE_PREFIX"
+NODE_PI_PIDS_INC="(node-package-injector|NodePI|vite|craco).*$NODE_PI_FILE_PREFIX"
 NODE_PI_PIDS_EXC="grep|node_pi_reset_all|node_pi_kill_all"
 
 if [[ "$(uname)" == "Darwin" ]]; then
