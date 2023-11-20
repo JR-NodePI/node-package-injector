@@ -1,10 +1,3 @@
-- Build process
+TODO: run "kill all" in the background as a watchdog -> when the app PID die -> kill all
 
-  - Calculate the order of build dependencies depending on the order of the package.json.
-  - Build the dependencies in order.
-
-- Sync process
-
-  - Try to use npm workspaces to sync the dependencies.
-
----
+TODO: Sort alphabetically the packages scripts in the script selector component
