@@ -1,8 +1,13 @@
-import { electronApp, is, optimizer } from '@electron-toolkit/utils';
-import { app, BrowserWindow, ipcMain, Menu, shell } from 'electron';
-import { join } from 'path';
+import packageJson from '../../package.json';
 
-import TerminalService from '../preload/Terminal/TerminalService';
+import { electronApp, is, optimizer } from '@electron-toolkit/utils';
+import { fork } from 'child_process';
+import { app, BrowserWindow, ipcMain, Menu, shell } from 'electron';
+import os from 'os';
+import path from 'path';
+
+import PathService from '../preload/Path/PathService';
+import JsonFile from './JsonFile';
 import { createAppMenu, getMenuItemsTemplate } from './menu';
 import {
   INI_WINDOW_HEIGHT,
@@ -26,9 +31,9 @@ function createWindow(): void {
     frame: process.platform === 'linux',
     autoHideMenuBar: process.platform === 'darwin',
     trafficLightPosition: { x: 10, y: 6 },
-    icon: join(__dirname, '../renderer/icons/png/512x512.png'),
+    icon: path.join(__dirname, '../renderer/icons/png/512x512.png'),
     webPreferences: {
-      preload: join(__dirname, '../preload/index.js'),
+      preload: path.join(__dirname, '../preload/index.js'),
       contextIsolation: false,
       sandbox: false,
     },
@@ -54,33 +59,13 @@ function createWindow(): void {
     }
   });
 
-  ipcMain.on('reset-all-before-close', async (_event, data) => {
-    await TerminalService.executeCommand({
-      command: 'bash',
-      args: [
-        data.resetAllCommand,
-        `"${data.NODE_PI_FILE_PREFIX}"`,
-        `"${data.targetPackageCwd}"`,
-        ...data.dependenciesCWDs.map(cwd => `"${cwd}"`),
-      ],
-      cwd: data.cwd,
-      addIcons: false,
-      syncMode: true,
-      skipWSL: true,
-    });
-
-    await TerminalService.executeCommand({
-      command: 'bash',
-      args: [
-        data.killAllCommand,
-        `"${data.NODE_PI_FILE_PREFIX}"`,
-        ...data.allScriptValues.map(cwd => `"${cwd}"`),
-      ],
-      cwd: data.cwd,
-      addIcons: false,
-      syncMode: true,
-      skipWSL: true,
-    });
+  ipcMain.on('kill-all-defer-and-quit', (_event, data) => {
+    fork(PathService.getExtraResourcesScriptPath('node_pi_kill_all_defer.js'), [
+      data.NODE_PI_KILL_ALL_DEFER_COMMAND,
+      data.NODE_PI_FILE_PREFIX,
+      data.TARGET_PACKAGE_CWD,
+      ...((data.DEPENDENCIES_CWD_S as string[]) ?? []).map(depCwd => depCwd),
+    ]);
 
     if (!isReadyToClose) {
       isReadyToClose = true;
@@ -98,7 +83,7 @@ function createWindow(): void {
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL']);
   } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
+    mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
   }
 }
 

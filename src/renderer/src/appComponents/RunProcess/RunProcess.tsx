@@ -93,15 +93,7 @@ export default function RunProcess(): JSX.Element {
 
   useDeepCompareEffect(() => {
     const handleAbort = async (): Promise<void> => {
-      const output = await RunService.resetAll({
-        targetPackage: activeTargetPackage,
-        dependencies: activeDependencies,
-        abortController: new AbortController(),
-      });
-
-      if (RunService.hasError(output)) {
-        displayProcessMessages(output);
-      }
+      await RunService.resetAllDefer();
     };
 
     const run = async (): Promise<void> => {
