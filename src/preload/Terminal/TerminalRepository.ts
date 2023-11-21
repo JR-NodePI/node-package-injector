@@ -19,6 +19,9 @@ type TraceConfig = ExecuteCommandOutput & {
   logFn?: typeof console.log | typeof console.warn;
 };
 
+const MINIMUM_TIMEOUT = 100;
+const EXIT_DELAY = 1000;
+
 const cleanOutput = (output: string): string =>
   output
     .replace(/[^a-z0-9-\n\s\r\t{}()"',:_\\/\\*+.|><=@áéíóúÁÉÍÓÚñçü]/gi, '')
@@ -117,7 +120,6 @@ const displayLogs = ({
 const containsTerminalError = (output: string): boolean =>
   STDERR_OUTPUT_DETECT_ERROR_PATTERNS.some(regExp => regExp.test(output));
 
-const exitDelay = 1000;
 let exitTimeoutId: NodeJS.Timeout;
 
 const executeCommandSyncMode = ({
@@ -186,6 +188,7 @@ const executeCommandAsyncMode = ({
   args,
   command,
   ignoreStderrErrors,
+  resolveTimeout,
   resolveTimeoutAfterFirstOutput,
 }: executeCommandAsyncModeOptions): Promise<ExecuteCommandOutput[]> => {
   const cmd = spawn(command, args, childProcessParams);
@@ -214,7 +217,23 @@ const executeCommandAsyncMode = ({
   );
 
   return new Promise((resolve, reject) => {
+    const resolveByTimeout = (): void => {
+      enqueueConsoleOutput(
+        {
+          type: ExecuteCommandOutputType.STDOUT,
+          pid: cmd.pid,
+          data: 'Resolve on timeout, still running in background',
+        },
+        isAborted
+      );
+      resolve(outputs);
+    };
+
     const resolveAfterFirstOutput = (): void => {
+      if (resolveTimeout) {
+        return;
+      }
+
       if (!resolveTimeoutAfterFirstOutput) {
         return;
       }
@@ -223,18 +242,20 @@ const executeCommandAsyncMode = ({
         return;
       }
 
-      resolveAfterFirstOutputId = setTimeout(() => {
-        enqueueConsoleOutput(
-          {
-            type: ExecuteCommandOutputType.STDOUT,
-            pid: cmd.pid,
-            data: 'Resolve on timeout, still running in background',
-          },
-          isAborted
-        );
-        resolve(outputs);
-      }, resolveTimeoutAfterFirstOutput);
+      resolveAfterFirstOutputId = setTimeout(
+        resolveByTimeout,
+        resolveTimeoutAfterFirstOutput
+      );
     };
+
+    cmd.addListener('spawn', () => {
+      if (resolveTimeout) {
+        setTimeout(
+          resolveByTimeout,
+          resolveTimeout > MINIMUM_TIMEOUT ? resolveTimeout : MINIMUM_TIMEOUT
+        );
+      }
+    });
 
     cmd.stdout.on('data', data => {
       const message = data instanceof Buffer ? data.toString() : data;
@@ -331,7 +352,7 @@ const executeCommandAsyncMode = ({
           },
           isAborted
         );
-      }, exitDelay);
+      }, EXIT_DELAY);
     });
   });
 };
@@ -344,6 +365,7 @@ export default class TerminalRepository {
     traceOnTime,
     abortController,
     ignoreStderrErrors,
+    resolveTimeout,
     resolveTimeoutAfterFirstOutput,
     syncMode,
     addIcons = true,
@@ -416,6 +438,7 @@ export default class TerminalRepository {
       args,
       childProcessParams,
       ignoreStderrErrors,
+      resolveTimeout,
       resolveTimeoutAfterFirstOutput,
     });
   }

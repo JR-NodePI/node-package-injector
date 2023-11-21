@@ -2,9 +2,7 @@ import { promiseAllSequentially } from '@renderer/helpers/promisesHelpers';
 import DependencyPackage from '@renderer/models/DependencyPackage';
 import NodePackage from '@renderer/models/NodePackage';
 import PackageScript from '@renderer/models/PackageScript';
-import TerminalService, {
-  type TerminalResponse,
-} from '@renderer/services/TerminalService';
+import TerminalService from '@renderer/services/TerminalService';
 
 import NodeService from '../NodeService/NodeService';
 import { RelatedDependencyProjection } from '../NodeService/NodeServiceTypes';

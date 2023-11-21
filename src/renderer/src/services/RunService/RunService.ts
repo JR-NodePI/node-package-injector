@@ -1,8 +1,8 @@
 import { NODE_PI_FILE_PREFIX } from '@renderer/constants';
-import DependencyPackage from '@renderer/models/DependencyPackage';
-import NodePackage from '@renderer/models/NodePackage';
+import type PackageBunch from '@renderer/models/PackageBunch';
 
 import PathService from '../PathService';
+import PersistService from '../PersistService';
 import type { TerminalResponse } from '../TerminalService';
 import TerminalService from '../TerminalService';
 import WSLService from '../WSLService';
@@ -13,80 +13,53 @@ export default class RunService {
     return responses.some(response => Boolean(response.error));
   }
 
-  public static async resetAll({
-    targetPackage,
-    dependencies,
-    abortController,
-  }: {
-    targetPackage: NodePackage;
-    dependencies: DependencyPackage[];
-    abortController?: AbortController;
-  }): Promise<ProcessServiceResponse[]> {
-    const outputTitle = 'Reset all';
-    if (abortController?.signal.aborted) {
-      return [
-        {
-          error: 'The process was aborted',
-          title: outputTitle,
-        },
-      ];
+  public static async resetAllDefer(mustQuit = false): Promise<void> {
+    const packageBunches = await PersistService.getItem<PackageBunch[]>(
+      'packageBunches'
+    );
+    const packageBunch = packageBunches.find(bunch => bunch.active);
+
+    if (!packageBunch) {
+      return;
     }
 
-    const cwd = targetPackage.cwd ?? '';
-
-    const targetPackageCwd = await WSLService.cleanSWLRoot(cwd, cwd);
-
-    const dependenciesCWDs = await Promise.all(
-      dependencies.map(
-        async dep =>
-          await WSLService.cleanSWLRoot(dep.cwd ?? '', `"${dep.cwd ?? ''}"`)
-      )
+    const TARGET_PACKAGE_CWD = await WSLService.cleanSWLRoot(
+      packageBunch.targetPackage.cwd ?? '',
+      packageBunch.targetPackage.cwd ?? ''
     );
 
-    const resetResponse = await TerminalService.executeCommand({
-      command: 'bash',
-      args: [
-        PathService.getExtraResourcesScriptPath('node_pi_reset_all.sh'),
-        `"${NODE_PI_FILE_PREFIX}"`,
-        `"${targetPackageCwd}"`,
-        ...dependenciesCWDs,
-      ],
-      cwd,
-      abortController,
-      skipWSL: true,
-    });
-
-    const allScriptValues = [
-      ...(targetPackage.scripts ?? []).map(({ scriptValue }) =>
-        scriptValue ? `"${scriptValue}"` : ``
-      ),
-      ...(targetPackage.afterBuildScripts ?? []).map(({ scriptValue }) =>
-        scriptValue ? `"${scriptValue}"` : ``
-      ),
-      ...dependencies
-        .map(({ scripts }) =>
-          (scripts ?? []).map(({ scriptValue }) =>
-            scriptValue ? `"${scriptValue}"` : ``
-          )
+    const DEPENDENCIES_CWD_S = await Promise.all(
+      packageBunch.dependencies
+        .map(
+          async dep =>
+            await WSLService.cleanSWLRoot(dep.cwd ?? '', dep.cwd ?? '')
         )
-        .flat(),
-    ].filter(Boolean);
+        .filter(Boolean)
+    );
 
-    const killResponse = await TerminalService.executeCommand({
-      command: 'bash',
-      args: [
-        PathService.getExtraResourcesScriptPath('node_pi_kill_all.sh'),
-        `"${NODE_PI_FILE_PREFIX}"`,
-        ...allScriptValues,
-      ],
-      cwd,
-      abortController,
-      skipWSL: true,
-    });
+    const NODE_PI_KILL_ALL_DEFER_COMMAND =
+      PathService.getExtraResourcesScriptPath('node_pi_kill_all_defer.sh');
 
-    return [
-      { ...resetResponse, title: outputTitle },
-      { ...killResponse, title: outputTitle },
-    ];
+    if (mustQuit) {
+      window.electron.ipcRenderer.send('kill-all-defer-and-quit', {
+        NODE_PI_KILL_ALL_DEFER_COMMAND,
+        NODE_PI_FILE_PREFIX,
+        TARGET_PACKAGE_CWD,
+        DEPENDENCIES_CWD_S,
+      });
+    } else {
+      await TerminalService.executeCommand({
+        command: 'bash',
+        args: [
+          NODE_PI_KILL_ALL_DEFER_COMMAND,
+          NODE_PI_FILE_PREFIX,
+          TARGET_PACKAGE_CWD,
+          ...DEPENDENCIES_CWD_S,
+        ],
+        cwd: TARGET_PACKAGE_CWD,
+        skipWSL: true,
+        traceOnTime: true,
+      });
+    }
   }
 }

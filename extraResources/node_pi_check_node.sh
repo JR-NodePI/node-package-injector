@@ -3,6 +3,7 @@
 . "$(dirname "$0")/helpers/global.sh"
 . "$(dirname "$0")/helpers/check_command.sh"
 
+check_command "node"
 check_command "rsync"
 check_command "shasum"
 check_command "watch"

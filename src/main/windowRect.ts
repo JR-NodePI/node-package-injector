@@ -1,7 +1,6 @@
 import { type BrowserWindow } from 'electron';
-import fs from 'fs';
 import os from 'os';
-import { join } from 'path';
+import path from 'path';
 
 type InitWindowBounds = {
   width: number;
@@ -11,24 +10,21 @@ type InitWindowBounds = {
 };
 import packageJson from '../../package.json';
 
-const INIT_STATUS_DIR = join(os.tmpdir(), `${packageJson.name}`);
-const INIT_STATUS_FILE = 'window_rect.json';
-const INIT_STATUS_PATH = join(INIT_STATUS_DIR, '/', INIT_STATUS_FILE);
+import JsonFile from './JsonFile';
+
+const INIT_STATUS_PATH = path.join(
+  os.tmpdir(),
+  `${packageJson.name}`,
+  'window_rect.json'
+);
 
 export const INI_WINDOW_WIDTH = 800;
 export const INI_WINDOW_HEIGHT = 600;
 
 export function loadWindowRect(): InitWindowBounds {
-  fs.mkdirSync(INIT_STATUS_DIR, { recursive: true });
-  const initStatus = fs.readFileSync(INIT_STATUS_PATH, {
-    encoding: 'utf8',
-    flag: 'a+',
-  });
-
+  const initStatusJson = JsonFile.read(INIT_STATUS_PATH);
+  const windowBounds = initStatusJson?.bounds as InitWindowBounds;
   try {
-    const initStatusJson = JSON.parse(initStatus);
-    const windowBounds = initStatusJson?.bounds;
-
     if (!windowBounds) {
       throw new Error('initWindowBounds is null');
     } else if (
@@ -63,6 +59,6 @@ export function saveWindowRect(window: BrowserWindow): void {
     initStatusJson.bounds.y >= 0;
 
   if (areValidBounds) {
-    fs.writeFileSync(INIT_STATUS_PATH, JSON.stringify(initStatusJson));
+    JsonFile.write(INIT_STATUS_PATH, initStatusJson);
   }
 }
