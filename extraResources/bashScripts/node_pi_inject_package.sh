@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. "$(dirname "$0")/helpers/global.sh"
+. "$(dirname "$0")/.nodepirc"
 
 DEPENDENCY_NAME=$1
 DEPENDENCY_PACKAGE_PATH=$2

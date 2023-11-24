@@ -11,6 +11,6 @@ window.electron.ipcRenderer.on('reset', () => {
   window.electron.ipcRenderer.send('reload');
 });
 
-window.electron.ipcRenderer.on('before-close', async (): Promise<void> => {
-  RunService.resetAllDefer(true);
+window.electron.ipcRenderer.on('before-close', (): void => {
+  RunService.resetKillAll(true);
 });

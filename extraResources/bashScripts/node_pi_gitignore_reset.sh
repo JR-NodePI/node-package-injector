@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. "$(dirname "$0")/helpers/global.sh"
+. "$(dirname "$0")/.nodepirc"
 
 NODE_PI_GIT_IGNORE_DELIMITER_INI="# >>>------ NodePi sync ------>>>"
 NODE_PI_GIT_IGNORE_DELIMITER_END="# <<<------ NodePi sync ------<<<"

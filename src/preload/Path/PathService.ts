@@ -78,7 +78,7 @@ export default class PathService {
 
   public static getExtraResourcesScriptPath(scriptFileName: string): string {
     return PathService.normalizeWin32Path(
-      path.join(extraResourcesPath, '/', scriptFileName)
+      path.join(extraResourcesPath, 'bashScripts', scriptFileName)
     );
   }
 

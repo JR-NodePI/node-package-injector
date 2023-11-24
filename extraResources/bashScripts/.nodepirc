@@ -1,0 +1,19 @@
+#!/bin/bash
+
+set -e
+
+export TERM="xterm-256color"
+
+. "$(dirname "$0")/helpers/check_command.sh"
+
+nodeCommand=$(get_command "node")
+
+if [[ -z "${nodeCommand}" && -d "$HOME/.nvm" ]]; then
+  export NVM_DIR="$HOME/.nvm"
+  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
+fi
+
+require_command "node"
+require_command "rsync"
+require_command "shasum"
+require_command "watch"

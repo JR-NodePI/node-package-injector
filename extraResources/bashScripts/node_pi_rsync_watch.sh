@@ -1,7 +1,6 @@
 #!/bin/bash
 
-. "$(dirname "$0")/helpers/global.sh"
-. "$(dirname "$0")/helpers/check_command.sh"
+. "$(dirname "$0")/.nodepirc"
 
 NODE_PI_FILE_PREFIX=$1
 TARGET_PACKAGE_DIR=$2
@@ -30,9 +29,9 @@ echo "TARGET_SYNC_DEPENDENCY_DIR: $TARGET_SYNC_DEPENDENCY_DIR"
 
 mkdir -p "$TARGET_SYNC_DEPENDENCY_DIR"
 
-check_command "rsync"
-check_command "watch"
-check_command "shasum"
+require_command "rsync"
+require_command "watch"
+require_command "shasum"
 
 sync_dir() {
   $(get_command "rsync") -avuh --exclude="node_modules" --exclude=".git" --delete "$SRC_DEPENDENCY_DIR" "$TARGET_SYNC_DEPENDENCY_DIR"
