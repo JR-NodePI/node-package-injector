@@ -14,7 +14,7 @@ get_command() {
   fi
 }
 
-check_command() {
+require_command() {
   local commandName=$1
 
   local command=$(get_command "${commandName}")

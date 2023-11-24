@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. "$(dirname "$0")/helpers/global.sh"
+. "$(dirname "$0")/.nodepirc"
 
 CURREMT_PID=$$
 EXTRA_RESOURCES_DIR=$(dirname "$0")
@@ -10,7 +10,7 @@ TARGET_PACKAGE_CWD=$1
 shift
 DEPENDENCIES_CWD_S=("$@")
 
-echo ">>>----->> node_pi_kill_all_defer.sh"
+echo ">>>----->> node_pi_reset_kill_all.sh"
 echo "CURREMT_PID:         $CURREMT_PID"
 echo "EXTRA_RESOURCES_DIR: $EXTRA_RESOURCES_DIR"
 echo "NODE_PI_FILE_PREFIX: $NODE_PI_FILE_PREFIX"
@@ -18,6 +18,7 @@ echo "TARGET_PACKAGE_CWD:  $TARGET_PACKAGE_CWD"
 
 ## ----------------------- reset all -----------------------
 resetAll() {
+  echo ""
   echo ">>------------ RESET ALL START ------------<<"
 
   echo "EXTRA_RESOURCES_DIR:  $EXTRA_RESOURCES_DIR"
@@ -48,7 +49,7 @@ killAll() {
   echo ">>------------- KILL ALL START ------------<<"
 
   local NODE_PI_PIDS_INC="(node-package-injector|NodePI|vite|craco).*$NODE_PI_FILE_PREFIX"
-  local NODE_PI_PIDS_EXC="grep|node_pi_kill_all_defer|$CURREMT_PID"
+  local NODE_PI_PIDS_EXC="grep|node_pi_reset_kill_all|$CURREMT_PID"
 
   if [[ "$(uname)" == "Darwin" ]]; then
     local NODE_PI_PIDS=$(ps -A | grep -E -i $NODE_PI_PIDS_INC | grep -E -i -v $NODE_PI_PIDS_EXC | awk "{ print \$1 }")
@@ -57,7 +58,6 @@ killAll() {
   fi
 
   if [[ -n "$NODE_PI_PIDS" ]]; then
-    echo ">> NodePI direct PIDs ----"
     for pid in $NODE_PI_PIDS; do
       echo "kill PID: $pid"
       kill -SIGKILL $pid &>/dev/null

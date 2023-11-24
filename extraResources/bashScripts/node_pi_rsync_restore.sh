@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. "$(dirname "$0")/helpers/global.sh"
+. "$(dirname "$0")/.nodepirc"
 
 NODE_PI_FILE_PREFIX=$1
 

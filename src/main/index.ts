@@ -1,13 +1,9 @@
-import packageJson from '../../package.json';
-
 import { electronApp, is, optimizer } from '@electron-toolkit/utils';
 import { fork } from 'child_process';
 import { app, BrowserWindow, ipcMain, Menu, shell } from 'electron';
-import os from 'os';
 import path from 'path';
 
-import PathService from '../preload/Path/PathService';
-import JsonFile from './JsonFile';
+import { extraResourcesPath } from '../preload/constants';
 import { createAppMenu, getMenuItemsTemplate } from './menu';
 import {
   INI_WINDOW_HEIGHT,
@@ -59,18 +55,24 @@ function createWindow(): void {
     }
   });
 
-  ipcMain.on('kill-all-defer-and-quit', (_event, data) => {
-    fork(PathService.getExtraResourcesScriptPath('node_pi_kill_all_defer.js'), [
-      data.NODE_PI_KILL_ALL_DEFER_COMMAND,
-      data.NODE_PI_FILE_PREFIX,
-      data.TARGET_PACKAGE_CWD,
-      ...((data.DEPENDENCIES_CWD_S as string[]) ?? []).map(depCwd => depCwd),
-    ]);
+  ipcMain.on('reset-kill-all-quit', (_event, data) => {
+    fork(
+      path.join(
+        extraResourcesPath,
+        'nodeScripts',
+        'node_pi_reset_kill_all_defer.js'
+      ),
+      [
+        data.NODE_PI_RESET_KILL_ALL_BASH_FILE,
+        data.NODE_PI_FILE_PREFIX,
+        data.TARGET_PACKAGE_CWD,
+        ...((data.DEPENDENCIES_CWD_S as string[]) ?? []).map(depCwd => depCwd),
+      ],
+      { detached: true }
+    );
 
-    if (!isReadyToClose) {
-      isReadyToClose = true;
-      app.quit();
-    }
+    isReadyToClose = true;
+    app.quit();
   });
 
   mainWindow.webContents.setWindowOpenHandler(details => {

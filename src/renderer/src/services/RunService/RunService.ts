@@ -13,7 +13,9 @@ export default class RunService {
     return responses.some(response => Boolean(response.error));
   }
 
-  public static async resetAllDefer(mustQuit = false): Promise<void> {
+  public static async resetKillAll(mustQuit = false): Promise<void> {
+    const isWSLActive = await PersistService.getItem<boolean>('isWSLActive');
+
     const packageBunches = await PersistService.getItem<PackageBunch[]>(
       'packageBunches'
     );
@@ -22,6 +24,9 @@ export default class RunService {
     if (!packageBunch) {
       return;
     }
+
+    const traceOnTime = true;
+    const cwd = await PathService.getHomePath(isWSLActive, traceOnTime);
 
     const TARGET_PACKAGE_CWD = await WSLService.cleanSWLRoot(
       packageBunch.targetPackage.cwd ?? '',
@@ -37,12 +42,12 @@ export default class RunService {
         .filter(Boolean)
     );
 
-    const NODE_PI_KILL_ALL_DEFER_COMMAND =
-      PathService.getExtraResourcesScriptPath('node_pi_kill_all_defer.sh');
+    const NODE_PI_RESET_KILL_ALL_BASH_FILE =
+      PathService.getExtraResourcesScriptPath('node_pi_reset_kill_all.sh');
 
     if (mustQuit) {
-      window.electron.ipcRenderer.send('kill-all-defer-and-quit', {
-        NODE_PI_KILL_ALL_DEFER_COMMAND,
+      window.electron.ipcRenderer.send('reset-kill-all-quit', {
+        NODE_PI_RESET_KILL_ALL_BASH_FILE,
         NODE_PI_FILE_PREFIX,
         TARGET_PACKAGE_CWD,
         DEPENDENCIES_CWD_S,
@@ -51,14 +56,14 @@ export default class RunService {
       await TerminalService.executeCommand({
         command: 'bash',
         args: [
-          NODE_PI_KILL_ALL_DEFER_COMMAND,
+          NODE_PI_RESET_KILL_ALL_BASH_FILE,
           NODE_PI_FILE_PREFIX,
           TARGET_PACKAGE_CWD,
           ...DEPENDENCIES_CWD_S,
         ],
-        cwd: TARGET_PACKAGE_CWD,
+        cwd,
         skipWSL: true,
-        traceOnTime: true,
+        traceOnTime,
       });
     }
   }

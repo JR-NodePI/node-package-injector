@@ -1,18 +1,12 @@
 #!/bin/bash
 
-. "$(dirname "$0")/helpers/global.sh"
-. "$(dirname "$0")/helpers/check_command.sh"
-
-check_command "node"
-check_command "rsync"
-check_command "shasum"
-check_command "watch"
+. "$(dirname "$0")/.nodepirc"
 
 get_version() {
   local commandName=$1
-  local commandAlias=$(command -v "${commandName}")
-  if [[ -n "${commandAlias}" ]]; then
-    eval "$commandName --version"
+  local command=$(get_command "${commandName}")
+  if [[ -n "${command}" ]]; then
+    eval "$command --version"
   else
     echo ""
   fi
@@ -23,6 +17,11 @@ NPM_VERSION=$(get_version "npm")
 YARN_VERSION=$(get_version "yarn")
 PNPM_VERSION=$(get_version "pnpm")
 NVM_VERSION=$(get_version "nvm")
+
+if [[ -z "$NODE_VERSION" ]]; then
+  echo "Error: node is not installed"
+  exit 1
+fi
 
 echo "{
   \"cwd\": \"$(pwd)\",
