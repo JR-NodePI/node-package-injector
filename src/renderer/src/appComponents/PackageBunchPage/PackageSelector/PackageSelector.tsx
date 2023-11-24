@@ -8,6 +8,7 @@ import { c } from 'fratch-ui/helpers';
 
 import DirectoryPathLabel from '../DirectoryPathLabel/DirectoryPathLabel';
 import PackageGitActions from './PackageGitActions/PackageGitActions';
+import PackageOpenButtons from './PackageOpenButtons';
 import PackageScripts from './PackageScripts/PackageScripts';
 import { type PackageSelectorProps } from './PackageSelectorProps';
 import { useDirectorySelectOptions } from './useDirectorySelectOptions';
@@ -156,6 +157,9 @@ export default function PackageSelector({
             handleOnClickBack={handleOnClickBack}
             isDirBackEnabled={isDirBackEnabled}
             pathDirectories={pathDirectories}
+            additionalComponent={
+              <PackageOpenButtons nodePackage={nodePackage} />
+            }
           />
         }
         field={
