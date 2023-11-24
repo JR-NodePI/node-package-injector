@@ -1,5 +1,3 @@
-import { useEffect, useState } from 'react';
-
 import LinkButton from '@renderer/components/linkButton/LinkButton';
 import NodePackage from '@renderer/models/NodePackage';
 import TerminalService from '@renderer/services/TerminalService';
@@ -47,23 +45,16 @@ export default function PackageOpenButtons({
 }: {
   nodePackage: NodePackage;
 }): JSX.Element {
-  const [hasVSCode, setHasVSCode] = useState(false);
-
-  useEffect(() => {
-    TerminalService.executeCommand({
-      command: 'command',
-      cwd: nodePackage.cwd,
-      args: ['-v', 'code'],
-    }).then(({ content }) => {
-      setHasVSCode((content ?? '').includes('code'));
-    });
-  });
-
   const handleVSCodeClick = (): void => {
     TerminalService.executeCommand({
-      command: 'code',
+      command: 'bash',
+      args: [
+        window.api.PathService.getExtraResourcesScriptPath(
+          'node_pi_open_vs_code.sh'
+        ),
+      ],
       cwd: nodePackage.cwd,
-      args: ['.'],
+      syncMode: true,
     });
   };
 
@@ -73,8 +64,9 @@ export default function PackageOpenButtons({
     }
     TerminalService.executeCommand({
       command: openCommand.command,
-      cwd: nodePackage.cwd,
       args: openCommand.args,
+      cwd: nodePackage.cwd,
+      syncMode: true,
     });
   };
 
@@ -84,14 +76,13 @@ export default function PackageOpenButtons({
     }
     TerminalService.executeCommand({
       command: openInTerminalCommand.command,
-      cwd: nodePackage.cwd,
       args: openInTerminalCommand.args,
+      cwd: nodePackage.cwd,
+      syncMode: true,
     });
   };
 
-  const areAvailable =
-    nodePackage.isValidPackage &&
-    Boolean(hasVSCode || openCommand || openInTerminalCommand);
+  const areAvailable = nodePackage.isValidPackage;
 
   if (!areAvailable) {
     return <></>;
@@ -101,16 +92,14 @@ export default function PackageOpenButtons({
     <>
       <span>|</span>
 
-      {hasVSCode && (
-        <LinkButton
-          key={'vscode'}
-          title="open in VS Code"
-          className={c(styles.tool_button)}
-          onClick={handleVSCodeClick}
-        >
-          <IconVSCode className={c(styles.tool_button_icon)} />
-        </LinkButton>
-      )}
+      <LinkButton
+        key={'vscode'}
+        title="open in VS Code"
+        className={c(styles.tool_button)}
+        onClick={handleVSCodeClick}
+      >
+        <IconVSCode className={c(styles.tool_button_icon)} />
+      </LinkButton>
 
       {openInTerminalCommand && (
         <LinkButton
