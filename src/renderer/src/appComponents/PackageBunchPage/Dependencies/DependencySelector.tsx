@@ -48,12 +48,11 @@ export default function DependencySelector({
           </>
         }
         disabled={disabled}
-        disableScripts={dependency.mode !== DependencyMode.BUILD}
+        enableScripts={dependency.mode === DependencyMode.BUILD}
         nodePackage={dependency}
         onPathChange={handlePathChange}
         onScriptsChange={handleScriptsChange}
-        findInstallScript
-        findBuildScript
+        scriptsLabel="Build scripts"
       >
         <>
           {dependency.mode === DependencyMode.SYNC && (

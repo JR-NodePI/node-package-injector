@@ -18,7 +18,7 @@ export default class NodePackage {
   public packageName?: string;
   public isValidPackage = false;
   public scripts?: PackageScript[];
-  public afterBuildScripts?: PackageScript[];
+  public postBuildScripts?: PackageScript[];
 
   public clone(): NodePackage {
     const nodePackage = new NodePackage();
@@ -28,7 +28,7 @@ export default class NodePackage {
     nodePackage.packageName = this.packageName;
     nodePackage.isValidPackage = this.isValidPackage;
     nodePackage.scripts = this.scripts?.map(script => script.clone());
-    nodePackage.afterBuildScripts = this.afterBuildScripts?.map(script =>
+    nodePackage.postBuildScripts = this.postBuildScripts?.map(script =>
       script.clone()
     );
     return nodePackage;

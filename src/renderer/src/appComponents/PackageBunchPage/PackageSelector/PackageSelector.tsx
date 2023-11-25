@@ -18,38 +18,46 @@ import styles from './PackageSelector.module.css';
 
 type AllPackageScriptsProps = Pick<
   PackageSelectorProps,
-  | 'findInstallScript'
-  | 'findBuildScript'
-  | 'onScriptsChange'
-  | 'onAfterBuildScriptsChange'
+  | 'scriptsLabel'
+  | 'enableScripts'
   | 'nodePackage'
+  | 'onPostBuildScriptsChange'
+  | 'onScriptsChange'
+  | 'scriptsLabelPostBuild'
 >;
 
 function AllPackageScripts({
-  onScriptsChange,
-  onAfterBuildScriptsChange,
+  enableScripts,
   nodePackage,
-  findInstallScript,
-  findBuildScript,
+  onPostBuildScriptsChange,
+  onScriptsChange,
+  scriptsLabel,
+  scriptsLabelPostBuild,
 }: AllPackageScriptsProps): JSX.Element {
+  const enablePostBuildScripts = typeof onPostBuildScriptsChange === 'function';
+
   return (
     <>
-      <p className={c(styles.scripts_title)}>Package scripts</p>
-      <PackageScripts
-        onChange={onScriptsChange}
-        cwd={nodePackage.cwd}
-        selectedScripts={nodePackage.scripts}
-        findInstallScript={findInstallScript}
-        findBuildScript={findBuildScript}
-      />
-
-      {typeof onAfterBuildScriptsChange === 'function' && (
+      {enableScripts && (
         <>
-          <p className={c(styles.scripts_title)}>After build package scripts</p>
+          <p className={c(styles.scripts_title)}>{scriptsLabel}</p>
           <PackageScripts
-            onChange={onAfterBuildScriptsChange}
+            onChange={onScriptsChange}
             cwd={nodePackage.cwd}
-            selectedScripts={nodePackage.afterBuildScripts}
+            selectedScripts={nodePackage.scripts}
+            enablePostBuildScripts={enablePostBuildScripts}
+            enableScripts={enableScripts}
+          />
+        </>
+      )}
+
+      {enablePostBuildScripts && (
+        <>
+          <p className={c(styles.scripts_title)}>{scriptsLabelPostBuild}</p>
+          <PackageScripts
+            onChange={onPostBuildScriptsChange}
+            cwd={nodePackage.cwd}
+            selectedScripts={nodePackage.postBuildScripts}
           />
         </>
       )}
@@ -61,13 +69,13 @@ export default function PackageSelector({
   additionalActionComponents,
   children,
   disabled,
-  disableScripts,
-  onPathChange,
-  onScriptsChange,
-  onAfterBuildScriptsChange,
+  enableScripts,
   nodePackage,
-  findInstallScript,
-  findBuildScript,
+  onPathChange,
+  onPostBuildScriptsChange,
+  onScriptsChange,
+  scriptsLabel,
+  scriptsLabelPostBuild,
 }: PackageSelectorProps): JSX.Element {
   const [id] = useState<string>(crypto.randomUUID());
 
@@ -185,15 +193,16 @@ export default function PackageSelector({
             />
             {additionalActionComponents}
           </div>
-          {!disableScripts && (
-            <AllPackageScripts
-              onScriptsChange={onScriptsChange}
-              onAfterBuildScriptsChange={onAfterBuildScriptsChange}
-              nodePackage={nodePackage}
-              findInstallScript={findInstallScript}
-              findBuildScript={findBuildScript}
-            />
-          )}
+
+          <AllPackageScripts
+            enableScripts={enableScripts}
+            nodePackage={nodePackage}
+            onPostBuildScriptsChange={onPostBuildScriptsChange}
+            onScriptsChange={onScriptsChange}
+            scriptsLabel={scriptsLabel}
+            scriptsLabelPostBuild={scriptsLabelPostBuild}
+          />
+
           {children}
         </>
       )}

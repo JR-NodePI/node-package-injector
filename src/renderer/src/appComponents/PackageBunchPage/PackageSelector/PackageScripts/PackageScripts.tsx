@@ -18,16 +18,16 @@ type PackageScriptsProps = {
   cwd?: string;
   selectedScripts?: PackageScript[];
   onChange: (scripts: PackageScript[]) => void;
-  findInstallScript?: boolean;
-  findBuildScript?: boolean;
+  enablePostBuildScripts?: boolean;
+  enableScripts?: boolean;
 };
 
 export default function PackageScripts({
   cwd = '',
   selectedScripts,
   onChange,
-  findInstallScript,
-  findBuildScript,
+  enablePostBuildScripts,
+  enableScripts,
 }: PackageScriptsProps): JSX.Element {
   const { additionalPackageScripts } = useGlobalData();
   const filteredAdditionalPackageScripts = additionalPackageScripts.filter(
@@ -159,21 +159,21 @@ export default function PackageScripts({
       if (selectedScripts == null && packageScripts.length > 0) {
         const scripts: PackageScript[] = [];
 
-        const installScript =
-          findInstallScript &&
+        const postBuildScripts =
+          enablePostBuildScripts &&
           packageScripts.find(
             ({ scriptValue, scriptName }) =>
               / install/gi.test(scriptValue) && !/prepare/gi.test(scriptName)
           );
 
-        if (installScript) {
-          scripts.push(installScript);
+        if (postBuildScripts) {
+          scripts.push(postBuildScripts);
         } else {
           scripts.push(new PackageScript());
         }
 
         const buildScript =
-          findBuildScript &&
+          enableScripts &&
           packageScripts.find(
             ({ scriptValue }) =>
               / pack /gi.test(scriptValue) || / pack$/gi.test(scriptValue)
@@ -195,8 +195,8 @@ export default function PackageScripts({
       abortController.abort();
     };
   }, [
-    findBuildScript,
-    findInstallScript,
+    enableScripts,
+    enablePostBuildScripts,
     onChange,
     packageScripts,
     selectedScripts,

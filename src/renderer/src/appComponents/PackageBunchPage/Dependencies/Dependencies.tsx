@@ -74,7 +74,7 @@ function Dependencies(): JSX.Element {
         clonedDependency.cwd = cwd;
         clonedDependency.srcSyncPath = undefined;
         clonedDependency.scripts = undefined;
-        clonedDependency.afterBuildScripts = undefined;
+        clonedDependency.postBuildScripts = undefined;
         clonedDependency.isValidPackage = isValidPackage;
         clonedDependency.packageName = packageName;
 

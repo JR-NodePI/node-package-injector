@@ -13,17 +13,17 @@ export type useDirectorySelectOptionsProps = {
 
 export type PackageSelectorProps = {
   additionalActionComponents?: JSX.Element;
+  scriptsLabel?: string;
   children?: JSX.Element;
   disabled?: boolean;
-  disableScripts?: boolean;
+  enableScripts?: boolean;
+  nodePackage: NodePackage;
   onPathChange: (
     cwd: string,
     isValidPackage: boolean,
     packageName?: string
   ) => void;
+  onPostBuildScriptsChange?: (scripts: PackageScript[]) => void;
   onScriptsChange: (scripts: PackageScript[]) => void;
-  onAfterBuildScriptsChange?: (scripts: PackageScript[]) => void;
-  nodePackage: NodePackage;
-  findInstallScript?: boolean;
-  findBuildScript?: boolean;
+  scriptsLabelPostBuild?: string;
 };

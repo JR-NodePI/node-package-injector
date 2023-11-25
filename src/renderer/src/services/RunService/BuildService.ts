@@ -129,7 +129,7 @@ export default class BuildService {
     const packageName = nodePackage.packageName ?? ' ';
 
     const scripts = mustRunAfterBuild
-      ? nodePackage.afterBuildScripts
+      ? nodePackage.postBuildScripts
       : nodePackage.scripts;
 
     const filledScripts = (scripts ?? []).filter(script =>
