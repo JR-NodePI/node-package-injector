@@ -33,7 +33,7 @@ export default class SyncService {
     const traceOnTime = true;
     const cwd = targetPackage.cwd ?? '';
 
-    const hastAfterBuildScripts = (targetPackage.afterBuildScripts ?? []).some(
+    const hastAfterBuildScripts = (targetPackage.postBuildScripts ?? []).some(
       ({ scriptValue }) => Boolean(scriptValue)
     );
 
