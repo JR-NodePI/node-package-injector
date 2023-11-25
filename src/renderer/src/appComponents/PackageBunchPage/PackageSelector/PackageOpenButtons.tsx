@@ -15,8 +15,8 @@ type CommandConfig = null | {
 };
 
 const openCommand: CommandConfig =
-  platform === 'cygwin'
-    ? { command: 'start', args: ['.'] }
+  platform === 'win32'
+    ? { command: 'explorer.exe', args: ['.'] }
     : platform === 'darwin'
     ? { command: 'open', args: ['.'] }
     : platform === 'linux'
@@ -24,18 +24,18 @@ const openCommand: CommandConfig =
     : null;
 
 const openInTerminalCommand: CommandConfig =
-  platform === 'cygwin'
+  platform === 'win32'
     ? {
         command: 'start-process',
-        args: ['wt', '.'],
+        args: ['wsl'],
         title: 'Open in windows Terminal',
       }
     : platform === 'darwin'
     ? { command: 'open', args: ['-a', 'iTerm', '.'], title: 'Open in iTerm' }
     : platform === 'linux'
     ? {
-        command: 'xdg-open',
-        args: ['-a', 'xterm', '.'],
+        command: 'qterminal',
+        args: ['.'],
         title: 'Open in terminal',
       }
     : null;
@@ -66,6 +66,7 @@ export default function PackageOpenButtons({
       command: openCommand.command,
       args: openCommand.args,
       cwd: nodePackage.cwd,
+      skipWSL: true,
       syncMode: true,
     });
   };
@@ -78,6 +79,7 @@ export default function PackageOpenButtons({
       command: openInTerminalCommand.command,
       args: openInTerminalCommand.args,
       cwd: nodePackage.cwd,
+      skipWSL: true,
       syncMode: true,
     });
   };
@@ -94,7 +96,7 @@ export default function PackageOpenButtons({
 
       <LinkButton
         key={'vscode'}
-        title="open in VS Code"
+        title="Open in VS Code"
         className={c(styles.tool_button)}
         onClick={handleVSCodeClick}
       >
@@ -115,7 +117,7 @@ export default function PackageOpenButtons({
       {openCommand && (
         <LinkButton
           key={'folder'}
-          title="open in folder"
+          title="Open in folder"
           className={c(styles.tool_button)}
           onClick={handleFolderClick}
         >

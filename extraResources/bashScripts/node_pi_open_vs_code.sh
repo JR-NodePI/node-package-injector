@@ -3,6 +3,10 @@
 . "$(dirname "$0")/.nodepirc"
 
 open_vs_code() {
-  $(get_command "code") .
+  if [[ "$(uname)" == "Darwin" ]]; then
+    $(get_command "code") .
+  else
+    code .
+  fi
 }
 open_vs_code
