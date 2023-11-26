@@ -185,9 +185,8 @@ export default class NodeService {
 
   public static async checkIsSynchronizable(cwd: string): Promise<boolean> {
     return (
-      // window.api.isDevMode && // TODO: remove when feature "sync mode" will be ready
-      await NodeService.checkViteConfig(cwd)
-      // ||   (await NodeService.checkCracoConfig(cwd)) //TODO: pending feature
+      (await NodeService.checkViteConfig(cwd)) ||
+      (await NodeService.checkCracoConfig(cwd))
     );
   }
 

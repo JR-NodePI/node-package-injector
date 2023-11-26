@@ -7,6 +7,7 @@ import PathService from '../PathService';
 import TerminalService, { TerminalResponse } from '../TerminalService';
 import WSLService from '../WSLService';
 import { type ProcessServiceResponse } from './RunService';
+import NodeService from '../NodeService/NodeService';
 
 export default class SyncService {
   public static async startSync({
@@ -58,12 +59,23 @@ export default class SyncService {
       ];
     }
 
-    // Add vite.config.js dependencies alias
+    const isViteProject = await NodeService.checkViteConfig(cwd);
+    const isCracoProject = await NodeService.checkCracoConfig(cwd);
+    if (!isViteProject && !isCracoProject) {
+      return [
+        {
+          error: 'The project is not a vite or craco project',
+          title: syncTitle,
+        },
+      ];
+    }
+
+    // Add sync dependencies alias config
     const viteSyncResponse = await TerminalService.executeCommand({
       command: 'bash',
       args: [
         PathService.getExtraResourcesScriptPath(
-          'node_pi_vite_config_add_sync_alias.sh'
+          isViteProject ? 'node_pi_sync_vite.sh' : 'node_pi_sync_craco.sh'
         ),
         `"${NODE_PI_FILE_PREFIX}"`,
         ...dependencyNames.map(dep => `"${dep}"`),
