@@ -6,7 +6,7 @@ import { c } from 'fratch-ui/helpers';
 import PackageSelector from '../PackageSelector/PackageSelector';
 import DependencyModeCheck from './DependencyModeCheck';
 import type { DependencySelectorProps } from './DependencySelectorProps';
-import DependencySyncSrcDirectory from './DependencySyncSrcDirectory';
+import SrcSyncDirectories from './SrcSyncDirectories/SrcSyncDirectories';
 
 import styles from './DependencySelector.module.css';
 
@@ -56,7 +56,7 @@ export default function DependencySelector({
       >
         <>
           {dependency.mode === DependencyMode.SYNC && (
-            <DependencySyncSrcDirectory
+            <SrcSyncDirectories
               dependency={dependency}
               onSrcSyncChange={onSrcSyncChange}
             />

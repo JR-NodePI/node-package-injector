@@ -21,5 +21,8 @@ export type DependencySelectorProps = {
     dependency: DependencyPackage,
     scripts: PackageScript[]
   ) => void;
-  onSrcSyncChange: (dependency: DependencyPackage, srcSyncPath: string) => void;
+  onSrcSyncChange: (
+    dependency: DependencyPackage,
+    srcSyncDirectories: string[]
+  ) => void;
 };

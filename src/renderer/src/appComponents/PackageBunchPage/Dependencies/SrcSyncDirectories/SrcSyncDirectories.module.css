@@ -1,0 +1,7 @@
+.sync_src {
+  position: relative;
+  z-index: 1;
+}
+.sync_src_title {
+  margin: 0 0 8px 0;
+}
