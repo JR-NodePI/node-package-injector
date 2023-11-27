@@ -1,6 +1,5 @@
 import useGlobalData from '@renderer/appComponents/GlobalDataProvider/useGlobalData';
 import PathService from '@renderer/services/PathService';
-import { IconFolder, IconVSCode } from 'fratch-ui';
 import { c } from 'fratch-ui/helpers';
 
 import LinkButton from '../../../components/linkButton/LinkButton';

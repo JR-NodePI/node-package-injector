@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import DependencyPackage from '@renderer/models/DependencyPackage';
 import NodePackage from '@renderer/models/NodePackage';
@@ -14,9 +14,6 @@ import GlobalDataContext, { GlobalDataProps } from './GlobalDataContext';
 import useLoadTerminal from './useCheckInitials';
 import useLoadHomePath from './useLoadHomePath';
 import usePersistedState from './usePersistedState';
-import PathService from '@renderer/services/PathService';
-import TerminalService from '@renderer/services/TerminalService';
-import { NODE_PI_FILE_PREFIX } from '@renderer/constants';
 
 export default function GlobalDataProvider({
   children,

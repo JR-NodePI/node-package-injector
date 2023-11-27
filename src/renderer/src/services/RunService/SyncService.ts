@@ -3,11 +3,11 @@ import DependencyPackage from '@renderer/models/DependencyPackage';
 import NodePackage from '@renderer/models/NodePackage';
 
 import GitService from '../GitService';
+import NodeService from '../NodeService/NodeService';
 import PathService from '../PathService';
 import TerminalService, { TerminalResponse } from '../TerminalService';
 import WSLService from '../WSLService';
 import { type ProcessServiceResponse } from './RunService';
-import NodeService from '../NodeService/NodeService';
 
 export default class SyncService {
   public static async startSync({
@@ -140,14 +140,14 @@ export default class SyncService {
       window.api.path.join(await WSLService.cleanSWLRoot(cwd, cwd, traceOnTime))
     );
 
-    if (!dependency.srcSyncPath) {
+    if (!dependency.srcSyncDirectories) {
       throw new Error(`${dependency.packageName} has no srcSyncPath`);
     }
 
     const srcDependencyDir = PathService.normalizeWin32Path(
       await WSLService.cleanSWLRoot(
         cwd,
-        dependency.srcSyncPath ?? '',
+        dependency.srcSyncDirectories?.[0] ?? '',
         traceOnTime
       )
     );

@@ -72,7 +72,7 @@ function Dependencies(): JSX.Element {
           clonedDependency.mode = DependencyMode.BUILD;
         }
         clonedDependency.cwd = cwd;
-        clonedDependency.srcSyncPath = undefined;
+        clonedDependency.srcSyncDirectories = undefined;
         clonedDependency.scripts = undefined;
         clonedDependency.postBuildScripts = undefined;
         clonedDependency.isValidPackage = isValidPackage;
@@ -124,9 +124,9 @@ function Dependencies(): JSX.Element {
 
   const handleSrcSyncChange = (
     dependency: DependencyPackage,
-    srcSyncPath: string
+    srcSyncDirectories: string[]
   ): void => {
-    changeDependencyProp(dependency, 'srcSyncPath', srcSyncPath);
+    changeDependencyProp(dependency, 'srcSyncDirectories', srcSyncDirectories);
   };
 
   return (
