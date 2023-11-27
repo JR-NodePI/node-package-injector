@@ -82,6 +82,7 @@ const sanitizeRules = rules =>
 const NodePiInjectPlugin = {
   overrideWebpackConfig: ({ webpackConfig }) => {
     //--- alias
+    webpackConfig.resolve.extensions.push('.ts', '.tsx');
     webpackConfig.resolve.alias = {
       ...(webpackConfig.resolve.alias ?? {}),
       ...packagesAlias,
