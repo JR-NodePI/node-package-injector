@@ -140,14 +140,14 @@ export default class SyncService {
       window.api.path.join(await WSLService.cleanSWLRoot(cwd, cwd, traceOnTime))
     );
 
-    if (!dependency.srcSyncDirectories) {
+    if (!dependency.syncDirectories) {
       throw new Error(`${dependency.packageName} has no srcSyncPath`);
     }
 
     const srcDependencyDir = PathService.normalizeWin32Path(
       await WSLService.cleanSWLRoot(
         cwd,
-        dependency.srcSyncDirectories?.[0] ?? '',
+        dependency.syncDirectories?.[0]?.srcPath ?? '',
         traceOnTime
       )
     );
