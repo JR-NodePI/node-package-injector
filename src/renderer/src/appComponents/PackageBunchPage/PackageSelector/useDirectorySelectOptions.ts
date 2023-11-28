@@ -36,12 +36,11 @@ const getDirectorySelectOptions = async (
 export function useDirectorySelectOptions({
   cwd,
   onDirectoriesLoad,
+  excludedDirectories,
 }: useDirectorySelectOptionsProps): DirectorySelectOption[] {
   const [directoryOptions, setDirectoryOptions] = useState<
     DirectorySelectOption[]
   >([]);
-
-  const excludedDirectories = useExcludedDirectories();
 
   useDeepCompareEffect(() => {
     const abortController = new AbortController();

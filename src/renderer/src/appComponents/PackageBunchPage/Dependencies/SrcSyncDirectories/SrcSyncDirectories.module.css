@@ -5,3 +5,29 @@
 .sync_src_title {
   margin: 0 0 8px 0;
 }
+
+.selectors {
+  display: flex;
+  justify-content: stretch;
+  width: 100%;
+  gap: 8px;
+}
+.selectors_src_path {
+  flex: auto;
+}
+.selectors_target_path {
+  flex: auto;
+  min-width: 21vw;
+  max-width: 21vw;
+}
+
+.selector_buttons {
+  flex: auto;
+  min-width: 74px;
+  max-width: 74px;
+  gap: 12px;
+  margin-left: 8px;
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}

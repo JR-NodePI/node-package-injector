@@ -4,6 +4,7 @@ import useGlobalData from '@renderer/appComponents/GlobalDataProvider/useGlobalD
 import { DependencyMode } from '@renderer/models/DependencyConstants';
 import DependencyPackage from '@renderer/models/DependencyPackage';
 import PackageScript from '@renderer/models/PackageScript';
+import SyncDirectory from '@renderer/models/SyncDirectory';
 import NodeService from '@renderer/services/NodeService/NodeService';
 import PathService from '@renderer/services/PathService';
 import { Button, IconPlus } from 'fratch-ui/components';
@@ -72,7 +73,7 @@ function Dependencies(): JSX.Element {
           clonedDependency.mode = DependencyMode.BUILD;
         }
         clonedDependency.cwd = cwd;
-        clonedDependency.srcSyncDirectories = undefined;
+        clonedDependency.syncDirectories = undefined;
         clonedDependency.scripts = undefined;
         clonedDependency.postBuildScripts = undefined;
         clonedDependency.isValidPackage = isValidPackage;
@@ -93,14 +94,14 @@ function Dependencies(): JSX.Element {
 
   const changeDependencyProp = (
     dependency: DependencyPackage,
-    key: string,
-    value: unknown
+    key: keyof Omit<DependencyPackage, 'id' | 'version' | 'clone'>,
+    value: DependencyPackage[typeof key]
   ): void => {
     const newDependencies = getUpdatedDependencyLits(
       activeDependencies,
       dependency,
       () => {
-        dependency[key] = value;
+        dependency[key] = value as never;
         return dependency;
       }
     );
@@ -112,7 +113,7 @@ function Dependencies(): JSX.Element {
     mode: typeof dependency.mode
   ): void => {
     changeDependencyProp(dependency, 'mode', mode);
-    changeDependencyProp(dependency, 'srcSyncPath', undefined);
+    changeDependencyProp(dependency, 'syncDirectories', undefined);
   };
 
   const handleScriptsChange = (
@@ -122,11 +123,11 @@ function Dependencies(): JSX.Element {
     changeDependencyProp(dependency, 'scripts', scripts);
   };
 
-  const handleSrcSyncChange = (
+  const handleSyncDirectoryChange = (
     dependency: DependencyPackage,
-    srcSyncDirectories: string[]
+    srcSyncDirectories: SyncDirectory[]
   ): void => {
-    changeDependencyProp(dependency, 'srcSyncDirectories', srcSyncDirectories);
+    changeDependencyProp(dependency, 'syncDirectories', srcSyncDirectories);
   };
 
   return (
@@ -146,7 +147,7 @@ function Dependencies(): JSX.Element {
           onModeChange={handleModeChange}
           onPathChange={handlePathChange}
           onScriptsChange={handleScriptsChange}
-          onSrcSyncChange={handleSrcSyncChange}
+          onSyncDirectoryChange={handleSyncDirectoryChange}
         />
       ))}
       <div className={c(styles.buttons)}>

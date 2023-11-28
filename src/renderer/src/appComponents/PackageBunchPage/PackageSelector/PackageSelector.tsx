@@ -15,6 +15,7 @@ import { useDirectorySelectOptions } from './useDirectorySelectOptions';
 import useEffectCWD from './useEffectCWD';
 
 import styles from './PackageSelector.module.css';
+import useExcludedDirectories from '@renderer/appComponents/GlobalDataProvider/useExcludedDirectories';
 
 type AllPackageScriptsProps = Pick<
   PackageSelectorProps,
@@ -124,9 +125,11 @@ export default function PackageSelector({
     refShouldFocus.current = false;
   }, []);
 
+  const excludedDirectories = useExcludedDirectories();
   const directoryOptions = useDirectorySelectOptions({
     cwd,
     onDirectoriesLoad,
+    excludedDirectories,
   });
 
   useEffect(() => {

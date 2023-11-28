@@ -1,12 +1,13 @@
 import { DependencyMode } from '@renderer/models/DependencyConstants';
 
 import NodePackage from './NodePackage';
+import SyncDirectory from './SyncDirectory';
 
 export default class DependencyPackage extends NodePackage {
   public mode: (typeof DependencyMode)[keyof typeof DependencyMode] =
     DependencyMode.BUILD;
 
-  public srcSyncDirectories?: string[]; //TODO: crate a new mode like { srcDir: string, relativeTargetSyncDir?: string }
+  public syncDirectories?: SyncDirectory[];
 
   public clone(): DependencyPackage {
     const dependencyPackage = Object.assign<DependencyPackage, NodePackage>(
@@ -15,7 +16,7 @@ export default class DependencyPackage extends NodePackage {
     ) as DependencyPackage;
 
     dependencyPackage.mode = this.mode;
-    dependencyPackage.srcSyncDirectories = this.srcSyncDirectories;
+    dependencyPackage.syncDirectories = this.syncDirectories;
     return dependencyPackage;
   }
 }

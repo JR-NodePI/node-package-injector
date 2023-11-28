@@ -9,6 +9,7 @@ export type DirectorySelectOption = SelectProps.SelectOption<string>;
 export type useDirectorySelectOptionsProps = {
   cwd: string;
   onDirectoriesLoad?: (options: SelectProps.SelectOption<string>[]) => void;
+  excludedDirectories?: string[];
 };
 
 export type PackageSelectorProps = {
