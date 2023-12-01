@@ -56,12 +56,7 @@ const packages = nodePiSyncModules
   .map(dep => path.resolve(__dirname, dep));
 
 const packagesAlias = Object.fromEntries(
-  nodePiSyncModules
-    .map(dep => [
-      [dep, path.resolve(__dirname, dep)],
-      [\`~\${dep}\`, path.resolve('./node_modules', dep)],
-    ])
-    .flat()
+  nodePiSyncModules.map(dep => [dep, path.resolve(__dirname, dep)])
 );
 
 const sanitizeRules = rules =>
