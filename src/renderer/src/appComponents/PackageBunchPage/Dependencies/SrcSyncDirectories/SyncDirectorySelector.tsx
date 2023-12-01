@@ -78,7 +78,7 @@ export default function SyncDirectorySelector({
   ): void => {
     const value = event?.target?.value || undefined;
     const newTargetPath = value
-      ? PathService.getPath([...value.split(/[/\\]/).filter(Boolean)])
+      ? PathService.getPath(PathService.getPathDirectories(value))
       : undefined;
     const newSyncDirectory = new SyncDirectory(
       PathService.getPath(srcPathDirectories),
