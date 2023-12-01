@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import useExcludedDirectories from '@renderer/appComponents/GlobalDataProvider/useExcludedDirectories';
 import GitService from '@renderer/services/GitService';
 import NodeService from '@renderer/services/NodeService/NodeService';
 import PathService from '@renderer/services/PathService';
@@ -15,7 +16,6 @@ import { useDirectorySelectOptions } from './useDirectorySelectOptions';
 import useEffectCWD from './useEffectCWD';
 
 import styles from './PackageSelector.module.css';
-import useExcludedDirectories from '@renderer/appComponents/GlobalDataProvider/useExcludedDirectories';
 
 type AllPackageScriptsProps = Pick<
   PackageSelectorProps,

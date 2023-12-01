@@ -245,9 +245,12 @@ export default function PackageScripts({
     [scriptOptions, selectedScripts]
   );
 
+  const isDraggable = (selectedScripts?.length ?? 0) > 1;
+
   return (
     <DragAndDropSorter
       onChange={handleSortChange}
+      draggable={isDraggable}
       items={(selectedScripts ?? []).map<DraggableItem<PackageScript>>(
         (script, index) => {
           const showAddButton =
@@ -258,8 +261,9 @@ export default function PackageScripts({
             dataItem: script,
             children: (
               <PackageScriptRenderer
-                key={`${script.id}-${script.scriptName}`}
                 index={index}
+                isDraggable={isDraggable}
+                key={`${script.id}-${script.scriptName}`}
                 onAdd={handleAddScript}
                 onChange={handleScriptChange}
                 onRemove={handleRemoveScript}
