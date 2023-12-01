@@ -1,12 +1,16 @@
 import { formatOrdinals } from '@renderer/helpers/utilsHelpers';
 import type PackageScript from '@renderer/models/PackageScript';
+import { IconSortVertical } from 'fratch-ui';
 
 import PackageScriptButtons from './PackageScriptButtons';
 import { type PackageScriptRendererProps } from './PackageScriptRendererProps';
 import PackageScriptSelector from './PackageScriptSelector';
 
+import styles from './PackageScriptRenderer.module.css';
+
 export function PackageScriptRenderer({
   index,
+  isDraggable,
   onAdd,
   onChange,
   onRemove,
@@ -22,8 +26,19 @@ export function PackageScriptRenderer({
 
   return (
     <PackageScriptSelector
-      label={`${ordinal}`}
-      title={`${ordinal}package script`}
+      label={
+        <span
+          title={`${ordinal}package script`}
+          className={styles.mode_scripts_label}
+        >
+          {isDraggable && (
+            <>
+              <IconSortVertical /> &nbsp;
+            </>
+          )}
+          {ordinal}
+        </span>
+      }
       selectedScript={script}
       scriptOptions={scriptOptions}
       onChange={handleOnChange}

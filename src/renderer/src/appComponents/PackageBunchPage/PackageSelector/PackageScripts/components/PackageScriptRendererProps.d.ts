@@ -9,6 +9,7 @@ export type PackageScriptRendererProps = {
   script: PackageScript;
   scriptOptions: SelectProps.SelectOption<PackageScript>[];
   showAddButton: boolean;
+  isDraggable?: boolean;
 };
 
 export type PackageScriptButtonsProps = Pick<
