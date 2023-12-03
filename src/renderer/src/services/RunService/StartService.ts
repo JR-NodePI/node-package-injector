@@ -37,11 +37,7 @@ export default class StartService {
   }): Promise<ProcessServiceResponse[]> {
     const successResponses: ProcessServiceResponse[] = [];
 
-    await RunService.resetAll({
-      targetPackage,
-      dependencies,
-      abortController,
-    });
+    await RunService.resetKillAll();
 
     const tmpDir = await PathService.getTmpDir({
       isWSLActive,

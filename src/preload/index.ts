@@ -4,20 +4,21 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 
+import { extraResourcesPath, isDevMode } from './constants';
+import PathService from './Path/PathService';
 import TerminalService from './Terminal/TerminalService';
-
-const isDevMode = process.env.NODE_ENV === 'development';
+import WSLService from './WSL/WSLService';
 
 // Custom APIs for renderer
 const api = {
-  extraResourcesPath: isDevMode
-    ? path.join(__dirname, '../../', 'extraResources')
-    : path.join(process.resourcesPath ?? '', 'extraResources'),
+  extraResourcesPath,
   fs,
   isDevMode,
   os,
   path,
+  PathService,
   TerminalService,
+  WSLService,
 };
 
 // Use `contextBridge` APIs to expose Electron APIs to

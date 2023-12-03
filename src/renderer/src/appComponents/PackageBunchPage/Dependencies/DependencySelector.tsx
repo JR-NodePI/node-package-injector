@@ -6,7 +6,7 @@ import { c } from 'fratch-ui/helpers';
 import PackageSelector from '../PackageSelector/PackageSelector';
 import DependencyModeCheck from './DependencyModeCheck';
 import type { DependencySelectorProps } from './DependencySelectorProps';
-import DependencySyncSrcDirectory from './DependencySyncSrcDirectory';
+import SyncDirectories from './SrcSyncDirectories/SyncDirectories';
 
 import styles from './DependencySelector.module.css';
 
@@ -18,7 +18,7 @@ export default function DependencySelector({
   onPathChange,
   onModeChange,
   onScriptsChange,
-  onSrcSyncChange,
+  onSyncDirectoryChange: onSrcSyncChange,
 }: DependencySelectorProps): JSX.Element {
   const handlePathChange = (
     cwd: string,
@@ -48,18 +48,17 @@ export default function DependencySelector({
           </>
         }
         disabled={disabled}
-        disableScripts={dependency.mode !== DependencyMode.BUILD}
+        enableScripts={dependency.mode === DependencyMode.BUILD}
         nodePackage={dependency}
         onPathChange={handlePathChange}
         onScriptsChange={handleScriptsChange}
-        findInstallScript
-        findBuildScript
+        scriptsLabel="Build scripts"
       >
         <>
           {dependency.mode === DependencyMode.SYNC && (
-            <DependencySyncSrcDirectory
+            <SyncDirectories
               dependency={dependency}
-              onSrcSyncChange={onSrcSyncChange}
+              onSyncDirectoryChange={onSrcSyncChange}
             />
           )}
         </>

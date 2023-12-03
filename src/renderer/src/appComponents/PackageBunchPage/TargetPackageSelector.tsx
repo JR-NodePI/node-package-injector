@@ -19,7 +19,7 @@ export default function TargetPackageSelector(): JSX.Element {
 
     clonedPackage.cwd = cwd;
     clonedPackage.scripts = undefined;
-    clonedPackage.afterBuildScripts = undefined;
+    clonedPackage.postBuildScripts = undefined;
     clonedPackage.isValidPackage = isValidPackage;
     clonedPackage.packageName = packageName;
 
@@ -34,21 +34,23 @@ export default function TargetPackageSelector(): JSX.Element {
     }
   };
 
-  const onAfterBuildScriptsChange = (scripts: PackageScript[]): void => {
+  const onPostBuildScriptsChange = (scripts: PackageScript[]): void => {
     if (activeTargetPackage) {
       const clonedPackage = activeTargetPackage.clone();
-      clonedPackage.afterBuildScripts = scripts;
+      clonedPackage.postBuildScripts = scripts;
       setActiveTargetPackage?.(clonedPackage);
     }
   };
 
   return (
     <PackageSelector
-      onPathChange={handlePathChange}
-      onScriptsChange={handleScriptsChange}
-      onAfterBuildScriptsChange={onAfterBuildScriptsChange}
+      enableScripts
       nodePackage={activeTargetPackage}
-      findInstallScript
+      onPathChange={handlePathChange}
+      onPostBuildScriptsChange={onPostBuildScriptsChange}
+      onScriptsChange={handleScriptsChange}
+      scriptsLabel="Scripts (pre build)"
+      scriptsLabelPostBuild="Scripts (post build)"
     />
   );
 }

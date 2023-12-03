@@ -2,9 +2,7 @@ import { promiseAllSequentially } from '@renderer/helpers/promisesHelpers';
 import DependencyPackage from '@renderer/models/DependencyPackage';
 import NodePackage from '@renderer/models/NodePackage';
 import PackageScript from '@renderer/models/PackageScript';
-import TerminalService, {
-  type TerminalResponse,
-} from '@renderer/services/TerminalService';
+import TerminalService from '@renderer/services/TerminalService';
 
 import NodeService from '../NodeService/NodeService';
 import { RelatedDependencyProjection } from '../NodeService/NodeServiceTypes';
@@ -131,15 +129,13 @@ export default class BuildService {
     const packageName = nodePackage.packageName ?? ' ';
 
     const scripts = mustRunAfterBuild
-      ? nodePackage.afterBuildScripts
+      ? nodePackage.postBuildScripts
       : nodePackage.scripts;
 
     const filledScripts = (scripts ?? []).filter(script =>
       Boolean(script.scriptName.trim())
     );
     const hasScripts = Boolean(filledScripts?.length);
-
-    let handleOnAbort: (() => Promise<void>) | null = null;
 
     if (hasScripts) {
       // eslint-disable-next-line no-console
@@ -159,11 +155,6 @@ export default class BuildService {
           },
         ];
       }
-
-      handleOnAbort = async (): Promise<void> => {
-        await NodeService.restoreFakePackageVersion(nodePackage.cwd ?? '');
-      };
-      abortController?.signal.addEventListener('abort', handleOnAbort);
     }
 
     const scriptsPromises = filledScripts.map(
@@ -179,27 +170,6 @@ export default class BuildService {
 
     const scriptsResponses =
       await promiseAllSequentially<ProcessServiceResponse>(scriptsPromises);
-
-    let outputRestoreVersion: TerminalResponse | null = null;
-
-    if (hasScripts && !abortController?.signal.aborted) {
-      // Restore fake package version
-      outputRestoreVersion = await NodeService.restoreFakePackageVersion(
-        cwd,
-        abortController
-      );
-    }
-
-    if (outputRestoreVersion?.error) {
-      scriptsResponses.push({
-        ...outputRestoreVersion,
-        title: `Restoring package.json: "${packageName}"`,
-      });
-    }
-
-    if (handleOnAbort != null) {
-      abortController?.signal.removeEventListener('abort', handleOnAbort);
-    }
 
     return scriptsResponses;
   }

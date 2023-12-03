@@ -185,9 +185,8 @@ export default class NodeService {
 
   public static async checkIsSynchronizable(cwd: string): Promise<boolean> {
     return (
-      // window.api.isDevMode && // TODO: remove when feature "sync mode" will be ready
-      await NodeService.checkViteConfig(cwd)
-      // ||   (await NodeService.checkCracoConfig(cwd)) //TODO: pending feature
+      (await NodeService.checkViteConfig(cwd)) ||
+      (await NodeService.checkCracoConfig(cwd))
     );
   }
 
@@ -235,24 +234,6 @@ export default class NodeService {
         `"${nodePackage.version}"`,
       ],
       cwd: nodePackage.cwd ?? '',
-      traceOnTime: true,
-      abortController,
-    });
-  }
-
-  public static async restoreFakePackageVersion(
-    cwd: string,
-    abortController?: AbortController
-  ): Promise<TerminalResponse> {
-    return await TerminalService.executeCommand({
-      command: 'bash',
-      args: [
-        PathService.getExtraResourcesScriptPath(
-          'node_pi_fake_pkg_version_restore.sh'
-        ),
-        `"${NODE_PI_FILE_PREFIX}"`,
-      ],
-      cwd,
       traceOnTime: true,
       abortController,
     });
