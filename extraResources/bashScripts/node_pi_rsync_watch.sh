@@ -31,7 +31,7 @@ require_command "watch"
 require_command "shasum"
 
 sync_dir() {
-  $(get_command "rsync") -avuh --exclude="node_modules" --exclude=".git" --delete "$SRC_DEPENDENCY_DIR" "$TARGET_SYNC_DEPENDENCY_DIR"
+  $(get_command "rsync") -avuh --exclude="node_modules" --exclude=".git" "$SRC_DEPENDENCY_DIR" "$TARGET_SYNC_DEPENDENCY_DIR"
 }
 
 watch_dir() {
