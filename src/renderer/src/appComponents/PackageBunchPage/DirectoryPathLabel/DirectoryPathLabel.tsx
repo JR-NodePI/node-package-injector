@@ -7,15 +7,17 @@ import LinkButton from '../../../components/linkButton/LinkButton';
 import styles from './DirectoryPathLabel.module.css';
 
 type PackageSelectorLabelProps = {
+  additionalComponent?: JSX.Element;
+  handleOnClickBack: () => void;
   id: string;
   isDirBackEnabled: boolean;
   pathDirectories: string[];
-  handleOnClickBack: () => void;
 };
 
 export default function DirectoryPathLabel({
-  id,
+  additionalComponent,
   handleOnClickBack,
+  id,
   isDirBackEnabled,
   pathDirectories,
 }: PackageSelectorLabelProps): JSX.Element {
@@ -46,6 +48,7 @@ export default function DirectoryPathLabel({
           ../
         </LinkButton>
       )}
+      {additionalComponent}
     </>
   );
 }

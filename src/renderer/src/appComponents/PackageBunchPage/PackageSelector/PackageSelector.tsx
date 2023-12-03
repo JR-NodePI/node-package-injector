@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import useExcludedDirectories from '@renderer/appComponents/GlobalDataProvider/useExcludedDirectories';
 import GitService from '@renderer/services/GitService';
 import NodeService from '@renderer/services/NodeService/NodeService';
 import PathService from '@renderer/services/PathService';
@@ -8,6 +9,7 @@ import { c } from 'fratch-ui/helpers';
 
 import DirectoryPathLabel from '../DirectoryPathLabel/DirectoryPathLabel';
 import PackageGitActions from './PackageGitActions/PackageGitActions';
+import PackageOpenButtons from './PackageOpenButtons';
 import PackageScripts from './PackageScripts/PackageScripts';
 import { type PackageSelectorProps } from './PackageSelectorProps';
 import { useDirectorySelectOptions } from './useDirectorySelectOptions';
@@ -17,38 +19,46 @@ import styles from './PackageSelector.module.css';
 
 type AllPackageScriptsProps = Pick<
   PackageSelectorProps,
-  | 'findInstallScript'
-  | 'findBuildScript'
-  | 'onScriptsChange'
-  | 'onAfterBuildScriptsChange'
+  | 'scriptsLabel'
+  | 'enableScripts'
   | 'nodePackage'
+  | 'onPostBuildScriptsChange'
+  | 'onScriptsChange'
+  | 'scriptsLabelPostBuild'
 >;
 
 function AllPackageScripts({
-  onScriptsChange,
-  onAfterBuildScriptsChange,
+  enableScripts,
   nodePackage,
-  findInstallScript,
-  findBuildScript,
+  onPostBuildScriptsChange,
+  onScriptsChange,
+  scriptsLabel,
+  scriptsLabelPostBuild,
 }: AllPackageScriptsProps): JSX.Element {
+  const enablePostBuildScripts = typeof onPostBuildScriptsChange === 'function';
+
   return (
     <>
-      <p className={c(styles.scripts_title)}>Package scripts</p>
-      <PackageScripts
-        onChange={onScriptsChange}
-        cwd={nodePackage.cwd}
-        selectedScripts={nodePackage.scripts}
-        findInstallScript={findInstallScript}
-        findBuildScript={findBuildScript}
-      />
-
-      {typeof onAfterBuildScriptsChange === 'function' && (
+      {enableScripts && (
         <>
-          <p className={c(styles.scripts_title)}>After build package scripts</p>
+          <p className={c(styles.scripts_title)}>{scriptsLabel}</p>
           <PackageScripts
-            onChange={onAfterBuildScriptsChange}
+            onChange={onScriptsChange}
             cwd={nodePackage.cwd}
-            selectedScripts={nodePackage.afterBuildScripts}
+            selectedScripts={nodePackage.scripts}
+            enablePostBuildScripts={enablePostBuildScripts}
+            enableScripts={enableScripts}
+          />
+        </>
+      )}
+
+      {enablePostBuildScripts && (
+        <>
+          <p className={c(styles.scripts_title)}>{scriptsLabelPostBuild}</p>
+          <PackageScripts
+            onChange={onPostBuildScriptsChange}
+            cwd={nodePackage.cwd}
+            selectedScripts={nodePackage.postBuildScripts}
           />
         </>
       )}
@@ -60,13 +70,13 @@ export default function PackageSelector({
   additionalActionComponents,
   children,
   disabled,
-  disableScripts,
-  onPathChange,
-  onScriptsChange,
-  onAfterBuildScriptsChange,
+  enableScripts,
   nodePackage,
-  findInstallScript,
-  findBuildScript,
+  onPathChange,
+  onPostBuildScriptsChange,
+  onScriptsChange,
+  scriptsLabel,
+  scriptsLabelPostBuild,
 }: PackageSelectorProps): JSX.Element {
   const [id] = useState<string>(crypto.randomUUID());
 
@@ -115,9 +125,11 @@ export default function PackageSelector({
     refShouldFocus.current = false;
   }, []);
 
+  const excludedDirectories = useExcludedDirectories();
   const directoryOptions = useDirectorySelectOptions({
     cwd,
     onDirectoriesLoad,
+    excludedDirectories,
   });
 
   useEffect(() => {
@@ -156,6 +168,9 @@ export default function PackageSelector({
             handleOnClickBack={handleOnClickBack}
             isDirBackEnabled={isDirBackEnabled}
             pathDirectories={pathDirectories}
+            additionalComponent={
+              <PackageOpenButtons nodePackage={nodePackage} />
+            }
           />
         }
         field={
@@ -181,15 +196,16 @@ export default function PackageSelector({
             />
             {additionalActionComponents}
           </div>
-          {!disableScripts && (
-            <AllPackageScripts
-              onScriptsChange={onScriptsChange}
-              onAfterBuildScriptsChange={onAfterBuildScriptsChange}
-              nodePackage={nodePackage}
-              findInstallScript={findInstallScript}
-              findBuildScript={findBuildScript}
-            />
-          )}
+
+          <AllPackageScripts
+            enableScripts={enableScripts}
+            nodePackage={nodePackage}
+            onPostBuildScriptsChange={onPostBuildScriptsChange}
+            onScriptsChange={onScriptsChange}
+            scriptsLabel={scriptsLabel}
+            scriptsLabelPostBuild={scriptsLabelPostBuild}
+          />
+
           {children}
         </>
       )}

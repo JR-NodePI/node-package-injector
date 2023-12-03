@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 import type PackageScript from '@renderer/models/PackageScript';
 import { LeftLabeledField, Select } from 'fratch-ui/components';
@@ -8,24 +8,20 @@ import { c } from 'fratch-ui/helpers';
 import styles from './PackageScriptSelector.module.css';
 
 type PackageScriptSelector = {
-  label: string;
-  title: string;
-  selectedScript: PackageScript;
-  scriptOptions: SelectOption<PackageScript>[];
-  onChange: (script?: PackageScript) => void;
   additionalComponent?: JSX.Element;
+  label: JSX.Element;
+  onChange: (script?: PackageScript) => void;
+  scriptOptions: SelectOption<PackageScript>[];
+  selectedScript: PackageScript;
 };
 
 export default function PackageScriptSelector({
-  label,
-  title,
-  selectedScript,
-  scriptOptions,
-  onChange,
   additionalComponent,
+  label,
+  onChange,
+  scriptOptions,
+  selectedScript,
 }: PackageScriptSelector): JSX.Element {
-  const [id] = useState<string>(crypto.randomUUID());
-
   const handleOnChange = (selectedScript?: PackageScript): void => {
     onChange(selectedScript);
   };
@@ -45,14 +41,9 @@ export default function PackageScriptSelector({
   return (
     <div className={c(styles.mode_scripts)}>
       <LeftLabeledField
-        label={
-          <label htmlFor={id} title={title}>
-            {label}
-          </label>
-        }
+        label={label}
         field={
           <Select
-            id={id}
             value={selectedScript}
             options={options}
             placeholder={selectorPlaceholder}

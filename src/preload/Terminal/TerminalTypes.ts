@@ -15,6 +15,7 @@ export type ExecuteCommandOptions = {
   traceOnTime?: boolean;
   abortController?: AbortController;
   ignoreStderrErrors?: boolean;
+  resolveTimeout?: number;
   resolveTimeoutAfterFirstOutput?: number;
   syncMode?: boolean;
   addIcons?: boolean;
@@ -34,6 +35,7 @@ export type executeCommandAsyncModeOptions = {
   | 'args'
   | 'command'
   | 'ignoreStderrErrors'
+  | 'resolveTimeout'
   | 'resolveTimeoutAfterFirstOutput'
 >;
 

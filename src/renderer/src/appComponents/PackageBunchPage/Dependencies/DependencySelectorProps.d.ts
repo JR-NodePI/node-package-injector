@@ -1,6 +1,7 @@
 import { type DependencyMode } from '@renderer/models/DependencyConstants';
 import type DependencyPackage from '@renderer/models/DependencyPackage';
 import PackageScript from '@renderer/models/PackageScript';
+import SyncDirectory from '@renderer/models/SyncDirectory';
 
 export type DependencySelectorProps = {
   disabled?: boolean;
@@ -21,5 +22,8 @@ export type DependencySelectorProps = {
     dependency: DependencyPackage,
     scripts: PackageScript[]
   ) => void;
-  onSrcSyncChange: (dependency: DependencyPackage, srcSyncPath: string) => void;
+  onSyncDirectoryChange: (
+    dependency: DependencyPackage,
+    srcSyncDirectories: SyncDirectory[]
+  ) => void;
 };

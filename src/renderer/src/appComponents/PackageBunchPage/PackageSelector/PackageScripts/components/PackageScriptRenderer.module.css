@@ -5,3 +5,7 @@
   min-width: 74px;
   margin-bottom: 8px;
 }
+
+.mode_scripts_label {
+  pointer-events: unset;
+}

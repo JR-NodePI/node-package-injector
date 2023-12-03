@@ -3,10 +3,13 @@ import DependencyPackage from '@renderer/models/DependencyPackage';
 import NodePackage from '@renderer/models/NodePackage';
 
 import GitService from '../GitService';
+import NodeService from '../NodeService/NodeService';
 import PathService from '../PathService';
-import TerminalService, { TerminalResponse } from '../TerminalService';
+import TerminalService from '../TerminalService';
 import WSLService from '../WSLService';
-import { type ProcessServiceResponse } from './RunService';
+import RunService, { type ProcessServiceResponse } from './RunService';
+
+const SYNC_RESOLVE_TIMEOUT = 2000;
 
 export default class SyncService {
   public static async startSync({
@@ -33,11 +36,11 @@ export default class SyncService {
     const traceOnTime = true;
     const cwd = targetPackage.cwd ?? '';
 
-    const hastAfterBuildScripts = (targetPackage.afterBuildScripts ?? []).some(
+    const hastAfterBuildScripts = (targetPackage.postBuildScripts ?? []).some(
       ({ scriptValue }) => Boolean(scriptValue)
     );
 
-    const resolveTimeoutAfterFirstOutput = hastAfterBuildScripts ? 2000 : 0;
+    const syncResolveTimeout = hastAfterBuildScripts ? SYNC_RESOLVE_TIMEOUT : 0;
 
     const dependencyNames = dependencies
       .map(({ packageName }) => packageName)
@@ -46,9 +49,7 @@ export default class SyncService {
     // Add dependencies to .gitignore
     const gitignoreResponse = await GitService.gitignoreAdd(
       cwd,
-      dependencyNames.map(
-        packageName => `${NODE_PI_FILE_PREFIX}${packageName}`
-      ),
+      [`${NODE_PI_FILE_PREFIX}/`],
       syncAbortController
     );
     if (gitignoreResponse.error) {
@@ -60,12 +61,23 @@ export default class SyncService {
       ];
     }
 
-    // Add vite.config.js dependencies alias
+    const isViteProject = await NodeService.checkViteConfig(cwd);
+    const isCracoProject = await NodeService.checkCracoConfig(cwd);
+    if (!isViteProject && !isCracoProject) {
+      return [
+        {
+          error: 'The project is not a vite or craco project',
+          title: syncTitle,
+        },
+      ];
+    }
+
+    // Add sync dependencies alias config
     const viteSyncResponse = await TerminalService.executeCommand({
       command: 'bash',
       args: [
         PathService.getExtraResourcesScriptPath(
-          'node_pi_vite_config_add_sync_alias.sh'
+          isViteProject ? 'node_pi_sync_vite.sh' : 'node_pi_sync_craco.sh'
         ),
         `"${NODE_PI_FILE_PREFIX}"`,
         ...dependencyNames.map(dep => `"${dep}"`),
@@ -91,7 +103,7 @@ export default class SyncService {
         dependency,
         traceOnTime,
         syncAbortController,
-        resolveTimeoutAfterFirstOutput,
+        syncResolveTimeout,
       })
     );
     const dependenciesResponses = await Promise.allSettled(
@@ -100,11 +112,11 @@ export default class SyncService {
 
     return dependenciesResponses.map(result => {
       if (result.status === 'fulfilled') {
-        const { terminalResponse, packageName } = result.value;
-        const hasError = (terminalResponse.error ?? '').includes('Error');
+        const { terminalResponses, packageName } = result.value;
+        const hasError = RunService.hasError(terminalResponses);
         return {
           ...(hasError
-            ? { error: terminalResponse.error }
+            ? { error: terminalResponses[0].error }
             : { content: 'Sync finished' }),
           title: `Sync mode ${packageName}`,
         };
@@ -118,47 +130,62 @@ export default class SyncService {
     dependency,
     traceOnTime,
     syncAbortController,
-    resolveTimeoutAfterFirstOutput,
+    syncResolveTimeout,
   }: {
     cwd: string;
     dependency: DependencyPackage;
     traceOnTime: boolean;
     syncAbortController?: AbortController;
-    resolveTimeoutAfterFirstOutput: number;
-  }): Promise<{ terminalResponse: TerminalResponse; packageName: string }> {
-    const targetPackageDir = PathService.normalizeWin32Path(
-      window.api.path.join(
-        await WSLService.cleanSWLRoot(cwd, cwd, traceOnTime),
-        `${NODE_PI_FILE_PREFIX}${dependency.packageName}`
-      )
-    );
-
-    if (!dependency.srcSyncPath) {
+    syncResolveTimeout: number;
+  }): Promise<{
+    terminalResponses: ProcessServiceResponse[];
+    packageName: string;
+  }> {
+    if (!dependency.syncDirectories) {
       throw new Error(`${dependency.packageName} has no srcSyncPath`);
     }
 
-    const srcPackageDir = PathService.normalizeWin32Path(
-      await WSLService.cleanSWLRoot(
+    const terminalResponses: ProcessServiceResponse[] = [];
+    for (const [index, syncDirectory] of dependency.syncDirectories.entries()) {
+      const resolveTimeoutAfterFirstOutput =
+        syncResolveTimeout || index !== dependency.syncDirectories.length - 1
+          ? SYNC_RESOLVE_TIMEOUT
+          : 0;
+
+      const targetPackageDir = PathService.normalizeWin32Path(
+        window.api.path.join(
+          await WSLService.cleanSWLRoot(cwd, cwd, traceOnTime),
+          NODE_PI_FILE_PREFIX,
+          dependency.packageName ?? '',
+          ...PathService.getPathDirectories(syncDirectory.targetPath ?? '')
+        )
+      );
+
+      const srcDependencyDir = PathService.normalizeWin32Path(
+        await WSLService.cleanSWLRoot(cwd, syncDirectory.srcPath, traceOnTime)
+      );
+
+      const terminalResponse = await TerminalService.executeCommand({
+        command: 'bash',
+        args: [
+          PathService.getExtraResourcesScriptPath('node_pi_rsync_watch.sh'),
+          `"${NODE_PI_FILE_PREFIX}"`,
+          `"${targetPackageDir}"`,
+          `"${srcDependencyDir}"`,
+        ],
         cwd,
-        dependency.srcSyncPath ?? '',
-        traceOnTime
-      )
-    );
+        traceOnTime: traceOnTime,
+        skipWSL: true,
+        abortController: syncAbortController,
+        resolveTimeoutAfterFirstOutput,
+      });
 
-    const terminalResponse = await TerminalService.executeCommand({
-      command: 'bash',
-      args: [
-        PathService.getExtraResourcesScriptPath('node_pi_rsync_watch.sh'),
-        `"${srcPackageDir}"`,
-        `"${targetPackageDir}"`,
-      ],
-      cwd,
-      traceOnTime: traceOnTime,
-      skipWSL: true,
-      abortController: syncAbortController,
-      resolveTimeoutAfterFirstOutput,
-    });
+      terminalResponses.push({
+        ...terminalResponse,
+        title: `Sync mode ${dependency.packageName}`,
+      });
+    }
 
-    return { terminalResponse, packageName: dependency.packageName ?? '' };
+    return { terminalResponses, packageName: dependency.packageName ?? '' };
   }
 }

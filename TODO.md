@@ -1,10 +1,7 @@
-- Build process
+# TODO list
 
-  - Calculate the order of build dependencies depending on the order of the package.json.
-  - Build the dependencies in order.
+TODO: Sort alphabetically the packages scripts in the script selector component
 
-- Sync process
+TODO: Refresh branches when focus on app window
 
-  - Try to use npm workspaces to sync the dependencies.
-
----
+TODO: Inject dependency in dependency selector --- or something similar

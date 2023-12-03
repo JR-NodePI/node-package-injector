@@ -51,6 +51,7 @@ export default class TerminalService {
     traceOnTime = false,
     abortController,
     ignoreStderrErrors = false,
+    resolveTimeout,
     resolveTimeoutAfterFirstOutput,
     syncMode,
     addIcons,
@@ -61,7 +62,7 @@ export default class TerminalService {
       throw new Error('Terminal is not enabled');
     }
 
-    if (TerminalService.isWSLAvailable == null) {
+    if (TerminalService.isWSLAvailable == null && !skipWSL) {
       TerminalService.isWSLAvailable = false;
       TerminalService.isWSLAvailable = await TerminalService.checkWSL(
         cwd ?? '',
@@ -91,6 +92,7 @@ export default class TerminalService {
         traceOnTime,
         abortController,
         ignoreStderrErrors,
+        resolveTimeout,
         resolveTimeoutAfterFirstOutput,
         syncMode,
         addIcons,
