@@ -9,10 +9,11 @@ export type PackageScriptRendererProps = {
   script: PackageScript;
   scriptOptions: SelectProps.SelectOption<PackageScript>[];
   showAddButton: boolean;
+  showRemoveButton: boolean;
   isDraggable?: boolean;
 };
 
 export type PackageScriptButtonsProps = Pick<
   PackageScriptRendererProps,
-  'index' | 'onAdd' | 'onRemove' | 'showAddButton'
+  'index' | 'onAdd' | 'onRemove' | 'showAddButton' | 'showRemoveButton'
 >;

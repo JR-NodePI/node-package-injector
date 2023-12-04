@@ -105,7 +105,7 @@ export default function SyncDirectorySelector({
         field={
           <div className={c(styles.selectors)}>
             <Select
-              title="Src directory..."
+              title="The source code directory of your dependency to sync."
               className={c(styles.selectors_src_path)}
               id={srcDirId}
               key={cwd}
@@ -117,10 +117,10 @@ export default function SyncDirectorySelector({
             {index > 0 && (
               <FormValidationRules rules={[ValidationRules.required()]}>
                 <InputText
-                  title="Target sub-directory"
+                  title="The directory in your target package where the sync files will be placed."
                   className={c(styles.target_path_selector)}
                   cleanable
-                  placeholder="Target sub-directory..."
+                  placeholder="Type target sync sub-directory..."
                   value={initialTargetPath}
                   onChange={handleTargetPathChange}
                 />
