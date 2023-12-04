@@ -5,6 +5,7 @@ import {
 } from 'fratch-ui/components';
 import { c } from 'fratch-ui/helpers';
 
+import FormValidationProvider from './appComponents/FormValidation/FormValidationProvider';
 import GlobalDataProvider from './appComponents/GlobalDataProvider/GlobalDataProvider';
 import Main from './appComponents/Main';
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
@@ -17,13 +18,15 @@ export default function App(): JSX.Element {
     <ErrorBoundary>
       <ColorSchemeProvider>
         <GlobalDataProvider>
-          <ModalProvider>
-            <ToasterProvider listClassName={c(styles.toaster_list)}>
-              <Layout>
-                <Main />
-              </Layout>
-            </ToasterProvider>
-          </ModalProvider>
+          <FormValidationProvider>
+            <ModalProvider>
+              <ToasterProvider listClassName={c(styles.toaster_list)}>
+                <Layout>
+                  <Main />
+                </Layout>
+              </ToasterProvider>
+            </ModalProvider>
+          </FormValidationProvider>
         </GlobalDataProvider>
       </ColorSchemeProvider>
     </ErrorBoundary>

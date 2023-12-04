@@ -1,5 +1,7 @@
 import { useState } from 'react';
 
+import FormValidationRules from '@renderer/appComponents/FormValidation/FormValidationField';
+import ValidationRules from '@renderer/appComponents/FormValidation/ValidationRules';
 import type DependencyPackage from '@renderer/models/DependencyPackage';
 import SyncDirectory from '@renderer/models/SyncDirectory';
 import PathService from '@renderer/services/PathService';
@@ -103,7 +105,7 @@ export default function SyncDirectorySelector({
         field={
           <div className={c(styles.selectors)}>
             <Select
-              title="Src directory..."
+              title="The source code directory of your dependency to sync."
               className={c(styles.selectors_src_path)}
               id={srcDirId}
               key={cwd}
@@ -112,14 +114,18 @@ export default function SyncDirectorySelector({
               placeholder="Select src directory..."
               searchable
             />
-            <InputText
-              title="Target sub directory"
-              className={c(styles.selectors_target_path)}
-              cleanable
-              placeholder="Target sub directory..."
-              value={initialTargetPath}
-              onChange={handleTargetPathChange}
-            />
+            {index > 0 && (
+              <FormValidationRules rules={[ValidationRules.required()]}>
+                <InputText
+                  title="The directory in your target package where the sync files will be placed."
+                  className={c(styles.target_path_selector)}
+                  cleanable
+                  placeholder="Type target sync sub-directory..."
+                  value={initialTargetPath}
+                  onChange={handleTargetPathChange}
+                />
+              </FormValidationRules>
+            )}
             {additionalComponent}
           </div>
         }
