@@ -253,6 +253,7 @@ export default function PackageScripts({
       draggable={isDraggable}
       items={(selectedScripts ?? []).map<DraggableItem<PackageScript>>(
         (script, index) => {
+          const showRemoveButton = (selectedScripts ?? []).length > 1;
           const showAddButton =
             index === (selectedScripts ?? []).length - 1 &&
             scriptOptions.length > (selectedScripts ?? []).length;
@@ -270,6 +271,7 @@ export default function PackageScripts({
                 script={script}
                 scriptOptions={scriptOptionsHiddenUsed}
                 showAddButton={showAddButton}
+                showRemoveButton={showRemoveButton}
               />
             ),
           };
