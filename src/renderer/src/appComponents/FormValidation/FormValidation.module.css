@@ -1,0 +1,23 @@
+.wrapper {
+  position: relative;
+}
+.wrapper input[type='text'] {
+  outline: solid 2px var(--ft-color-error);
+  position: relative;
+}
+.wrapper .error {
+  position: absolute;
+  background-color: var(--ft-color-error);
+  color: var(--ft-color-lightest);
+  display: block;
+  box-sizing: border-box;
+  max-width: calc(100% - 16px);
+  font-size: 0.8em;
+  padding: 4px 12px;
+  right: 8px;
+  bottom: 100%;
+  border-radius: var(--ft-form-item-border-radius)
+    var(--ft-form-item-border-radius) 0 0;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
