@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import FormValidationRules from '@renderer/appComponents/FormValidation/FormValidationRules';
 import type DependencyPackage from '@renderer/models/DependencyPackage';
 import SyncDirectory from '@renderer/models/SyncDirectory';
 import PathService from '@renderer/services/PathService';
@@ -112,14 +113,18 @@ export default function SyncDirectorySelector({
               placeholder="Select src directory..."
               searchable
             />
-            <InputText
-              title="Target sub directory"
-              className={c(styles.selectors_target_path)}
-              cleanable
-              placeholder="Target sub directory..."
-              value={initialTargetPath}
-              onChange={handleTargetPathChange}
-            />
+            {index > 0 && (
+              <FormValidationRules>
+                <InputText
+                  title="Write target sub-directory"
+                  className={c(styles.target_path_selector)}
+                  cleanable
+                  placeholder="Write target sub-directory..."
+                  value={initialTargetPath}
+                  onChange={handleTargetPathChange}
+                />
+              </FormValidationRules>
+            )}
             {additionalComponent}
           </div>
         }
