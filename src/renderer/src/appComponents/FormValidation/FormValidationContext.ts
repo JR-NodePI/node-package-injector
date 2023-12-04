@@ -1,9 +1,9 @@
 import React from 'react';
 
-export type FormValidationProps = {
-  addValidator?: (() => void) => void;
-};
+import type { FormValidationContextProps } from './FormValidationTypes';
 
-const FormValidationContext = React.createContext<FormValidationProps>({});
+const FormValidationContext = React.createContext<FormValidationContextProps>(
+  {}
+);
 
 export default FormValidationContext;

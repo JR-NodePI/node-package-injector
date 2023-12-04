@@ -15,6 +15,7 @@ import { c } from 'fratch-ui/helpers';
 import useDeepCompareEffect from 'use-deep-compare-effect';
 
 import StartService from '../../services/RunService/StartService';
+import useFormValidation from '../FormValidation/useFormValidation';
 import useGlobalData from '../GlobalDataProvider/useGlobalData';
 
 import styles from './RunProcess.module.css';
@@ -42,6 +43,8 @@ const STATUSES = {
 type STATUS = (typeof STATUSES)[keyof typeof STATUSES];
 
 export default function RunProcess(): JSX.Element {
+  const form = useFormValidation();
+
   const { loading, isValidTerminal } = useGlobalData();
 
   const { addToaster } = useContext(ToasterListContext);
@@ -153,7 +156,12 @@ export default function RunProcess(): JSX.Element {
     syncAbortController,
   ]);
 
-  const handleRunClick = (): void => {
+  const handleRunClick = async (): Promise<void> => {
+    const isValid = await form.validate?.();
+    if (!isValid) {
+      return;
+    }
+
     setAbortController(new AbortController());
     setSyncAbortController(new AbortController());
   };

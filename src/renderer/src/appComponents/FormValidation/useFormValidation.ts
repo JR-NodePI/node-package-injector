@@ -1,19 +1,12 @@
 import { useContext } from 'react';
 
-import FormValidationContext, {
-  type FormValidationProps,
-} from './FormValidationContext';
+import FormValidationContext from './FormValidationContext';
+import { FormValidationContextProps } from './FormValidationTypes';
 
-export type useFormValidationProps = {
-  rules: Array<(value?: unknown) => boolean>;
-  value?: unknown;
-};
-
-export default function useFormValidation({
-  rules,
-  value,
-}: useFormValidationProps): { errors: string[] } {
-  const { addValidator } = useContext(FormValidationContext);
-  console.log('>>>----->> ', rules, value);
-  return { errors: ['Error'] };
+export default function useFormValidation(): Pick<
+  FormValidationContextProps,
+  'validate' | 'validators'
+> {
+  const { validate, validators } = useContext(FormValidationContext);
+  return { validate, validators };
 }
