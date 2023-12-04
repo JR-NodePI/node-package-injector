@@ -17,6 +17,7 @@ export function PackageScriptRenderer({
   script,
   scriptOptions,
   showAddButton,
+  showRemoveButton,
 }: PackageScriptRendererProps): JSX.Element {
   const handleOnChange = (script?: PackageScript): void => {
     onChange(index, script);
@@ -48,6 +49,7 @@ export function PackageScriptRenderer({
           onAdd={onAdd}
           onRemove={onRemove}
           showAddButton={showAddButton}
+          showRemoveButton={showRemoveButton}
         />
       }
     />

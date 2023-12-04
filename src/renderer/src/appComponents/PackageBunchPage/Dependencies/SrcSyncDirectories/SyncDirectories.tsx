@@ -98,6 +98,7 @@ export default function SyncDirectories({
         Source code directories to sync
       </p>
       {syncDirectories?.map<ReactNode>((syncDirectory, index) => {
+        const showRemoveButton = syncDirectories.length > 1;
         const showAddButton = index === syncDirectories.length - 1;
         return (
           <SyncDirectorySelector
@@ -113,16 +114,19 @@ export default function SyncDirectories({
             syncDirectory={syncDirectory}
             additionalComponent={
               <div className={c(styles.selector_buttons)}>
-                <Button
-                  onClick={(event): void => {
-                    event.preventDefault();
-                    handleRemoveSrcDirectory(index);
-                  }}
-                  Icon={IconClose}
-                  size="smaller"
-                  isRound
-                  label="Remove source code directory"
-                />
+                {showRemoveButton && (
+                  <Button
+                    onClick={(event): void => {
+                      event.preventDefault();
+                      handleRemoveSrcDirectory(index);
+                    }}
+                    Icon={IconClose}
+                    size="smaller"
+                    isRound
+                    label="Remove source code directory"
+                  />
+                )}
+
                 {showAddButton && (
                   <Button
                     type="tertiary"

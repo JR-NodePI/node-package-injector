@@ -10,19 +10,22 @@ export default function PackageScriptButtons({
   onAdd,
   onRemove,
   showAddButton,
+  showRemoveButton,
 }: PackageScriptButtonsProps): JSX.Element {
   return (
     <div className={c(styles.add_script_buttons)}>
-      <Button
-        onClick={(event): void => {
-          event.preventDefault();
-          onRemove(index);
-        }}
-        Icon={IconClose}
-        size="smaller"
-        isRound
-        label="Remove package script"
-      />
+      {showRemoveButton && (
+        <Button
+          onClick={(event): void => {
+            event.preventDefault();
+            onRemove(index);
+          }}
+          Icon={IconClose}
+          size="smaller"
+          isRound
+          label="Remove package script"
+        />
+      )}
       {showAddButton && (
         <Button
           type="tertiary"
@@ -33,7 +36,7 @@ export default function PackageScriptButtons({
           Icon={IconPlus}
           size="smaller"
           isRound
-          label="Add an package script"
+          label="Add package script"
         />
       )}
     </div>
