@@ -68,6 +68,7 @@ export default function AdditionalPackageScripts(): JSX.Element {
       <p className={c(styles.title)}>🤖 custom package scripts</p>
       <div className={c(styles.overflow)}>
         {additionalPackageScripts.map(({ scriptName, scriptValue }, index) => {
+          const showRemoveButton = additionalPackageScripts.length > 1;
           const showAddButton = index === additionalPackageScripts.length - 1;
 
           return (
@@ -93,6 +94,7 @@ export default function AdditionalPackageScripts(): JSX.Element {
                 onAdd={handleAdd}
                 onRemove={handleRemove}
                 showAddButton={showAddButton}
+                showRemoveButton={showRemoveButton}
               />
             </div>
           );
