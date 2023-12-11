@@ -1,5 +1,7 @@
 # TODO list
 
+TODO: Show spinner in the tab when the process is running
+
 TODO: Add a summary of packages process while running process
 
 - try to show the host url of the post-build script "start"
