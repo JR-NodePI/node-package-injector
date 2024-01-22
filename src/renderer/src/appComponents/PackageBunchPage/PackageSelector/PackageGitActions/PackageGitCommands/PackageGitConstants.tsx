@@ -1,18 +1,25 @@
 export const GIT_COMMANDS = {
-  pull: { label: 'git pull', value: 'pull', needsConfirmation: false } as const,
+  pull: {
+    label: 'git pull',
+    commands: ['pull'],
+    needsConfirmation: false,
+  } as const,
   fetch: {
     label: 'git fetch',
-    value: 'fetch',
+    commands: ['fetch'],
     needsConfirmation: false,
   } as const,
   clean: {
-    label: 'git checkout .',
-    value: ['checkout', '.'],
+    label: 'git clean',
+    commands: [
+      ['clean', '-df'],
+      ['checkout', '--', '.'],
+    ] as const,
     needsConfirmation: true,
   } as const,
   reset: {
-    label: 'git reset --hard HEAD~1',
-    value: ['reset', '--hard', 'HEAD~1'],
+    label: 'git hard reset ~1',
+    commands: [['reset', '--hard', 'HEAD~1']],
     needsConfirmation: true,
   } as const,
 } as const;
