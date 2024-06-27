@@ -22,14 +22,15 @@
     "test": "vitest --run --config ./vitest.config.ts",
     "test:cover": "yarn test run --coverage"
   },
-  "engines" : {
-    "node" : ">=20.11.0",
-    "npm" : ">=10.4.0",
-    "yarn" : ">=1.22.21"
+  "engines": {
+    "node": ">=20.11.0",
+    "npm": ">=10.4.0",
+    "yarn": ">=1.22.21"
   },
   "dependencies": {
     "@electron-toolkit/preload": "2.0.0",
     "@electron-toolkit/utils": "2.0.1",
+    "electron-config": "2.0.0",
     "electron-updater": "6.1.4",
     "fratch-ui": "1.8.4",
     "lodash": "4.17.21",
