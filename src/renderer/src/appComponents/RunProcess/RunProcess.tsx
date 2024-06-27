@@ -1,5 +1,6 @@
 import { useCallback, useContext, useState } from 'react';
 
+import type PackageBunch from '@renderer/models/PackageBunch';
 import RunService, {
   ProcessServiceResponse,
 } from '@renderer/services/RunService/RunService';
@@ -48,14 +49,14 @@ export default function RunProcess(): JSX.Element {
   const { loading, isValidTerminal } = useGlobalData();
 
   const { addToaster } = useContext(ToasterListContext);
-  const {
-    additionalPackageScripts,
-    activeTargetPackage,
-    activeDependencies,
-    isWSLActive,
-  } = useGlobalData();
+  const { activePackageBunch, additionalPackageScripts, isWSLActive } =
+    useGlobalData();
 
   const [status, setStatus] = useState<STATUS>(STATUSES.IDLE);
+
+  const [runActivePackageBunch, setRunActivePackageBunch] =
+    useState<PackageBunch | null>();
+
   const [abortController, setAbortController] =
     useState<AbortController | null>();
   const [syncAbortController, setSyncAbortController] =
@@ -101,6 +102,7 @@ export default function RunProcess(): JSX.Element {
 
     const run = async (): Promise<void> => {
       const mustRun =
+        runActivePackageBunch != null &&
         abortController?.signal != null &&
         !abortController.signal.aborted &&
         syncAbortController?.signal != null &&
@@ -116,8 +118,8 @@ export default function RunProcess(): JSX.Element {
 
       const output = await StartService.run({
         additionalPackageScripts,
-        targetPackage: activeTargetPackage,
-        dependencies: activeDependencies,
+        targetPackage: runActivePackageBunch.targetPackage,
+        dependencies: runActivePackageBunch.dependencies,
         abortController,
         syncAbortController,
         isWSLActive,
@@ -148,11 +150,10 @@ export default function RunProcess(): JSX.Element {
     };
   }, [
     abortController,
-    activeDependencies,
-    activeTargetPackage,
     additionalPackageScripts,
     displayProcessMessages,
     isWSLActive,
+    runActivePackageBunch,
     syncAbortController,
   ]);
 
@@ -162,6 +163,7 @@ export default function RunProcess(): JSX.Element {
       return;
     }
 
+    setRunActivePackageBunch(activePackageBunch);
     setAbortController(new AbortController());
     setSyncAbortController(new AbortController());
   };
@@ -169,6 +171,8 @@ export default function RunProcess(): JSX.Element {
   const handleStopClick = (): void => {
     abortController?.abort();
     syncAbortController?.abort();
+
+    setRunActivePackageBunch(null);
     setAbortController(null);
     setSyncAbortController(null);
   };
@@ -185,10 +189,12 @@ export default function RunProcess(): JSX.Element {
   const isSyncing = status.value === STATUSES.SYNCING.value;
 
   const isRunning = isAfterBuilding || isBuilding || isSyncing;
+  const isSpinning =
+    isRunning && runActivePackageBunch?.id === activePackageBunch.id;
 
   const isRunEnabled =
-    activeTargetPackage?.isValidPackage &&
-    activeDependencies?.every(d => d.isValidPackage);
+    activePackageBunch.targetPackage?.isValidPackage &&
+    activePackageBunch.dependencies?.every(d => d.isValidPackage);
 
   if (loading || !isValidTerminal) {
     return <></>;
@@ -196,15 +202,35 @@ export default function RunProcess(): JSX.Element {
 
   return (
     <>
-      {isRunning && (
+      {isSpinning && (
         <Spinner
           cover
           inverted={isSyncing}
           type={isSyncing ? 'primary' : 'secondary'}
           label={processMsg}
+          className={c(styles.run_process_spinner)}
         />
       )}
-      {!isRunning ? (
+      {isRunning ? (
+        <>
+          {!isSpinning && (
+            <p className={c(styles.mini_run_summary)}>
+              <span
+                className={c(styles.mini_run_summary_bullet)}
+                style={{ backgroundColor: runActivePackageBunch?.color }}
+              ></span>
+              {runActivePackageBunch?.name}: <i>{processMsg}</i>
+            </p>
+          )}
+          <Button
+            Icon={IconClose}
+            className={c(styles.stop_button)}
+            label="Stop"
+            type={isSyncing ? 'tertiary' : 'secondary'}
+            onClick={handleStopClick}
+          />
+        </>
+      ) : (
         <Button
           disabled={!isRunEnabled}
           Icon={IconPlay}
@@ -212,14 +238,6 @@ export default function RunProcess(): JSX.Element {
           label="Run"
           type="primary"
           onClick={handleRunClick}
-        />
-      ) : (
-        <Button
-          Icon={IconClose}
-          className={c(styles.stop_button)}
-          label="Stop"
-          type={isSyncing ? 'tertiary' : 'secondary'}
-          onClick={handleStopClick}
         />
       )}
     </>
