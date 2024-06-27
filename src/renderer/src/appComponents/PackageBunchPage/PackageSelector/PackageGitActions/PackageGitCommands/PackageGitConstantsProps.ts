@@ -8,6 +8,6 @@ export type PackageGitCommandsProps = {
 
 export type GitCommandName = keyof typeof GIT_COMMANDS;
 
-export type GitCommandValue = (typeof GIT_COMMANDS)[GitCommandName]['value'];
+export type GitCommands = (typeof GIT_COMMANDS)[GitCommandName]['commands'];
 
 export type GitCommand = string | string[];

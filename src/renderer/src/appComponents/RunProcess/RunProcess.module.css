@@ -4,3 +4,39 @@
   z-index: 9999;
   width: 150px;
 }
+
+.run_process_spinner {
+  --ft-packages-spinner-top: calc(
+    var(--ft-header-height) + var(--ft-packages-tabs-height)
+  );
+  top: var(--ft-packages-spinner-top) !important;
+
+  height: calc(
+    100vh -
+      calc(
+        var(--ft-packages-spinner-top) + calc(var(--ft-footer-height) - 32px)
+      )
+  ) !important;
+}
+
+.mini_run_summary {
+  margin: 6px 0;
+  padding: 0 24px 0 12px;
+  box-sizing: border-box;
+  border-radius: 26px;
+  height: 40px;
+  display: flex;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
+  align-items: center;
+  border: var(--ft-color-grey-1) solid 1px;
+  font-size: 12px;
+}
+.mini_run_summary_bullet {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  border-radius: 100%;
+  border: solid 1px var(--ft-color-grey-4);
+}

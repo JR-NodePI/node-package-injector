@@ -9,7 +9,7 @@ import { GIT_COMMANDS } from './PackageGitConstants';
 import type {
   GitCommand,
   GitCommandName,
-  GitCommandValue,
+  GitCommands,
   PackageGitCommandsProps,
 } from './PackageGitConstantsProps';
 
@@ -24,24 +24,28 @@ export default function PackageGitCommands({
   const [isLoading, setIsLoading] = useState<GitCommandName | null>(null);
 
   const handleGitCommand =
-    (name: GitCommandName, gitCommand: GitCommandValue) =>
+    (name: GitCommandName, commands: GitCommands) =>
     async (): Promise<void> => {
       setIsLoading(name);
-      await GitService.executeCommand(cwd, gitCommand as GitCommand);
+      for (const command of commands) {
+        await GitService.executeCommand(cwd, command as GitCommand);
+      }
       setIsLoading(null);
     };
 
   const handleGitCommandLoadBranches =
-    (name: GitCommandName, gitCommand: GitCommandValue) =>
+    (name: GitCommandName, commands: GitCommands) =>
     async (): Promise<void> => {
       setIsLoading(name);
-      await GitService.executeCommand(cwd, gitCommand as GitCommand);
+      for (const command of commands) {
+        await GitService.executeCommand(cwd, command as GitCommand);
+      }
       await loadBranches();
       setIsLoading(null);
     };
 
   const handleConfirmGitCommand =
-    (name: GitCommandName, gitCommand: GitCommandValue) =>
+    (name: GitCommandName, gitCommand: GitCommands) =>
     async (): Promise<void> => {
       showModalConfirm({
         title: `Git Command: git ${
@@ -58,24 +62,24 @@ export default function PackageGitCommands({
 
   const getHandleClick = (
     name: GitCommandName,
-    gitCommand: GitCommandValue,
+    commands: GitCommands,
     needsConfirmation: boolean
   ): (() => Promise<void>) => {
     if (needsConfirmation) {
-      return handleConfirmGitCommand(name, gitCommand);
+      return handleConfirmGitCommand(name, commands);
     }
 
     if (['fetch', 'pull'].includes(name)) {
-      return handleGitCommandLoadBranches(name, gitCommand);
+      return handleGitCommandLoadBranches(name, commands);
     }
 
-    return handleGitCommand(name, gitCommand);
+    return handleGitCommand(name, commands);
   };
 
   const buttonsDisabled = disabled || isLoading != null;
 
   const items: JSX.Element[] = Object.entries(GIT_COMMANDS).map(
-    ([name, { label, value, needsConfirmation }]) => {
+    ([name, { label, commands, needsConfirmation }]) => {
       return (
         <Button
           key={name}
@@ -86,7 +90,7 @@ export default function PackageGitCommands({
           Icon={name === isLoading ? Spinner : IconGit}
           onClick={getHandleClick(
             name as GitCommandName,
-            value,
+            commands,
             needsConfirmation
           )}
         >
