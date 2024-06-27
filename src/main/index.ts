@@ -1,23 +1,18 @@
 import { electronApp, is, optimizer } from '@electron-toolkit/utils';
 import { fork } from 'child_process';
 import { app, BrowserWindow, ipcMain, Menu, shell } from 'electron';
+import Config from 'electron-config';
 import path from 'path';
+
+const config = new Config();
 
 import { extraResourcesPath } from '../preload/constants';
 import { createAppMenu, getMenuItemsTemplate } from './menu';
-import {
-  INI_WINDOW_HEIGHT,
-  INI_WINDOW_WIDTH,
-  loadWindowRect,
-  saveWindowRect,
-} from './windowRect';
 
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    ...loadWindowRect(),
-    minWidth: INI_WINDOW_WIDTH,
-    minHeight: INI_WINDOW_HEIGHT,
+    ...(config.get('winBounds') ?? {}),
     titleBarStyle: process.platform === 'linux' ? 'default' : 'hidden',
     titleBarOverlay: {
       color: '#5858f0',
@@ -33,26 +28,21 @@ function createWindow(): void {
       contextIsolation: false,
       sandbox: false,
     },
+    show: false,
   });
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show();
   });
 
-  mainWindow.on('move', () => {
-    saveWindowRect(mainWindow);
-  });
-  mainWindow.on('resize', () => {
-    saveWindowRect(mainWindow);
-  });
-
   let isReadyToClose = false;
   mainWindow.on('close', event => {
-    saveWindowRect(mainWindow);
     if (isReadyToClose === false) {
       event.preventDefault();
       mainWindow.webContents.send('before-close');
     }
+
+    config.set('winBounds', mainWindow.getBounds());
   });
 
   ipcMain.on('reset-kill-all-quit', (_event, data) => {
