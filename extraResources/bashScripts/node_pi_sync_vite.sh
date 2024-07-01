@@ -56,12 +56,16 @@ config.resolve = {
   ...(config?.resolve ?? {}),
   alias: [...syncAlias, ...(config.resolve?.alias ?? [])],
 };
+config.optimizeDeps = {
+  ...(config?.optimizeDeps ?? {}),
+  exclude: [...(config?.optimizeDeps?.exclude ?? []), ...nodePiSyncModules],
+};
 export default config;
 " >"${NODE_PI_FILE_PREFIX}/${VITE_CONFIG_FILE_NAME}"
 }
 
 replace_vite_config_file_in_package_json() {
-  local PATTERN_SEC_1='(: *"([^&]+&&)? *vite)'                                               # find the vite section inside a package.json script
+  local PATTERN_SEC_1='(: *"([^&]+&&)?[^v]*vite)'                                            # find the vite section inside a package.json script
   local PATTERN_SEC_2="((.*)--config.*\.(js|ts|cjs) *'?)?"                                   # find the optional --config inside the vite section
   local PATTERN_SEC_3='(([^&]+&&)?[^"]*")'                                                   # find the end of the package.json script line
   local REPLACEMENT="\1 --config='.\/${NODE_PI_FILE_PREFIX}\/${VITE_CONFIG_FILE_NAME}' \4\6" # replacement for the vite section with the new vite config file
