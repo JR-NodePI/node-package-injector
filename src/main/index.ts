@@ -10,9 +10,17 @@ import { extraResourcesPath } from '../preload/constants';
 import { createAppMenu, getMenuItemsTemplate } from './menu';
 
 function createWindow(): void {
+  const windowBounds: Record<string, number> = config.get('winBounds');
+
+  const isUnsecurePositioning = Object.values(windowBounds).some(
+    value => value < 0
+  );
+
+  const secureWindowBounds = isUnsecurePositioning ? {} : windowBounds;
+
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    ...(config.get('winBounds') ?? {}),
+    ...secureWindowBounds,
     titleBarStyle: process.platform === 'linux' ? 'default' : 'hidden',
     titleBarOverlay: {
       color: '#5858f0',
