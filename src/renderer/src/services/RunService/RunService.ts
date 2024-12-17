@@ -29,8 +29,7 @@ export default class RunService {
       return;
     }
 
-    const traceOnTime = true;
-    const cwd = await PathService.getHomePath(isWSLActive, traceOnTime);
+    const cwd = await PathService.getHomePath(isWSLActive);
 
     const TARGET_PACKAGE_CWD = await WSLService.cleanSWLRoot(
       packageBunch.targetPackage.cwd ?? '',
@@ -69,7 +68,7 @@ export default class RunService {
         ],
         cwd,
         skipWSL: true,
-        traceOnTime,
+        traceOnTime: true,
       });
       consoleGroup.close();
     }

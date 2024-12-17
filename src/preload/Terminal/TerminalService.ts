@@ -1,4 +1,3 @@
-import ConsoleGroup from './ConsoleGroup';
 import { ExecuteCommandOutputType } from './TerminalConstants';
 import TerminalRepository from './TerminalRepository';
 import {

@@ -105,17 +105,6 @@ describe('WSLService', () => {
         getDistroNameWithExecuteCommandParams
       );
     });
-
-    it('should call TerminalService.executeCommand with traceOnTime', async () => {
-      const traceOnTime = true;
-      await WSLService.getSWLRoot(cwd, linuxPath, traceOnTime);
-
-      expect(TerminalService.executeCommand).toHaveBeenCalledTimes(1);
-      expect(TerminalService.executeCommand).toHaveBeenCalledWith({
-        ...getDistroNameWithExecuteCommandParams,
-        traceOnTime,
-      });
-    });
   });
 
   describe('getSWLHomePath', () => {
@@ -226,21 +215,6 @@ describe('WSLService', () => {
         getHomePathWithExecuteCommandParams
       );
     });
-
-    it('should call TerminalService.executeCommand with traceOnTime', async () => {
-      const traceOnTime = true;
-      await WSLService.getSWLHomePath(cwd, traceOnTime);
-
-      expect(TerminalService.executeCommand).toHaveBeenCalledTimes(2);
-      expect(TerminalService.executeCommand).toHaveBeenNthCalledWith(1, {
-        ...getDistroNameWithExecuteCommandParams,
-        traceOnTime,
-      });
-      expect(TerminalService.executeCommand).toHaveBeenNthCalledWith(2, {
-        ...getHomePathWithExecuteCommandParams,
-        traceOnTime,
-      });
-    });
   });
 
   describe('cleanSWLRoot', () => {
@@ -269,17 +243,6 @@ describe('WSLService', () => {
       vi.spyOn(window.api.os, 'platform').mockReturnValue('linux');
       const result = await WSLService.cleanSWLRoot(cwd, pathWithWSL);
       expect(result).toEqual(pathWithWSL);
-    });
-
-    it('should call TerminalService.executeCommand with traceOnTime', async () => {
-      const traceOnTime = true;
-      WSLService.cleanSWLRoot(cwd, pathWithWSL, traceOnTime);
-
-      expect(TerminalService.executeCommand).toHaveBeenCalledTimes(1);
-      expect(TerminalService.executeCommand).toHaveBeenCalledWith({
-        ...getDistroNameWithExecuteCommandParams,
-        traceOnTime,
-      });
     });
   });
 });

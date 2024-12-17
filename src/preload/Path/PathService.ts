@@ -2,7 +2,6 @@ import os from 'os';
 import path from 'path';
 
 import { extraResourcesPath } from '../constants';
-import TerminalService from '../Terminal/TerminalService';
 import WSLService, { WSL_DOMAIN } from '../WSL/WSLService';
 
 export default class PathService {
@@ -57,14 +56,9 @@ export default class PathService {
       .filter(Boolean);
   }
 
-  public static async getHomePath(
-    isWSLActive?: boolean,
-    traceOnTime?: boolean
-  ): Promise<string> {
+  public static async getHomePath(isWSLActive?: boolean): Promise<string> {
     const homedir = os.homedir();
-    return isWSLActive
-      ? await WSLService.getSWLHomePath(homedir, traceOnTime)
-      : homedir;
+    return isWSLActive ? await WSLService.getSWLHomePath(homedir) : homedir;
   }
 
   public static normalizeWin32Path(path: string): string {
@@ -80,35 +74,5 @@ export default class PathService {
     return PathService.normalizeWin32Path(
       path.join(extraResourcesPath, 'bashScripts', scriptFileName)
     );
-  }
-
-  public static async getTmpDir({
-    isWSLActive,
-    skipWSLRoot,
-    traceOnTime,
-  }: {
-    isWSLActive?: boolean;
-    skipWSLRoot?: boolean;
-    traceOnTime?: boolean;
-  }): Promise<string> {
-    if (os.platform() !== 'win32') {
-      return os.tmpdir();
-    }
-
-    if (isWSLActive) {
-      const cwd = await PathService.getHomePath(isWSLActive, traceOnTime);
-      const { content: tmpDir = '' } = await TerminalService.executeCommand({
-        command: 'systemd-path',
-        args: ['temporary'],
-        traceOnTime: true,
-        cwd,
-      });
-
-      return skipWSLRoot
-        ? tmpDir
-        : await WSLService.getSWLRoot(cwd, tmpDir, traceOnTime);
-    }
-
-    return os.tmpdir();
   }
 }

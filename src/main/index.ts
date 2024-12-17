@@ -6,6 +6,11 @@ import path from 'path';
 
 const config = new Config();
 
+import {
+  installExtension,
+  REACT_DEVELOPER_TOOLS,
+} from 'electron-devtools-installer';
+
 import { extraResourcesPath } from '../preload/constants';
 import { createAppMenu, getMenuItemsTemplate } from './menu';
 
@@ -91,6 +96,10 @@ function createWindow(): void {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(async () => {
+  if (is.dev) {
+    await installExtension(REACT_DEVELOPER_TOOLS);
+    await installExtension(REACT_DEVELOPER_TOOLS);
+  }
   // Set app user model id for windows
   electronApp.setAppUserModelId('github.com/JorgeRojo/node-package-injector');
 
