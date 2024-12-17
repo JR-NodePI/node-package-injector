@@ -6,6 +6,7 @@ import path from 'node:path';
 
 import { extraResourcesPath, isDevMode } from './constants';
 import PathService from './Path/PathService';
+import ConsoleGroup from './Terminal/ConsoleGroup';
 import TerminalService from './Terminal/TerminalService';
 import WSLService from './WSL/WSLService';
 
@@ -17,6 +18,7 @@ const api = {
   os,
   path,
   PathService,
+  ConsoleGroup,
   TerminalService,
   WSLService,
 };

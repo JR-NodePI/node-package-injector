@@ -31,6 +31,7 @@ export default class WSLService {
         cwd,
         skipWSL: true,
         traceOnTime,
+        groupLogsLabel: 'WSL get distro name',
       });
 
       const patternDistroMatch = /\([^)]+\)/;
@@ -103,7 +104,7 @@ export default class WSLService {
           args: ['-e', 'ls', '/home'],
           cwd,
           skipWSL: true,
-          traceOnTime,
+          groupLogsLabel: 'WSL get home path',
         });
 
         username = (content ?? '').split(/[\n\r]/g)[0] || '';

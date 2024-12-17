@@ -1,4 +1,7 @@
-import { NODE_PI_FILE_PREFIX } from '@renderer/constants';
+import {
+  NODE_PI_FILE_PREFIX,
+  TYPICAL_BUILD_DIRECTORIES,
+} from '@renderer/constants';
 import type DependencyPackage from '@renderer/models/DependencyPackage';
 import NodePackage from '@renderer/models/NodePackage';
 
@@ -104,7 +107,7 @@ export default class NodeService {
     return {};
   }
 
-  public static async getPackageBuildedPath(
+  public static async getPackageDistDir(
     nodePackage: NodePackage
   ): Promise<TerminalResponse> {
     if (!nodePackage.packageName) {
@@ -121,19 +124,19 @@ export default class NodeService {
 
     const fileName = `${nodePackage.packageName}-v${nodePackage.version}.tgz`;
 
-    for (const dir of ['', 'dist', '.dist', 'build', '.build', 'out', '.out']) {
+    for (const dir of ['', ...TYPICAL_BUILD_DIRECTORIES]) {
       if (await NodeService.hasFile(nodePackage.cwd, dir, fileName)) {
         const builtPackagePath = window.api.path.join(
           nodePackage.cwd,
           dir,
-          fileName
+          '/'
         );
         return { content: builtPackagePath };
       }
     }
 
     return {
-      error: `There is no built package for ${nodePackage.packageName}`,
+      error: `There is no dist package for ${nodePackage.packageName}`,
     };
   }
 
@@ -143,6 +146,7 @@ export default class NodeService {
       args: [PathService.getExtraResourcesScriptPath('node_pi_check_node.sh')],
       cwd: window.api.path.join(window.api.extraResourcesPath),
       skipWSL: true,
+      groupLogsLabel: 'NODE checks',
     });
     try {
       const data = JSON.parse(output?.content ?? '');
