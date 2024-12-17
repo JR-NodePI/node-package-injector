@@ -316,19 +316,15 @@ export default class BuildService {
       };
     }
 
-    const traceOnTime = true;
-
     const cleanDependencyDistDir = await WSLService.cleanSWLRoot(
       targetPackage.cwd ?? '',
-      dependencyDistDir,
-      traceOnTime
+      dependencyDistDir
     );
 
     const targetPackageDir = PathService.normalizeWin32Path(
       await WSLService.cleanSWLRoot(
         targetPackage.cwd ?? '',
-        window.api.path.join(targetPackage.cwd ?? '', '/'),
-        traceOnTime
+        window.api.path.join(targetPackage.cwd ?? '', '/')
       )
     );
 
@@ -350,7 +346,7 @@ export default class BuildService {
         `"${targetPackageDir}"`,
       ],
       cwd: targetPackage.cwd ?? '',
-      traceOnTime,
+      traceOnTime: true,
       abortController,
     });
 

@@ -13,6 +13,8 @@ echo "> TARGET_PACKAGE_DIR:       "$TARGET_PACKAGE_DIR
 
 cd ${TARGET_PACKAGE_DIR}
 
+### TODO: check the package installer
+
 yarn add "${DEPENDENCY_NAME}@file:${DEPENDENCY_DIST_DIR}"
 
 # rm -r -f ${TMP_DEPENDENCY_DIR}
