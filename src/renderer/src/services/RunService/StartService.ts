@@ -5,7 +5,6 @@ import type PackageScript from '@renderer/models/PackageScript';
 
 import NodeService from '../NodeService/NodeService';
 import { RelatedDependencyProjection } from '../NodeService/NodeServiceTypes';
-import PathService from '../PathService';
 import BuildService from './BuildService';
 import RunService, { type ProcessServiceResponse } from './RunService';
 import SyncService from './SyncService';
@@ -17,7 +16,6 @@ export default class StartService {
     dependencies,
     abortController,
     syncAbortController,
-    isWSLActive,
     onTargetBuildStart,
     onDependenciesBuildStart,
     onDependenciesSyncStart,
@@ -28,7 +26,6 @@ export default class StartService {
     dependencies: DependencyPackage[];
     abortController?: AbortController;
     syncAbortController?: AbortController;
-    isWSLActive?: boolean;
     onTargetBuildStart?: () => void;
     onDependenciesSyncPrepare?: () => void;
     onDependenciesBuildStart?: () => void;
@@ -38,22 +35,6 @@ export default class StartService {
     const successResponses: ProcessServiceResponse[] = [];
 
     await RunService.resetKillAll();
-
-    const tmpDir = await PathService.getTmpDir({
-      isWSLActive,
-      skipWSLRoot: true,
-      traceOnTime: true,
-    });
-
-    if (!tmpDir) {
-      abortController?.abort();
-      return [
-        {
-          error: 'Temporals (/tmp) system directory is not reachable',
-          title: 'System error',
-        },
-      ];
-    }
 
     const outputTitle = 'Invalid package';
 
@@ -101,7 +82,6 @@ export default class StartService {
     const dependenciesResponses = await StartService.runBuildDependencies({
       additionalPackageScripts,
       sortedRelatedDependencies,
-      tmpDir,
       abortController,
     });
     if (RunService.hasError(dependenciesResponses.flat())) {
@@ -118,7 +98,6 @@ export default class StartService {
     const injectDependenciesResponses = await BuildService.injectDependencies({
       targetPackage,
       dependencies: targetDependencies,
-      tmpDir,
       abortController,
     });
     if (RunService.hasError(injectDependenciesResponses)) {
@@ -200,18 +179,15 @@ export default class StartService {
   private static async runBuildDependencies({
     additionalPackageScripts,
     sortedRelatedDependencies,
-    tmpDir,
     abortController,
   }: {
     additionalPackageScripts: PackageScript[];
     sortedRelatedDependencies: RelatedDependencyProjection[];
-    tmpDir: string;
     abortController?: AbortController;
   }): Promise<ProcessServiceResponse[][]> {
     const dependenciesResponses = await BuildService.buildDependencies({
       additionalPackageScripts,
       sortedRelatedDependencies,
-      tmpDir,
       abortController,
     });
 

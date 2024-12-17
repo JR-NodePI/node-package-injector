@@ -9,16 +9,17 @@ export type ExecuteCommandOutput = {
 };
 
 export type ExecuteCommandOptions = {
+  abortController?: AbortController;
+  addIcons?: boolean;
+  args?: string[];
   command: string;
   cwd?: string;
-  args?: string[];
-  traceOnTime?: boolean;
-  abortController?: AbortController;
+  groupLogsLabel?: string;
   ignoreStderrErrors?: boolean;
   resolveTimeout?: number;
   resolveTimeoutAfterFirstOutput?: number;
   syncMode?: boolean;
-  addIcons?: boolean;
+  traceOnTime?: boolean;
 };
 
 export type executeCommandAsyncModeOptions = {
