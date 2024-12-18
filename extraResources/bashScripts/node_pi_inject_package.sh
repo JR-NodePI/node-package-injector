@@ -6,27 +6,23 @@
 DEPENDENCY_NAME=$2
 DEPENDENCY_DIST_DIR=$3
 TARGET_PACKAGE_DIR=$4
+TARGET_PACKAGE_MANAGER=$5
 
 echo "> DEPENDENCY_NAME:          "$DEPENDENCY_NAME
 echo "> DEPENDENCY_DIST_DIR:      "$DEPENDENCY_DIST_DIR
 echo "> TARGET_PACKAGE_DIR:       "$TARGET_PACKAGE_DIR
+echo "> TARGET_PACKAGE_MANAGER:   "$TARGET_PACKAGE_MANAGER
 
 cd ${TARGET_PACKAGE_DIR}
 
-### TODO: check the package installer
+npm pkg delete "dependencies.${DEPENDENCY_NAME}"
+npm pkg delete "devDependencies.${DEPENDENCY_NAME}"
+npm pkg delete "peerDependencies.${DEPENDENCY_NAME}"
 
-yarn add "${DEPENDENCY_NAME}@file:${DEPENDENCY_DIST_DIR}"
-
-# rm -r -f ${TMP_DEPENDENCY_DIR}
-
-# mkdir ${TMP_DEPENDENCY_DIR}
-#
-# tar -xzf ${DEPENDENCY_DIST_DIR} -C ${TMP_DEPENDENCY_DIR}
-#
-# rm -r -f ${TARGET_PACKAGE_DIR}
-#
-# mkdir ${TARGET_PACKAGE_DIR}
-#
-# mv ${TMP_DEPENDENCY_DIR}/package/* ${TARGET_PACKAGE_DIR}
-#
-# rm -r -f ${TMP_DEPENDENCY_DIR}
+if [[ "${TARGET_PACKAGE_MANAGER}" == "yarn" ]]; then
+  yarn add "${DEPENDENCY_NAME}@file:${DEPENDENCY_DIST_DIR}"
+elif [[ "${TARGET_PACKAGE_MANAGER}" == "pnpm" ]]; then
+  pnpm add "${DEPENDENCY_NAME}@file:${DEPENDENCY_DIST_DIR}"
+elif [[ "${TARGET_PACKAGE_MANAGER}" == "npm" ]]; then
+  npm install --save "${DEPENDENCY_NAME}@file:${DEPENDENCY_DIST_DIR}"
+fi

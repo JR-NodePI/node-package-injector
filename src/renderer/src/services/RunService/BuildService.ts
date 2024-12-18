@@ -12,15 +12,19 @@ import PathService from '../PathService';
 import WSLService from '../WSLService';
 import RunService, { type ProcessServiceResponse } from './RunService';
 
+export type PackageManager = 'npm' | 'yarn' | 'pnpm';
+
 export default class BuildService {
   public static async buildDependencies({
-    additionalPackageScripts,
-    sortedRelatedDependencies,
     abortController,
+    additionalPackageScripts,
+    packageManager,
+    sortedRelatedDependencies,
   }: {
-    additionalPackageScripts: PackageScript[];
-    sortedRelatedDependencies: RelatedDependencyProjection[];
     abortController?: AbortController;
+    additionalPackageScripts: PackageScript[];
+    packageManager: PackageManager;
+    sortedRelatedDependencies: RelatedDependencyProjection[];
   }): Promise<ProcessServiceResponse[][]> {
     if (abortController?.signal.aborted) {
       return [
@@ -39,6 +43,7 @@ export default class BuildService {
           additionalPackageScripts,
           relatedDependency,
           abortController,
+          packageManager,
         })
     );
 
@@ -49,13 +54,15 @@ export default class BuildService {
   }
 
   private static async buildSingleDependency({
-    additionalPackageScripts,
-    relatedDependency,
     abortController,
+    additionalPackageScripts,
+    packageManager,
+    relatedDependency,
   }: {
-    additionalPackageScripts: PackageScript[];
-    relatedDependency: RelatedDependencyProjection;
     abortController?: AbortController;
+    additionalPackageScripts: PackageScript[];
+    packageManager: PackageManager;
+    relatedDependency: RelatedDependencyProjection;
   }): Promise<ProcessServiceResponse[]> {
     const outputTitle = `Build dependency: ${
       relatedDependency.dependency.packageName ?? ''
@@ -76,6 +83,7 @@ export default class BuildService {
       targetPackage: dependency,
       dependencies: subDependencies,
       abortController,
+      packageManager,
     });
 
     if (RunService.hasError(injectDependenciesResponses)) {
@@ -89,6 +97,7 @@ export default class BuildService {
       nodePackage: dependency,
       abortController,
       runScriptsTitle: 'Run dependency scripts',
+      packageManager,
     });
 
     if (RunService.hasError(scriptsResponses)) {
@@ -100,17 +109,19 @@ export default class BuildService {
   }
 
   public static async runPackageScripts({
-    additionalPackageScripts,
-    nodePackage,
     abortController,
-    runScriptsTitle = 'Run package scripts',
+    additionalPackageScripts,
     mustRunAfterBuild = false,
+    nodePackage,
+    packageManager,
+    runScriptsTitle = 'Run package scripts',
   }: {
-    additionalPackageScripts: PackageScript[];
-    nodePackage: NodePackage;
     abortController?: AbortController;
-    runScriptsTitle?: string;
+    additionalPackageScripts: PackageScript[];
     mustRunAfterBuild?: boolean;
+    nodePackage: NodePackage;
+    packageManager: PackageManager;
+    runScriptsTitle?: string;
   }): Promise<ProcessServiceResponse[]> {
     if (abortController?.signal.aborted) {
       return [
@@ -165,6 +176,7 @@ export default class BuildService {
           cwd,
           packageName,
           abortController,
+          packageManager,
         })
     );
 
@@ -175,17 +187,19 @@ export default class BuildService {
   }
 
   private static async runPackageSingleScript({
-    additionalPackageScripts,
-    packageScript,
-    cwd,
-    packageName,
     abortController,
+    additionalPackageScripts,
+    cwd,
+    packageManager,
+    packageName,
+    packageScript,
   }: {
-    additionalPackageScripts: PackageScript[];
-    packageScript: PackageScript;
-    cwd: string;
-    packageName?: string;
     abortController?: AbortController;
+    additionalPackageScripts: PackageScript[];
+    cwd: string;
+    packageManager: PackageManager;
+    packageName?: string;
+    packageScript: PackageScript;
   }): Promise<ProcessServiceResponse> {
     const outputTitle = `Run package script: ${packageName} - ${packageScript.scriptName}`;
 
@@ -196,11 +210,7 @@ export default class BuildService {
       };
     }
 
-    let script = (await NodeService.checkYarn(cwd))
-      ? `yarn ${packageScript.scriptName}`
-      : (await NodeService.checkPnpm(cwd))
-      ? `pnpm run ${packageScript.scriptName}`
-      : `npm run ${packageScript.scriptName}`;
+    let script = `${packageManager} run ${packageScript.scriptName}`;
 
     const isAdditionalScript = additionalPackageScripts.find(
       ({ id }) => id === packageScript.id
@@ -230,10 +240,12 @@ export default class BuildService {
     targetPackage,
     dependencies,
     abortController,
+    packageManager,
   }: {
     targetPackage: NodePackage;
     dependencies: DependencyPackage[];
     abortController?: AbortController;
+    packageManager: PackageManager;
   }): Promise<ProcessServiceResponse[]> {
     if (abortController?.signal.aborted) {
       return [
@@ -276,6 +288,7 @@ export default class BuildService {
           dependencyDistDir,
           dependencyName: dependency.packageName,
           abortController,
+          packageManager,
         });
       } else {
         return {
@@ -297,15 +310,17 @@ export default class BuildService {
   }
 
   private static async injectSingleDependency({
-    targetPackage,
+    abortController,
     dependencyDistDir,
     dependencyName,
-    abortController,
+    packageManager,
+    targetPackage,
   }: {
-    targetPackage: NodePackage;
+    abortController?: AbortController;
     dependencyDistDir: string;
     dependencyName: string;
-    abortController?: AbortController;
+    packageManager: PackageManager;
+    targetPackage: NodePackage;
   }): Promise<ProcessServiceResponse> {
     const outputTitle = `Dependency injection: ${dependencyName}`;
 
@@ -344,6 +359,7 @@ export default class BuildService {
         `"${dependencyName}"`,
         `"${cleanDependencyDistDir}"`,
         `"${targetPackageDir}"`,
+        `"${packageManager}"`,
       ],
       cwd: targetPackage.cwd ?? '',
       traceOnTime: true,

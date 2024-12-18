@@ -5,6 +5,7 @@ import type PackageScript from '@renderer/models/PackageScript';
 
 import NodeService from '../NodeService/NodeService';
 import { RelatedDependencyProjection } from '../NodeService/NodeServiceTypes';
+import type { PackageManager } from './BuildService';
 import BuildService from './BuildService';
 import RunService, { type ProcessServiceResponse } from './RunService';
 import SyncService from './SyncService';
@@ -54,13 +55,20 @@ export default class StartService {
       ];
     }
 
+    const packageManager = (await NodeService.checkYarn(targetPackage.cwd))
+      ? 'yarn'
+      : (await NodeService.checkPnpm(targetPackage.cwd))
+      ? 'pnpm'
+      : 'npm';
+
     onTargetBuildStart?.();
 
     // Run package scripts
     const scriptsResponses = await BuildService.runPackageScripts({
+      abortController,
       additionalPackageScripts,
       nodePackage: targetPackage,
-      abortController,
+      packageManager,
       runScriptsTitle: 'Run target scripts',
     });
     if (RunService.hasError(scriptsResponses)) {
@@ -80,9 +88,10 @@ export default class StartService {
 
     // Run dependencies in build mode
     const dependenciesResponses = await StartService.runBuildDependencies({
-      additionalPackageScripts,
-      sortedRelatedDependencies,
       abortController,
+      additionalPackageScripts,
+      packageManager,
+      sortedRelatedDependencies,
     });
     if (RunService.hasError(dependenciesResponses.flat())) {
       abortController?.abort();
@@ -96,9 +105,10 @@ export default class StartService {
       ({ dependency }) => dependency
     );
     const injectDependenciesResponses = await BuildService.injectDependencies({
-      targetPackage,
-      dependencies: targetDependencies,
       abortController,
+      dependencies: targetDependencies,
+      packageManager,
+      targetPackage,
     });
     if (RunService.hasError(injectDependenciesResponses)) {
       abortController?.abort();
@@ -124,11 +134,12 @@ export default class StartService {
 
     // Run after build dependencies package scripts
     const afterBuildScriptsResponses = await BuildService.runPackageScripts({
-      additionalPackageScripts,
-      nodePackage: targetPackage,
       abortController,
-      runScriptsTitle: 'Run after build target scripts',
+      additionalPackageScripts,
       mustRunAfterBuild: true,
+      nodePackage: targetPackage,
+      packageManager,
+      runScriptsTitle: 'Run after build target scripts',
     });
 
     if (!syncAbortController?.signal.aborted) {
@@ -180,15 +191,18 @@ export default class StartService {
     additionalPackageScripts,
     sortedRelatedDependencies,
     abortController,
+    packageManager,
   }: {
     additionalPackageScripts: PackageScript[];
     sortedRelatedDependencies: RelatedDependencyProjection[];
     abortController?: AbortController;
+    packageManager: PackageManager;
   }): Promise<ProcessServiceResponse[][]> {
     const dependenciesResponses = await BuildService.buildDependencies({
       additionalPackageScripts,
       sortedRelatedDependencies,
       abortController,
+      packageManager,
     });
 
     return dependenciesResponses;
