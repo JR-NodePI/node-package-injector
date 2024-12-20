@@ -2,6 +2,8 @@
 
 . "$(dirname "$0")/.nodepirc"
 
+rm -f "${PIDS_FILE}"
+
 get_version() {
   local commandName=$1
   local command=$(get_command "${commandName}")

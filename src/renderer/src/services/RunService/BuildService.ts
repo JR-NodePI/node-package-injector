@@ -2,7 +2,7 @@ import { NODE_PI_FILE_PREFIX } from '@renderer/constants';
 import { promiseAllSequentially } from '@renderer/helpers/promisesHelpers';
 import DependencyPackage from '@renderer/models/DependencyPackage';
 import NodePackage from '@renderer/models/NodePackage';
-import PackageScript from '@renderer/models/PackageScript';
+import PackageScript, { ScriptsType } from '@renderer/models/PackageScript';
 import TerminalService from '@renderer/services/TerminalService';
 
 import ConsoleGroup from '../ConsoleGroup';
@@ -91,13 +91,14 @@ export default class BuildService {
       return injectDependenciesResponses;
     }
 
-    // Run dependencies scripts
+    // Run dependencies build scripts
     const scriptsResponses = await BuildService.runPackageScripts({
+      abortController,
       additionalPackageScripts,
       nodePackage: dependency,
-      abortController,
-      runScriptsTitle: 'Run dependency scripts',
       packageManager,
+      runScriptsTitle: 'Run dependency BUILD scripts',
+      scriptsType: 'scripts',
     });
 
     if (RunService.hasError(scriptsResponses)) {
@@ -111,17 +112,17 @@ export default class BuildService {
   public static async runPackageScripts({
     abortController,
     additionalPackageScripts,
-    mustRunAfterBuild = false,
     nodePackage,
     packageManager,
     runScriptsTitle = 'Run package scripts',
+    scriptsType,
   }: {
     abortController?: AbortController;
     additionalPackageScripts: PackageScript[];
-    mustRunAfterBuild?: boolean;
     nodePackage: NodePackage;
     packageManager: PackageManager;
     runScriptsTitle?: string;
+    scriptsType: ScriptsType;
   }): Promise<ProcessServiceResponse[]> {
     if (abortController?.signal.aborted) {
       return [
@@ -135,9 +136,7 @@ export default class BuildService {
     const cwd = nodePackage.cwd ?? '';
     const packageName = nodePackage.packageName ?? ' ';
 
-    const scripts = mustRunAfterBuild
-      ? nodePackage.postBuildScripts
-      : nodePackage.scripts;
+    const scripts = nodePackage[scriptsType];
 
     const filledScripts = (scripts ?? []).filter(script =>
       Boolean(script.scriptName.trim())

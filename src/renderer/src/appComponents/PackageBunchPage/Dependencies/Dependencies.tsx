@@ -74,6 +74,7 @@ function Dependencies(): JSX.Element {
         }
         clonedDependency.cwd = cwd;
         clonedDependency.syncDirectories = undefined;
+        clonedDependency.preBuildScripts = undefined;
         clonedDependency.scripts = undefined;
         clonedDependency.postBuildScripts = undefined;
         clonedDependency.isValidPackage = isValidPackage;
@@ -116,6 +117,13 @@ function Dependencies(): JSX.Element {
     changeDependencyProp(dependency, 'syncDirectories', undefined);
   };
 
+  const handlePreInstallScriptsChange = (
+    dependency: DependencyPackage,
+    scripts: PackageScript[]
+  ): void => {
+    changeDependencyProp(dependency, 'preBuildScripts', scripts);
+  };
+
   const handleScriptsChange = (
     dependency: DependencyPackage,
     scripts: PackageScript[]
@@ -147,6 +155,7 @@ function Dependencies(): JSX.Element {
           onModeChange={handleModeChange}
           onPathChange={handlePathChange}
           onScriptsChange={handleScriptsChange}
+          onPreInstallScriptsChange={handlePreInstallScriptsChange}
           onSyncDirectoryChange={handleSyncDirectoryChange}
         />
       ))}

@@ -17,6 +17,7 @@ export default function DependencySelector({
   onClickRemove,
   onPathChange,
   onModeChange,
+  onPreInstallScriptsChange,
   onScriptsChange,
   onSyncDirectoryChange: onSrcSyncChange,
 }: DependencySelectorProps): JSX.Element {
@@ -30,6 +31,10 @@ export default function DependencySelector({
 
   const handleScriptsChange = (scripts): void => {
     onScriptsChange(dependency, scripts);
+  };
+
+  const handlePreInstallScriptsChange = (scripts): void => {
+    onPreInstallScriptsChange(dependency, scripts);
   };
 
   return (
@@ -48,11 +53,21 @@ export default function DependencySelector({
           </>
         }
         disabled={disabled}
-        enableScripts={dependency.mode === DependencyMode.BUILD}
+        enablePackageScriptsSelectors={dependency.mode === DependencyMode.BUILD}
         nodePackage={dependency}
         onPathChange={handlePathChange}
+        onPreInstallScriptsChange={handlePreInstallScriptsChange}
         onScriptsChange={handleScriptsChange}
-        scriptsLabel="Build scripts"
+        scriptsLabelPreInstall={
+          <>
+            Scripts <small>({dependency.packageName} - installation)</small>
+          </>
+        }
+        scriptsLabel={
+          <>
+            Scripts <small>({dependency.packageName} - building)</small>
+          </>
+        }
       >
         <>
           {dependency.mode === DependencyMode.SYNC && (

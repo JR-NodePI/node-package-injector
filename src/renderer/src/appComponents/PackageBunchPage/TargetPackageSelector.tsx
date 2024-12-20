@@ -18,6 +18,7 @@ export default function TargetPackageSelector(): JSX.Element {
     const clonedPackage = activeTargetPackage.clone();
 
     clonedPackage.cwd = cwd;
+    clonedPackage.preBuildScripts = undefined;
     clonedPackage.scripts = undefined;
     clonedPackage.postBuildScripts = undefined;
     clonedPackage.isValidPackage = isValidPackage;
@@ -44,7 +45,7 @@ export default function TargetPackageSelector(): JSX.Element {
 
   return (
     <PackageSelector
-      enableScripts
+      enablePackageScriptsSelectors
       nodePackage={activeTargetPackage}
       onPathChange={handlePathChange}
       onPostBuildScriptsChange={onPostBuildScriptsChange}
