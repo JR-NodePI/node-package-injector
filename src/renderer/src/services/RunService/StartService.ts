@@ -1,3 +1,4 @@
+import { promiseAllSequentially } from '@renderer/helpers/promisesHelpers';
 import { DependencyMode } from '@renderer/models/DependencyConstants';
 import type DependencyPackage from '@renderer/models/DependencyPackage';
 import type NodePackage from '@renderer/models/NodePackage';
@@ -5,7 +6,7 @@ import type PackageScript from '@renderer/models/PackageScript';
 
 import NodeService from '../NodeService/NodeService';
 import { RelatedDependencyProjection } from '../NodeService/NodeServiceTypes';
-import PathService from '../PathService';
+import type { PackageManager } from './BuildService';
 import BuildService from './BuildService';
 import RunService, { type ProcessServiceResponse } from './RunService';
 import SyncService from './SyncService';
@@ -17,7 +18,6 @@ export default class StartService {
     dependencies,
     abortController,
     syncAbortController,
-    isWSLActive,
     onTargetBuildStart,
     onDependenciesBuildStart,
     onDependenciesSyncStart,
@@ -28,7 +28,6 @@ export default class StartService {
     dependencies: DependencyPackage[];
     abortController?: AbortController;
     syncAbortController?: AbortController;
-    isWSLActive?: boolean;
     onTargetBuildStart?: () => void;
     onDependenciesSyncPrepare?: () => void;
     onDependenciesBuildStart?: () => void;
@@ -38,22 +37,6 @@ export default class StartService {
     const successResponses: ProcessServiceResponse[] = [];
 
     await RunService.resetKillAll();
-
-    const tmpDir = await PathService.getTmpDir({
-      isWSLActive,
-      skipWSLRoot: true,
-      traceOnTime: true,
-    });
-
-    if (!tmpDir) {
-      abortController?.abort();
-      return [
-        {
-          error: 'Temporals (/tmp) system directory is not reachable',
-          title: 'System error',
-        },
-      ];
-    }
 
     const outputTitle = 'Invalid package';
 
@@ -73,14 +56,22 @@ export default class StartService {
       ];
     }
 
+    const packageManager = (await NodeService.checkYarn(targetPackage.cwd))
+      ? 'yarn'
+      : (await NodeService.checkPnpm(targetPackage.cwd))
+      ? 'pnpm'
+      : 'npm';
+
     onTargetBuildStart?.();
 
-    // Run package scripts
+    // Run package pre build scripts
     const scriptsResponses = await BuildService.runPackageScripts({
+      abortController,
       additionalPackageScripts,
       nodePackage: targetPackage,
-      abortController,
-      runScriptsTitle: 'Run target scripts',
+      packageManager,
+      runScriptsTitle: 'Run target scripts (pre build)',
+      scriptsType: 'scripts',
     });
     if (RunService.hasError(scriptsResponses)) {
       abortController?.abort();
@@ -94,15 +85,37 @@ export default class StartService {
       onDependenciesBuildStart?.();
     }
 
+    //Run dependency INSTALLATION scripts
+    const dependenciesInstallScriptsPromises = dependenciesToBuild.map(
+      dependency => () =>
+        BuildService.runPackageScripts({
+          abortController,
+          additionalPackageScripts,
+          nodePackage: dependency,
+          packageManager,
+          runScriptsTitle: 'Run dependency INSTALLATION scripts',
+          scriptsType: 'preBuildScripts',
+        })
+    );
+
+    const dependenciesInstallScriptsResponses = await promiseAllSequentially<
+      ProcessServiceResponse[]
+    >(dependenciesInstallScriptsPromises);
+    if (RunService.hasError(dependenciesInstallScriptsResponses.flat())) {
+      abortController?.abort();
+      return dependenciesInstallScriptsResponses.flat();
+    }
+
+    // Get sorted dependencies
     const sortedRelatedDependencies =
       await NodeService.getDependenciesSortedByHierarchy(dependenciesToBuild);
 
     // Run dependencies in build mode
     const dependenciesResponses = await StartService.runBuildDependencies({
-      additionalPackageScripts,
-      sortedRelatedDependencies,
-      tmpDir,
       abortController,
+      additionalPackageScripts,
+      packageManager,
+      sortedRelatedDependencies,
     });
     if (RunService.hasError(dependenciesResponses.flat())) {
       abortController?.abort();
@@ -116,10 +129,10 @@ export default class StartService {
       ({ dependency }) => dependency
     );
     const injectDependenciesResponses = await BuildService.injectDependencies({
-      targetPackage,
-      dependencies: targetDependencies,
-      tmpDir,
       abortController,
+      dependencies: targetDependencies,
+      packageManager,
+      targetPackage,
     });
     if (RunService.hasError(injectDependenciesResponses)) {
       abortController?.abort();
@@ -145,11 +158,12 @@ export default class StartService {
 
     // Run after build dependencies package scripts
     const afterBuildScriptsResponses = await BuildService.runPackageScripts({
+      abortController,
       additionalPackageScripts,
       nodePackage: targetPackage,
-      abortController,
-      runScriptsTitle: 'Run after build target scripts',
-      mustRunAfterBuild: true,
+      packageManager,
+      runScriptsTitle: 'Run target scripts (post build)',
+      scriptsType: 'postBuildScripts',
     });
 
     if (!syncAbortController?.signal.aborted) {
@@ -200,19 +214,19 @@ export default class StartService {
   private static async runBuildDependencies({
     additionalPackageScripts,
     sortedRelatedDependencies,
-    tmpDir,
     abortController,
+    packageManager,
   }: {
     additionalPackageScripts: PackageScript[];
     sortedRelatedDependencies: RelatedDependencyProjection[];
-    tmpDir: string;
     abortController?: AbortController;
+    packageManager: PackageManager;
   }): Promise<ProcessServiceResponse[][]> {
     const dependenciesResponses = await BuildService.buildDependencies({
       additionalPackageScripts,
       sortedRelatedDependencies,
-      tmpDir,
       abortController,
+      packageManager,
     });
 
     return dependenciesResponses;

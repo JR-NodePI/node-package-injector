@@ -4,14 +4,43 @@ set -e
 
 export TERM="xterm-256color"
 
+## add local bin programs
+if [ -d "$HOME/.local/bin" ]; then
+  export PATH="$HOME/.local/bin:$PATH"
+fi
+
 . "$(dirname "$0")/helpers/check_command.sh"
 
 nodeCommand=$(get_command "node")
 
+## enable nvm if installed
 if [[ -z "${nodeCommand}" && -d "$HOME/.nvm" ]]; then
   export NVM_DIR="$HOME/.nvm"
   [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
 fi
+
+## save current node pi PIDs -----------
+PIDS_FILE="/tmp/current_node_pi_PIDs.log"
+
+save_initial_PIDs() {
+  if [[ ! -f "${PIDS_FILE}" ]]; then
+    if [[ "$(uname)" == "Darwin" ]]; then
+      local NODE_PI_PIDS=$(ps -A | awk "{ print \$1 }")
+    else
+      local NODE_PI_PIDS=$(ps aux | awk "{ print \$2 }")
+    fi
+    echo "$NODE_PI_PIDS" >"${PIDS_FILE}"
+  fi
+}
+
+read_initial_PIDs() {
+  if [[ -f "${PIDS_FILE}" ]]; then
+    local PIDS=$(echo $(cat "${PIDS_FILE}"))
+    echo $PIDS | sed -e "s/ / | /g"
+  fi
+
+  rm -f "${PIDS_FILE}"
+}
 
 require_command "node"
 require_command "rsync"

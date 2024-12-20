@@ -49,8 +49,7 @@ export default function RunProcess(): JSX.Element {
   const { loading, isValidTerminal } = useGlobalData();
 
   const { addToaster } = useContext(ToasterListContext);
-  const { activePackageBunch, additionalPackageScripts, isWSLActive } =
-    useGlobalData();
+  const { activePackageBunch, additionalPackageScripts } = useGlobalData();
 
   const [status, setStatus] = useState<STATUS>(STATUSES.IDLE);
 
@@ -122,7 +121,6 @@ export default function RunProcess(): JSX.Element {
         dependencies: runActivePackageBunch.dependencies,
         abortController,
         syncAbortController,
-        isWSLActive,
         onTargetBuildStart: () => {
           setStatus(STATUSES.BUILDING);
         },
@@ -152,7 +150,6 @@ export default function RunProcess(): JSX.Element {
     abortController,
     additionalPackageScripts,
     displayProcessMessages,
-    isWSLActive,
     runActivePackageBunch,
     syncAbortController,
   ]);

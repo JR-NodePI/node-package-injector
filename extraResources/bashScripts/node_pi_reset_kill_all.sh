@@ -48,18 +48,19 @@ killAll() {
   echo ""
   echo ">>------------- KILL ALL START ------------<<"
 
-  local NODE_PI_PIDS_INC="(node-package-injector|NodePI|vite|craco).*$NODE_PI_FILE_PREFIX"
-  local NODE_PI_PIDS_EXC="grep|node_pi_reset_kill_all|$CURREMT_PID"
+  local INITIAL_PIDS=$(read_initial_PIDs)
+  local NODE_PI_PIDS_INC="NodePI|vite|craco|node|yarn|npm|pnpm|node-package-injector|$NODE_PI_FILE_PREFIX"
+  local NODE_PI_PIDS_EXC="grep|node_pi_reset_kill_all| ${CURREMT_PID} | ${INITIAL_PIDS} "
 
   if [[ "$(uname)" == "Darwin" ]]; then
-    local NODE_PI_PIDS=$(ps -A | grep -E -i $NODE_PI_PIDS_INC | grep -E -i -v $NODE_PI_PIDS_EXC | awk "{ print \$1 }")
+    local NODE_PI_PIDS=$(ps -A | grep -E -i "$NODE_PI_PIDS_INC" | grep -E -i -v "$NODE_PI_PIDS_EXC" | awk "{ print \$1 }")
   else
-    local NODE_PI_PIDS=$(ps aux | grep -E -i $NODE_PI_PIDS_INC | grep -E -i -v $NODE_PI_PIDS_EXC | awk "{ print \$2 }")
+    local NODE_PI_PIDS=$(ps aux | grep -E -i "$NODE_PI_PIDS_INC" | grep -E -i -v "$NODE_PI_PIDS_EXC" | awk "{ print \$2 }")
   fi
 
   if [[ -n "$NODE_PI_PIDS" ]]; then
     for pid in $NODE_PI_PIDS; do
-      echo "kill PID: $pid"
+      echo ">>>> kill PID: $pid"
       kill -SIGKILL $pid &>/dev/null
       kill $pid &>/dev/null
     done
