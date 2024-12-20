@@ -1,6 +1,6 @@
 {
   "name": "node-package-injector",
-  "version": "1.9.8-alpha",
+  "version": "1.10.0-alpha",
   "description": "Dev tool to simulate npm dependencies",
   "repository": "https://github.com/JorgeRojo/node-package-injector",
   "main": "./out/main/index.js",
@@ -23,15 +23,16 @@
     "test:cover": "yarn test run --coverage"
   },
   "engines": {
-    "node": ">=20.11.0",
-    "npm": ">=10.4.0",
-    "yarn": ">=1.22.21"
+    "node": ">=22.12.0",
+    "npm": ">=11.0.0",
+    "yarn": ">=1.22.22"
   },
   "dependencies": {
-    "@electron-toolkit/preload": "2.0.0",
-    "@electron-toolkit/utils": "2.0.1",
+    "@electron-toolkit/preload": "3.0.1",
+    "@electron-toolkit/utils": "3.0.0",
     "electron-config": "2.0.0",
-    "electron-updater": "6.1.4",
+    "electron-devtools-installer": "4.0.0",
+    "electron-updater": "6.3.9",
     "fratch-ui": "1.8.4",
     "lodash": "4.17.21",
     "react": "18.2.0",
@@ -40,7 +41,7 @@
   },
   "devDependencies": {
     "@electron-toolkit/tsconfig": "1.0.1",
-    "@electron/notarize": "2.2.0",
+    "@electron/notarize": "2.5.0",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.4.3",
@@ -50,10 +51,10 @@
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",
     "@vitejs/plugin-react": "^4.0.3",
-    "electron": "27.1.0",
-    "electron-builder": "24.6.4",
+    "electron": "33.2.1",
+    "electron-builder": "25.1.8",
     "electron-icon-builder": "2.0.1",
-    "electron-vite": "1.0.28",
+    "electron-vite": "2.3.0",
     "eslint": "^8.44.0",
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-prettier": "^4.2.1",

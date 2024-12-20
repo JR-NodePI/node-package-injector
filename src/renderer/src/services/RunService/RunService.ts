@@ -1,6 +1,7 @@
 import { NODE_PI_FILE_PREFIX } from '@renderer/constants';
 import type PackageBunch from '@renderer/models/PackageBunch';
 
+import ConsoleGroup from '../ConsoleGroup';
 import PathService from '../PathService';
 import PersistService from '../PersistService';
 import type { TerminalResponse } from '../TerminalService';
@@ -14,6 +15,9 @@ export default class RunService {
   }
 
   public static async resetKillAll(mustQuit = false): Promise<void> {
+    const consoleGroup = new ConsoleGroup('Reset Kill All');
+    consoleGroup.start();
+
     const isWSLActive = await PersistService.getItem<boolean>('isWSLActive');
 
     const packageBunches = await PersistService.getItem<PackageBunch[]>(
@@ -25,8 +29,7 @@ export default class RunService {
       return;
     }
 
-    const traceOnTime = true;
-    const cwd = await PathService.getHomePath(isWSLActive, traceOnTime);
+    const cwd = await PathService.getHomePath(isWSLActive);
 
     const TARGET_PACKAGE_CWD = await WSLService.cleanSWLRoot(
       packageBunch.targetPackage.cwd ?? '',
@@ -53,6 +56,8 @@ export default class RunService {
         DEPENDENCIES_CWD_S,
       });
     } else {
+      const consoleGroup = new ConsoleGroup('Reset Kill All');
+      consoleGroup.start();
       await TerminalService.executeCommand({
         command: 'bash',
         args: [
@@ -63,8 +68,11 @@ export default class RunService {
         ],
         cwd,
         skipWSL: true,
-        traceOnTime,
+        traceOnTime: true,
       });
+      consoleGroup.close();
     }
+
+    consoleGroup.close();
   }
 }

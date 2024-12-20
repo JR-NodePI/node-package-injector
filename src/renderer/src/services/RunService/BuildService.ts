@@ -1,26 +1,30 @@
+import { NODE_PI_FILE_PREFIX } from '@renderer/constants';
 import { promiseAllSequentially } from '@renderer/helpers/promisesHelpers';
 import DependencyPackage from '@renderer/models/DependencyPackage';
 import NodePackage from '@renderer/models/NodePackage';
-import PackageScript from '@renderer/models/PackageScript';
+import PackageScript, { ScriptsType } from '@renderer/models/PackageScript';
 import TerminalService from '@renderer/services/TerminalService';
 
+import ConsoleGroup from '../ConsoleGroup';
 import NodeService from '../NodeService/NodeService';
 import { RelatedDependencyProjection } from '../NodeService/NodeServiceTypes';
 import PathService from '../PathService';
 import WSLService from '../WSLService';
 import RunService, { type ProcessServiceResponse } from './RunService';
 
+export type PackageManager = 'npm' | 'yarn' | 'pnpm';
+
 export default class BuildService {
   public static async buildDependencies({
-    additionalPackageScripts,
-    sortedRelatedDependencies,
-    tmpDir,
     abortController,
+    additionalPackageScripts,
+    packageManager,
+    sortedRelatedDependencies,
   }: {
-    additionalPackageScripts: PackageScript[];
-    sortedRelatedDependencies: RelatedDependencyProjection[];
-    tmpDir: string;
     abortController?: AbortController;
+    additionalPackageScripts: PackageScript[];
+    packageManager: PackageManager;
+    sortedRelatedDependencies: RelatedDependencyProjection[];
   }): Promise<ProcessServiceResponse[][]> {
     if (abortController?.signal.aborted) {
       return [
@@ -38,8 +42,8 @@ export default class BuildService {
         BuildService.buildSingleDependency({
           additionalPackageScripts,
           relatedDependency,
-          tmpDir,
           abortController,
+          packageManager,
         })
     );
 
@@ -50,15 +54,15 @@ export default class BuildService {
   }
 
   private static async buildSingleDependency({
-    additionalPackageScripts,
-    relatedDependency,
-    tmpDir,
     abortController,
+    additionalPackageScripts,
+    packageManager,
+    relatedDependency,
   }: {
-    additionalPackageScripts: PackageScript[];
-    relatedDependency: RelatedDependencyProjection;
-    tmpDir: string;
     abortController?: AbortController;
+    additionalPackageScripts: PackageScript[];
+    packageManager: PackageManager;
+    relatedDependency: RelatedDependencyProjection;
   }): Promise<ProcessServiceResponse[]> {
     const outputTitle = `Build dependency: ${
       relatedDependency.dependency.packageName ?? ''
@@ -78,8 +82,8 @@ export default class BuildService {
     const injectDependenciesResponses = await BuildService.injectDependencies({
       targetPackage: dependency,
       dependencies: subDependencies,
-      tmpDir,
       abortController,
+      packageManager,
     });
 
     if (RunService.hasError(injectDependenciesResponses)) {
@@ -87,12 +91,14 @@ export default class BuildService {
       return injectDependenciesResponses;
     }
 
-    // Run dependencies scripts
+    // Run dependencies build scripts
     const scriptsResponses = await BuildService.runPackageScripts({
+      abortController,
       additionalPackageScripts,
       nodePackage: dependency,
-      abortController,
-      runScriptsTitle: 'Run dependency scripts',
+      packageManager,
+      runScriptsTitle: 'Run dependency BUILD scripts',
+      scriptsType: 'scripts',
     });
 
     if (RunService.hasError(scriptsResponses)) {
@@ -104,17 +110,19 @@ export default class BuildService {
   }
 
   public static async runPackageScripts({
+    abortController,
     additionalPackageScripts,
     nodePackage,
-    abortController,
+    packageManager,
     runScriptsTitle = 'Run package scripts',
-    mustRunAfterBuild = false,
+    scriptsType,
   }: {
+    abortController?: AbortController;
     additionalPackageScripts: PackageScript[];
     nodePackage: NodePackage;
-    abortController?: AbortController;
+    packageManager: PackageManager;
     runScriptsTitle?: string;
-    mustRunAfterBuild?: boolean;
+    scriptsType: ScriptsType;
   }): Promise<ProcessServiceResponse[]> {
     if (abortController?.signal.aborted) {
       return [
@@ -128,9 +136,7 @@ export default class BuildService {
     const cwd = nodePackage.cwd ?? '';
     const packageName = nodePackage.packageName ?? ' ';
 
-    const scripts = mustRunAfterBuild
-      ? nodePackage.postBuildScripts
-      : nodePackage.scripts;
+    const scripts = nodePackage[scriptsType];
 
     const filledScripts = (scripts ?? []).filter(script =>
       Boolean(script.scriptName.trim())
@@ -138,14 +144,18 @@ export default class BuildService {
     const hasScripts = Boolean(filledScripts?.length);
 
     if (hasScripts) {
-      // eslint-disable-next-line no-console
-      console.log(`>>>----->> ${runScriptsTitle}: `, nodePackage.packageName);
+      const consoleGroup = new ConsoleGroup(
+        `>>>----->> ${runScriptsTitle}: ${nodePackage.packageName}`
+      );
+      consoleGroup.start();
 
       // Inject fake package version
       const outputFakeVersion = await NodeService.injectFakePackageVersion(
         nodePackage,
         abortController
       );
+
+      consoleGroup.close();
 
       if (outputFakeVersion.error) {
         return [
@@ -165,6 +175,7 @@ export default class BuildService {
           cwd,
           packageName,
           abortController,
+          packageManager,
         })
     );
 
@@ -175,17 +186,19 @@ export default class BuildService {
   }
 
   private static async runPackageSingleScript({
-    additionalPackageScripts,
-    packageScript,
-    cwd,
-    packageName,
     abortController,
+    additionalPackageScripts,
+    cwd,
+    packageManager,
+    packageName,
+    packageScript,
   }: {
-    additionalPackageScripts: PackageScript[];
-    packageScript: PackageScript;
-    cwd: string;
-    packageName?: string;
     abortController?: AbortController;
+    additionalPackageScripts: PackageScript[];
+    cwd: string;
+    packageManager: PackageManager;
+    packageName?: string;
+    packageScript: PackageScript;
   }): Promise<ProcessServiceResponse> {
     const outputTitle = `Run package script: ${packageName} - ${packageScript.scriptName}`;
 
@@ -196,11 +209,7 @@ export default class BuildService {
       };
     }
 
-    let script = (await NodeService.checkYarn(cwd))
-      ? `yarn ${packageScript.scriptName}`
-      : (await NodeService.checkPnpm(cwd))
-      ? `pnpm run ${packageScript.scriptName}`
-      : `npm run ${packageScript.scriptName}`;
+    let script = `${packageManager} run ${packageScript.scriptName}`;
 
     const isAdditionalScript = additionalPackageScripts.find(
       ({ id }) => id === packageScript.id
@@ -209,7 +218,12 @@ export default class BuildService {
       script = packageScript.scriptValue;
     }
 
+    const consoleGroup = new ConsoleGroup(`>>>----->> ${outputTitle}`, {
+      abortController,
+    });
+    consoleGroup.start();
     const output = await NodeService.runScript(cwd, script, abortController);
+    consoleGroup.close();
 
     if (output.error) {
       return {
@@ -224,13 +238,13 @@ export default class BuildService {
   public static async injectDependencies({
     targetPackage,
     dependencies,
-    tmpDir,
     abortController,
+    packageManager,
   }: {
     targetPackage: NodePackage;
-    tmpDir: string;
     dependencies: DependencyPackage[];
     abortController?: AbortController;
+    packageManager: PackageManager;
   }): Promise<ProcessServiceResponse[]> {
     if (abortController?.signal.aborted) {
       return [
@@ -254,25 +268,26 @@ export default class BuildService {
         };
       }
 
-      const packageBuildedPathResponse =
-        await NodeService.getPackageBuildedPath(dependency);
-      if (packageBuildedPathResponse.error) {
+      const packageDistDirResponse = await NodeService.getPackageDistDir(
+        dependency
+      );
+      if (packageDistDirResponse.error) {
         abortController?.abort();
         return {
-          ...packageBuildedPathResponse,
+          ...packageDistDirResponse,
           title: outputTitle,
         };
       }
 
-      const dependencyPackagePath = packageBuildedPathResponse.content ?? '';
+      const dependencyDistDir = packageDistDirResponse.content ?? '';
 
-      if (dependencyPackagePath) {
+      if (dependencyDistDir) {
         return await BuildService.injectSingleDependency({
           targetPackage,
-          dependencyPackagePath,
+          dependencyDistDir,
           dependencyName: dependency.packageName,
-          tmpDir,
           abortController,
+          packageManager,
         });
       } else {
         return {
@@ -294,17 +309,17 @@ export default class BuildService {
   }
 
   private static async injectSingleDependency({
-    targetPackage,
-    dependencyPackagePath,
-    dependencyName,
-    tmpDir,
     abortController,
+    dependencyDistDir,
+    dependencyName,
+    packageManager,
+    targetPackage,
   }: {
-    targetPackage: NodePackage;
-    dependencyPackagePath: string;
-    dependencyName: string;
-    tmpDir: string;
     abortController?: AbortController;
+    dependencyDistDir: string;
+    dependencyName: string;
+    packageManager: PackageManager;
+    targetPackage: NodePackage;
   }): Promise<ProcessServiceResponse> {
     const outputTitle = `Dependency injection: ${dependencyName}`;
 
@@ -315,50 +330,42 @@ export default class BuildService {
       };
     }
 
-    const traceOnTime = true;
-
-    const cleanDependencyPackagePath = await WSLService.cleanSWLRoot(
+    const cleanDependencyDistDir = await WSLService.cleanSWLRoot(
       targetPackage.cwd ?? '',
-      dependencyPackagePath,
-      traceOnTime
+      dependencyDistDir
     );
-    const tmpDependencyDir = PathService.normalizeWin32Path(
-      window.api.path.join(tmpDir, dependencyName, '/')
-    );
+
     const targetPackageDir = PathService.normalizeWin32Path(
       await WSLService.cleanSWLRoot(
         targetPackage.cwd ?? '',
-        window.api.path.join(
-          targetPackage.cwd ?? '',
-          '/node_modules/',
-          dependencyName,
-          '/'
-        ),
-        traceOnTime
+        window.api.path.join(targetPackage.cwd ?? '', '/')
       )
     );
 
-    // eslint-disable-next-line no-console
-    console.log(
-      '>>>----->> Injecting: ',
-      dependencyName,
-      '->',
-      targetPackage.packageName ?? ''
+    const consoleGroup = new ConsoleGroup(
+      `>>>----->> Injecting: ${dependencyName} -> ${
+        targetPackage.packageName ?? ''
+      }`,
+      { abortController }
     );
+    consoleGroup.start();
 
     const injectionOutput = await TerminalService.executeCommand({
       command: 'bash',
       args: [
         PathService.getExtraResourcesScriptPath('node_pi_inject_package.sh'),
+        `"${NODE_PI_FILE_PREFIX}"`,
         `"${dependencyName}"`,
-        `"${cleanDependencyPackagePath}"`,
-        `"${tmpDependencyDir}"`,
+        `"${cleanDependencyDistDir}"`,
         `"${targetPackageDir}"`,
+        `"${packageManager}"`,
       ],
       cwd: targetPackage.cwd ?? '',
-      traceOnTime,
+      traceOnTime: true,
       abortController,
     });
+
+    consoleGroup.close();
 
     if (injectionOutput.error) {
       return {

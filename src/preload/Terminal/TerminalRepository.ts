@@ -1,5 +1,6 @@
 import { spawn, spawnSync } from 'node:child_process';
 
+import ConsoleGroup from './ConsoleGroup';
 import {
   ExecuteCommandOutputType,
   OutputColor,
@@ -91,12 +92,28 @@ const consoleError = (config: TraceConfig): void => {
 };
 
 const displayLogs = ({
-  outputStack,
+  abortController,
+  groupLogsLabel,
   icon,
+  outputStack,
 }: {
-  outputStack: ExecuteCommandOutput[];
+  abortController?: AbortController;
+  groupLogsLabel?: string;
   icon?: string;
+  outputStack: ExecuteCommandOutput[];
 }): void => {
+  if (!outputStack.length) {
+    return;
+  }
+
+  const group = new ConsoleGroup(`${icon} ${groupLogsLabel} `, {
+    abortController,
+  });
+
+  if (groupLogsLabel) {
+    group.start();
+  }
+
   outputStack.forEach(({ type, pid, data }) => {
     switch (type) {
       case ExecuteCommandOutputType.STDERR_WARN:
@@ -115,6 +132,10 @@ const displayLogs = ({
         break;
     }
   });
+
+  if (groupLogsLabel) {
+    group.close();
+  }
 };
 
 const containsTerminalError = (output: string): boolean =>
@@ -123,13 +144,13 @@ const containsTerminalError = (output: string): boolean =>
 let exitTimeoutId: NodeJS.Timeout;
 
 const executeCommandSyncMode = ({
+  args,
   childProcessParams,
+  command,
   enqueueConsoleOutput,
+  ignoreStderrErrors,
   initCommandOutput,
   outputs,
-  command,
-  args,
-  ignoreStderrErrors,
 }: executeCommandSyncModeOptions): Promise<ExecuteCommandOutput[]> => {
   const syncCmd = spawnSync(command, args, childProcessParams);
 
@@ -180,14 +201,14 @@ const executeCommandSyncMode = ({
 };
 
 const executeCommandAsyncMode = ({
-  childProcessParams,
-  enqueueConsoleOutput,
-  initCommandOutput,
-  outputs,
   abortController,
   args,
+  childProcessParams,
   command,
+  enqueueConsoleOutput,
   ignoreStderrErrors,
+  initCommandOutput,
+  outputs,
   resolveTimeout,
   resolveTimeoutAfterFirstOutput,
 }: executeCommandAsyncModeOptions): Promise<ExecuteCommandOutput[]> => {
@@ -359,16 +380,17 @@ const executeCommandAsyncMode = ({
 
 export default class TerminalRepository {
   static executeCommand({
-    command,
-    args = [],
-    cwd,
-    traceOnTime,
     abortController,
+    addIcons = true,
+    args = [],
+    command,
+    cwd,
+    groupLogsLabel,
     ignoreStderrErrors,
     resolveTimeout,
     resolveTimeoutAfterFirstOutput,
     syncMode,
-    addIcons = true,
+    traceOnTime,
   }: ExecuteCommandOptions): Promise<ExecuteCommandOutput[]> {
     if (!cwd) {
       throw new Error('cwd is required');
@@ -407,37 +429,40 @@ export default class TerminalRepository {
 
       const mustDisplay =
         traceOnTime ||
-        output.type === ExecuteCommandOutputType.STDERR_ERROR ||
-        output.type === ExecuteCommandOutputType.ERROR ||
         output.type === ExecuteCommandOutputType.CLOSE ||
         output.type === ExecuteCommandOutputType.EXIT;
 
       if (mustDisplay) {
-        displayLogs({ outputStack, icon });
+        displayLogs({
+          abortController,
+          groupLogsLabel,
+          icon,
+          outputStack,
+        });
         outputStack = [];
       }
     };
 
     if (syncMode) {
       return executeCommandSyncMode({
-        enqueueConsoleOutput,
-        initCommandOutput,
-        outputs,
-        command,
         args,
         childProcessParams,
+        command,
+        enqueueConsoleOutput,
         ignoreStderrErrors,
+        initCommandOutput,
+        outputs,
       });
     }
 
     return executeCommandAsyncMode({
-      enqueueConsoleOutput,
-      initCommandOutput,
-      outputs,
-      command,
       args,
       childProcessParams,
+      command,
+      enqueueConsoleOutput,
       ignoreStderrErrors,
+      initCommandOutput,
+      outputs,
       resolveTimeout,
       resolveTimeoutAfterFirstOutput,
     });
