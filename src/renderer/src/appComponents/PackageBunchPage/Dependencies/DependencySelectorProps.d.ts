@@ -18,6 +18,10 @@ export type DependencySelectorProps = {
     dependency: DependencyPackage,
     mode: (typeof DependencyMode)[keyof typeof DependencyMode]
   ) => void;
+  onPreInstallScriptsChange: (
+    dependency: DependencyPackage,
+    scripts: PackageScript[]
+  ) => void;
   onScriptsChange: (
     dependency: DependencyPackage,
     scripts: PackageScript[]

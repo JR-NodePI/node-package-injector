@@ -10,7 +10,7 @@
   left: 0;
   position: fixed;
 }
-.layout.with_header {
+.with_header {
   height: calc(
     100vh - calc(var(--ft-header-height) + var(--ft-packages-tabs-height))
   );

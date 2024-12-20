@@ -1,7 +1,7 @@
 import { DependencyMode } from '@renderer/models/DependencyConstants';
 
 import NodePackage from './NodePackage';
-import SyncDirectory from './SyncDirectory';
+import type SyncDirectory from './SyncDirectory';
 
 export default class DependencyPackage extends NodePackage {
   public mode: (typeof DependencyMode)[keyof typeof DependencyMode] =
