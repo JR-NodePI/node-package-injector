@@ -8,6 +8,7 @@ packageBunchTemplate.targetPackage = new NodePackage();
 packageBunchTemplate.targetPackage.scripts = [new PackageScript()];
 packageBunchTemplate.targetPackage.postBuildScripts = [new PackageScript()];
 packageBunchTemplate.dependencies = [new DependencyPackage()];
+packageBunchTemplate.dependencies[0].preBuildScripts = [new PackageScript()];
 packageBunchTemplate.dependencies[0].scripts = [new PackageScript()];
 packageBunchTemplate.dependencies[0].postBuildScripts = [new PackageScript()];
 

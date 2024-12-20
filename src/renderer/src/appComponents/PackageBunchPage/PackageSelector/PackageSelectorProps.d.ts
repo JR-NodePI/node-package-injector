@@ -1,5 +1,7 @@
 import '../../../models/PackageScript';
 
+import React from 'react';
+
 import { SelectProps } from 'fratch-ui/components';
 
 import NodePackage from '../../../models/NodePackage';
@@ -14,10 +16,9 @@ export type useDirectorySelectOptionsProps = {
 
 export type PackageSelectorProps = {
   additionalActionComponents?: JSX.Element;
-  scriptsLabel?: string;
   children?: JSX.Element;
   disabled?: boolean;
-  enableScripts?: boolean;
+  enablePackageScriptsSelectors?: boolean;
   nodePackage: NodePackage;
   onPathChange: (
     cwd: string,
@@ -25,6 +26,9 @@ export type PackageSelectorProps = {
     packageName?: string
   ) => void;
   onPostBuildScriptsChange?: (scripts: PackageScript[]) => void;
+  onPreInstallScriptsChange?: (scripts: PackageScript[]) => void;
   onScriptsChange: (scripts: PackageScript[]) => void;
-  scriptsLabelPostBuild?: string;
+  scriptsLabel?: React.ReactNode;
+  scriptsLabelPostBuild?: React.ReactNode;
+  scriptsLabelPreInstall?: React.ReactNode;
 };

@@ -1,3 +1,4 @@
+import { promiseAllSequentially } from '@renderer/helpers/promisesHelpers';
 import { DependencyMode } from '@renderer/models/DependencyConstants';
 import type DependencyPackage from '@renderer/models/DependencyPackage';
 import type NodePackage from '@renderer/models/NodePackage';
@@ -63,13 +64,14 @@ export default class StartService {
 
     onTargetBuildStart?.();
 
-    // Run package scripts
+    // Run package pre build scripts
     const scriptsResponses = await BuildService.runPackageScripts({
       abortController,
       additionalPackageScripts,
       nodePackage: targetPackage,
       packageManager,
-      runScriptsTitle: 'Run target scripts',
+      runScriptsTitle: 'Run target scripts (pre build)',
+      scriptsType: 'scripts',
     });
     if (RunService.hasError(scriptsResponses)) {
       abortController?.abort();
@@ -83,6 +85,28 @@ export default class StartService {
       onDependenciesBuildStart?.();
     }
 
+    //Run dependency INSTALLATION scripts
+    const dependenciesInstallScriptsPromises = dependenciesToBuild.map(
+      dependency => () =>
+        BuildService.runPackageScripts({
+          abortController,
+          additionalPackageScripts,
+          nodePackage: dependency,
+          packageManager,
+          runScriptsTitle: 'Run dependency INSTALLATION scripts',
+          scriptsType: 'preBuildScripts',
+        })
+    );
+
+    const dependenciesInstallScriptsResponses = await promiseAllSequentially<
+      ProcessServiceResponse[]
+    >(dependenciesInstallScriptsPromises);
+    if (RunService.hasError(dependenciesInstallScriptsResponses.flat())) {
+      abortController?.abort();
+      return dependenciesInstallScriptsResponses.flat();
+    }
+
+    // Get sorted dependencies
     const sortedRelatedDependencies =
       await NodeService.getDependenciesSortedByHierarchy(dependenciesToBuild);
 
@@ -136,10 +160,10 @@ export default class StartService {
     const afterBuildScriptsResponses = await BuildService.runPackageScripts({
       abortController,
       additionalPackageScripts,
-      mustRunAfterBuild: true,
       nodePackage: targetPackage,
       packageManager,
-      runScriptsTitle: 'Run after build target scripts',
+      runScriptsTitle: 'Run target scripts (post build)',
+      scriptsType: 'postBuildScripts',
     });
 
     if (!syncAbortController?.signal.aborted) {

@@ -96,7 +96,7 @@ function createWindow(): void {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(async () => {
-  if (is.dev) {
+  if (is.dev && process.env['ENABLE_DEVTOOLS']) {
     await installExtension(REACT_DEVELOPER_TOOLS);
     await installExtension(REACT_DEVELOPER_TOOLS);
   }
