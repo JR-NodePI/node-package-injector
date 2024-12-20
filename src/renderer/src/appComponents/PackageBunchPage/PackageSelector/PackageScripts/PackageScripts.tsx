@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import useGlobalData from '@renderer/appComponents/GlobalDataProvider/useGlobalData';
+import type { ScriptsType } from '@renderer/models/PackageScript';
 import PackageScript from '@renderer/models/PackageScript';
 import NodeService from '@renderer/services/NodeService/NodeService';
 import DragAndDropSorter from 'fratch-ui/components/DragAndDropSorter/DragAndDropSorter';
@@ -14,20 +15,42 @@ import useDeepCompareEffect from 'use-deep-compare-effect';
 import { PackageScriptRenderer } from './components/PackageScriptRenderer';
 
 type PackageScriptOption = SelectOption<PackageScript>;
+
 type PackageScriptsProps = {
   cwd?: string;
   selectedScripts?: PackageScript[];
   onChange: (scripts: PackageScript[]) => void;
+  enablePreInstallScripts?: boolean;
   enablePostBuildScripts?: boolean;
-  enableScripts?: boolean;
+  scriptsType?: ScriptsType;
 };
+
+const findScript = ({
+  packageScripts,
+  included: includeInValueTerms,
+  excluded: excludeInNameTerms = [],
+}: {
+  packageScripts: PackageScript[];
+  included: string[];
+  excluded?: string[];
+}): PackageScript | undefined =>
+  packageScripts.find(
+    ({ scriptValue, scriptName }) =>
+      includeInValueTerms.some(
+        term => scriptValue.includes(term) || scriptName.includes(term)
+      ) &&
+      !excludeInNameTerms.some(
+        term => scriptValue.includes(term) || scriptName.includes(term)
+      )
+  );
 
 export default function PackageScripts({
   cwd = '',
-  selectedScripts,
-  onChange,
   enablePostBuildScripts,
-  enableScripts,
+  enablePreInstallScripts,
+  onChange,
+  scriptsType = 'scripts',
+  selectedScripts,
 }: PackageScriptsProps): JSX.Element {
   const { additionalPackageScripts } = useGlobalData();
   const filteredAdditionalPackageScripts = additionalPackageScripts.filter(
@@ -44,6 +67,7 @@ export default function PackageScripts({
 
     (async (): Promise<void> => {
       const rawScripts = await NodeService.getPackageScripts(cwd ?? '');
+
       const scripts = Object.entries(rawScripts).map(
         ([scriptName, scriptValue]) =>
           initialScripts.find(script => script.scriptName === scriptName) ??
@@ -159,28 +183,56 @@ export default function PackageScripts({
       if (selectedScripts == null && packageScripts.length > 0) {
         const scripts: PackageScript[] = [];
 
-        const postBuildScripts =
-          enablePostBuildScripts &&
-          packageScripts.find(
-            ({ scriptValue, scriptName }) =>
-              / install/gi.test(scriptValue) && !/prepare/gi.test(scriptName)
-          );
+        const mustCalculateInstallScripts =
+          scriptsType === 'preBuildScripts' ||
+          (scriptsType === 'scripts' &&
+            !enablePreInstallScripts &&
+            enablePostBuildScripts);
 
-        if (postBuildScripts) {
-          scripts.push(postBuildScripts);
-        } else {
-          scripts.push(new PackageScript());
-        }
+        const mustCalculateDistScripts =
+          scriptsType === 'postBuildScripts' ||
+          (scriptsType === 'scripts' && enablePreInstallScripts);
+
+        const mustCalculateStartScripts = mustCalculateDistScripts;
+
+        const installScript =
+          mustCalculateInstallScripts &&
+          findScript({
+            packageScripts,
+            included: ['install'],
+            excluded: ['prepare'],
+          });
 
         const buildScript =
-          enableScripts &&
-          packageScripts.find(
-            ({ scriptValue }) =>
-              / pack /gi.test(scriptValue) || / pack$/gi.test(scriptValue)
-          );
+          mustCalculateDistScripts &&
+          findScript({
+            packageScripts,
+            included: ['pack'],
+            excluded: ['clean'],
+          });
+
+        const startScript =
+          mustCalculateStartScripts &&
+          findScript({
+            packageScripts,
+            included: ['start', 'dev'],
+            excluded: ['install', 'pack', 'test'],
+          });
+
+        if (installScript) {
+          scripts.push(installScript);
+        }
 
         if (buildScript) {
           scripts.push(buildScript);
+        }
+
+        if (startScript) {
+          scripts.push(startScript);
+        }
+
+        if (scripts.length === 0) {
+          scripts.push(new PackageScript());
         }
 
         if (abortController.signal.aborted) {
@@ -195,10 +247,11 @@ export default function PackageScripts({
       abortController.abort();
     };
   }, [
-    enableScripts,
     enablePostBuildScripts,
+    enablePreInstallScripts,
     onChange,
     packageScripts,
+    scriptsType,
     selectedScripts,
   ]);
 

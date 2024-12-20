@@ -10,10 +10,7 @@ export default class WSLService {
     value: '',
   };
 
-  private static async getSWLDistroName(
-    cwd: string,
-    traceOnTime?: boolean
-  ): Promise<string> {
+  private static async getSWLDistroName(cwd: string): Promise<string> {
     const isSWLCompatible = ['win32'].includes(os.platform());
 
     if (!isSWLCompatible) {
@@ -30,7 +27,7 @@ export default class WSLService {
         args: ['-l', '--all'],
         cwd,
         skipWSL: true,
-        traceOnTime,
+        groupLogsLabel: 'WSL get distro name',
       });
 
       const patternDistroMatch = /\([^)]+\)/;
@@ -52,12 +49,8 @@ export default class WSLService {
     }
   }
 
-  public static async getSWLRoot(
-    cwd: string,
-    path: string,
-    traceOnTime?: boolean
-  ): Promise<string> {
-    const wslDistro = await WSLService.getSWLDistroName(cwd, traceOnTime);
+  public static async getSWLRoot(cwd: string, path: string): Promise<string> {
+    const wslDistro = await WSLService.getSWLDistroName(cwd);
 
     if (wslDistro) {
       return `\\\\${WSL_DOMAIN}\\${wslDistro}${path.replace(/\//g, '\\')}`;
@@ -66,12 +59,8 @@ export default class WSLService {
     return '';
   }
 
-  public static async cleanSWLRoot(
-    cwd: string,
-    path: string,
-    traceOnTime?: boolean
-  ): Promise<string> {
-    const wslDistro = await WSLService.getSWLDistroName(cwd, traceOnTime);
+  public static async cleanSWLRoot(cwd: string, path: string): Promise<string> {
+    const wslDistro = await WSLService.getSWLDistroName(cwd);
 
     if (wslDistro) {
       return path
@@ -88,11 +77,8 @@ export default class WSLService {
     return path;
   }
 
-  public static async getSWLHomePath(
-    cwd: string,
-    traceOnTime?: boolean
-  ): Promise<string> {
-    const wslDistro = await WSLService.getSWLDistroName(cwd, traceOnTime);
+  public static async getSWLHomePath(cwd: string): Promise<string> {
+    const wslDistro = await WSLService.getSWLDistroName(cwd);
 
     if (wslDistro) {
       let username = '';
@@ -103,7 +89,7 @@ export default class WSLService {
           args: ['-e', 'ls', '/home'],
           cwd,
           skipWSL: true,
-          traceOnTime,
+          groupLogsLabel: 'WSL get home path',
         });
 
         username = (content ?? '').split(/[\n\r]/g)[0] || '';
