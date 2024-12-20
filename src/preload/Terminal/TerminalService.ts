@@ -26,11 +26,12 @@ export default class TerminalService {
 
     try {
       const { content } = await TerminalService.executeCommand({
-        command: 'wsl',
-        args: ['-e', 'bash', '--version'],
-        cwd,
-        syncMode,
         addIcons,
+        args: ['-e', 'bash', '--version'],
+        command: 'wsl',
+        cwd,
+        groupLogsLabel: 'WSL CHECK',
+        syncMode,
       });
 
       return (content ?? '').includes('GNU bash');
@@ -44,17 +45,18 @@ export default class TerminalService {
     Promise<ExecuteCommandOutput[]>
   >();
   public static async executeCommand({
-    command,
-    args = [],
-    cwd,
-    skipWSL = false,
-    traceOnTime = false,
     abortController,
+    addIcons,
+    args = [],
+    command,
+    cwd,
+    groupLogsLabel,
     ignoreStderrErrors = false,
     resolveTimeout,
     resolveTimeoutAfterFirstOutput,
+    skipWSL = false,
     syncMode,
-    addIcons,
+    traceOnTime = false,
   }: ExecuteCommandOptions & {
     skipWSL?: boolean;
   }): Promise<TerminalResponse> {
@@ -86,16 +88,17 @@ export default class TerminalService {
 
     if (!promise) {
       promise = TerminalRepository.executeCommand({
-        command: finalCommand,
-        args: finalArgs,
-        cwd,
-        traceOnTime,
         abortController,
+        addIcons,
+        args: finalArgs,
+        command: finalCommand,
+        cwd,
+        groupLogsLabel,
         ignoreStderrErrors,
         resolveTimeout,
         resolveTimeoutAfterFirstOutput,
         syncMode,
-        addIcons,
+        traceOnTime,
       });
     }
 
@@ -130,9 +133,10 @@ export default class TerminalService {
 
     try {
       const outputs = await TerminalRepository.executeCommand({
-        command: 'echo',
         args: [`${expectedOutput}`],
+        command: 'echo',
         cwd,
+        groupLogsLabel: '> INIT',
       });
 
       const output = (outputs[0]?.data ?? '').toString().trim();

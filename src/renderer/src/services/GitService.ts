@@ -15,9 +15,10 @@ export default class GitService {
     gitCommand: string | string[]
   ): Promise<TerminalResponse> {
     return await TerminalService.executeCommand({
-      command: 'git',
       args: [gitCommand].flat(),
+      command: 'git',
       cwd,
+      groupLogsLabel: 'GIT -> command',
     });
   }
 
@@ -29,6 +30,7 @@ export default class GitService {
       command: 'git',
       args: ['checkout', branch],
       cwd,
+      groupLogsLabel: 'GIT -> checkout',
     });
   }
 
@@ -37,6 +39,7 @@ export default class GitService {
       command: 'git',
       args: ['pull'],
       cwd,
+      groupLogsLabel: 'GIT -> pull',
     });
   }
 
@@ -50,10 +53,11 @@ export default class GitService {
     ignoreStderrErrors?: boolean;
   }): Promise<string> {
     const { content } = await TerminalService.executeCommand({
-      command: 'git',
-      args: ['rev-parse', '--abbrev-ref', 'HEAD'],
-      cwd,
       abortController,
+      args: ['rev-parse', '--abbrev-ref', 'HEAD'],
+      command: 'git',
+      cwd,
+      groupLogsLabel: 'GIT -> get current branch',
       ignoreStderrErrors,
     });
     const value = (content ?? '').trim();
@@ -69,6 +73,7 @@ export default class GitService {
       args: ['branch', '-l', '-a'],
       cwd,
       abortController,
+      groupLogsLabel: 'GIT -> get branches',
     });
     const value = (content ?? '')
       .split('\n')
@@ -91,6 +96,7 @@ export default class GitService {
       ],
       cwd,
       abortController,
+      groupLogsLabel: 'GIT -> add to git ignore',
     });
   }
 

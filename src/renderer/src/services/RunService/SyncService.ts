@@ -154,7 +154,7 @@ export default class SyncService {
 
       const targetPackageDir = PathService.normalizeWin32Path(
         window.api.path.join(
-          await WSLService.cleanSWLRoot(cwd, cwd, traceOnTime),
+          await WSLService.cleanSWLRoot(cwd, cwd),
           NODE_PI_FILE_PREFIX,
           dependency.packageName ?? '',
           ...PathService.getPathDirectories(syncDirectory.targetPath ?? '')
@@ -162,7 +162,7 @@ export default class SyncService {
       );
 
       const srcDependencyDir = PathService.normalizeWin32Path(
-        await WSLService.cleanSWLRoot(cwd, syncDirectory.srcPath, traceOnTime)
+        await WSLService.cleanSWLRoot(cwd, syncDirectory.srcPath)
       );
 
       const terminalResponse = await TerminalService.executeCommand({

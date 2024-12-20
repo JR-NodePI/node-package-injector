@@ -1,3 +1,5 @@
+export type ScriptsType = 'scripts' | 'postBuildScripts' | 'preBuildScripts';
+
 export default class PackageScript {
   private _id = crypto.randomUUID();
 
