@@ -68,8 +68,7 @@ function createWindow(): void {
       [
         data.NODE_PI_RESET_KILL_ALL_BASH_FILE,
         data.NODE_PI_FILE_PREFIX,
-        data.TARGET_PACKAGE_CWD,
-        ...((data.DEPENDENCIES_CWD_S as string[]) ?? []).map(depCwd => depCwd),
+        ...(data.PACKAGES_CWD ?? []).map(depCwd => depCwd),
       ],
       { detached: true }
     );
