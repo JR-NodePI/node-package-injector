@@ -23,27 +23,34 @@ export default class RunService {
     const packageBunches = await PersistService.getItem<PackageBunch[]>(
       'packageBunches'
     );
-    const packageBunch = packageBunches.find(bunch => bunch.active);
 
-    if (!packageBunch) {
-      return;
-    }
+    const packagesCwdPromises = packageBunches.reduce<Promise<string>[]>(
+      (promises, packageBunch) => {
+        promises.push(
+          WSLService.cleanSWLRoot(
+            packageBunch.targetPackage.cwd ?? '',
+            packageBunch.targetPackage.cwd ?? ''
+          )
+        );
+
+        promises.push(
+          ...packageBunch.dependencies.map(dep =>
+            WSLService.cleanSWLRoot(dep.cwd ?? '', dep.cwd ?? '')
+          )
+        );
+
+        return promises;
+      },
+      []
+    );
+
+    const PACKAGES_CWD = (await Promise.allSettled(packagesCwdPromises))
+      .map<string | null>(result =>
+        result.status === 'fulfilled' ? result.value : null
+      )
+      .filter(Boolean) as string[];
 
     const cwd = await PathService.getHomePath(isWSLActive);
-
-    const TARGET_PACKAGE_CWD = await WSLService.cleanSWLRoot(
-      packageBunch.targetPackage.cwd ?? '',
-      packageBunch.targetPackage.cwd ?? ''
-    );
-
-    const DEPENDENCIES_CWD_S = await Promise.all(
-      packageBunch.dependencies
-        .map(
-          async dep =>
-            await WSLService.cleanSWLRoot(dep.cwd ?? '', dep.cwd ?? '')
-        )
-        .filter(Boolean)
-    );
 
     const NODE_PI_RESET_KILL_ALL_BASH_FILE =
       PathService.getExtraResourcesScriptPath('node_pi_reset_kill_all.sh');
@@ -52,8 +59,7 @@ export default class RunService {
       window.electron.ipcRenderer.send('reset-kill-all-quit', {
         NODE_PI_RESET_KILL_ALL_BASH_FILE,
         NODE_PI_FILE_PREFIX,
-        TARGET_PACKAGE_CWD,
-        DEPENDENCIES_CWD_S,
+        PACKAGES_CWD,
       });
     } else {
       const consoleGroup = new ConsoleGroup('Reset Kill All');
@@ -63,8 +69,7 @@ export default class RunService {
         args: [
           NODE_PI_RESET_KILL_ALL_BASH_FILE,
           NODE_PI_FILE_PREFIX,
-          TARGET_PACKAGE_CWD,
-          ...DEPENDENCIES_CWD_S,
+          ...PACKAGES_CWD,
         ],
         cwd,
         skipWSL: true,

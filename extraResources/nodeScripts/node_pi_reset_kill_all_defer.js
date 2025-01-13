@@ -15,8 +15,7 @@ const [
   ,
   NODE_PI_RESET_KILL_ALL_BASH_FILE,
   NODE_PI_FILE_PREFIX,
-  TARGET_PACKAGE_CWD,
-  ...DEPENDENCIES_CWD_S
+  ...PACKAGES_CWD
 ] = process.argv;
 
 logBuffer.push(new Date(Date.now()).toLocaleString());
@@ -26,8 +25,7 @@ logBuffer.push(
     {
       NODE_PI_RESET_KILL_ALL_BASH_FILE,
       NODE_PI_FILE_PREFIX,
-      TARGET_PACKAGE_CWD,
-      DEPENDENCIES_CWD_S,
+      PACKAGES_CWD,
     },
     null,
     2
@@ -36,12 +34,7 @@ logBuffer.push(
 
 const buffer = spawnSync(
   'bash',
-  [
-    NODE_PI_RESET_KILL_ALL_BASH_FILE,
-    NODE_PI_FILE_PREFIX,
-    TARGET_PACKAGE_CWD,
-    ...DEPENDENCIES_CWD_S,
-  ],
+  [NODE_PI_RESET_KILL_ALL_BASH_FILE, NODE_PI_FILE_PREFIX, ...PACKAGES_CWD],
   {
     cwd: path.join(__dirname),
     env: process.env,
