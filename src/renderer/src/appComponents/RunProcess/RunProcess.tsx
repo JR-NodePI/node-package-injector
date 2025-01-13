@@ -220,6 +220,7 @@ export default function RunProcess(): JSX.Element {
             </p>
           )}
           <Button
+            size="small"
             Icon={IconClose}
             className={c(styles.stop_button)}
             label="Stop"
@@ -229,6 +230,7 @@ export default function RunProcess(): JSX.Element {
         </>
       ) : (
         <Button
+          size="small"
           disabled={!isRunEnabled}
           Icon={IconPlay}
           className={c(styles.run_button)}
