@@ -62,6 +62,10 @@ export default class GitService {
 
     const hasEmptyOrError = !value || value.includes('fatal:');
 
+    if (hasEmptyOrError && value.includes('not a git repository')) {
+      return '';
+    }
+
     if (hasEmptyOrError) {
       throw new Error(value);
     }
@@ -72,7 +76,10 @@ export default class GitService {
   static async getCurrentBranch(
     params: Parameters<typeof GitService._getCurrentBranch>[0]
   ): Promise<string> {
-    return retryPromise<string>(() => GitService._getCurrentBranch(params));
+    const result = await retryPromise<string>(() =>
+      GitService._getCurrentBranch(params)
+    );
+    return result ?? '';
   }
 
   static async getBranches(
@@ -111,23 +118,5 @@ export default class GitService {
       abortController,
       groupLogsLabel: 'GIT -> add to git ignore',
     });
-  }
-
-  static async checkGit(
-    cwd: string,
-    abortController?: AbortController
-  ): Promise<boolean> {
-    try {
-      const branch = await GitService.getCurrentBranch({
-        cwd,
-        abortController,
-        ignoreStderrErrors: true,
-      });
-      return Boolean(branch);
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(error);
-      return false;
-    }
   }
 }

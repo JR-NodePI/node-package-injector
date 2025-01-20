@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import useExcludedDirectories from '@renderer/appComponents/GlobalDataProvider/useExcludedDirectories';
-import GitService from '@renderer/services/GitService';
 import NodeService from '@renderer/services/NodeService/NodeService';
 import PathService from '@renderer/services/PathService';
 import { LeftLabeledField, Select } from 'fratch-ui/components';
@@ -116,12 +115,8 @@ export default function PackageSelector({
         const packageName = isValidPackage
           ? await NodeService.getPackageName(cwd)
           : undefined;
-        const branch = await GitService.getCurrentBranch({
-          cwd,
-          abortController,
-        });
-        const isValid =
-          isValidPackage && Boolean(packageName) && branch.length > 0;
+
+        const isValid = isValidPackage && Boolean(packageName);
         if (!abortController.signal.aborted) {
           onPathChange(cwd, isValid, packageName);
         }
