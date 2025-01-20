@@ -1,13 +1,11 @@
+import retryPromise from './helpers/retryPromise';
 import PathService from './PathService';
 import TerminalService, { type TerminalResponse } from './TerminalService';
 
-const REMOTE_BRANCH_PATTERN = new RegExp(`(.*remotes/origin/)(.*)`);
+const isValidBranch = (line: string): boolean => !line.includes('HEAD -');
 
-const isValidBranch = (line: string): boolean =>
-  REMOTE_BRANCH_PATTERN.test(line) && !line.includes('HEAD -');
-
-const getLocalBranch = (line: string): string =>
-  line.replace(REMOTE_BRANCH_PATTERN, '$2');
+const getCleanBranchName = (line: string): string =>
+  line.replace(new RegExp(`(.*remotes/origin/|^\\* *|^ *)(.*)`), '$2');
 
 export default class GitService {
   static async executeCommand(
@@ -43,7 +41,7 @@ export default class GitService {
     });
   }
 
-  static async getCurrentBranch({
+  private static async _getCurrentBranch({
     cwd,
     abortController,
     ignoreStderrErrors,
@@ -57,11 +55,24 @@ export default class GitService {
       args: ['rev-parse', '--abbrev-ref', 'HEAD'],
       command: 'git',
       cwd,
-      groupLogsLabel: 'GIT -> get current branch',
+      groupLogsLabel: `GIT -> get current branch`,
       ignoreStderrErrors,
     });
     const value = (content ?? '').trim();
+
+    const hasEmptyOrError = !value || value.includes('fatal:');
+
+    if (hasEmptyOrError) {
+      throw new Error(value);
+    }
+
     return value;
+  }
+
+  static async getCurrentBranch(
+    params: Parameters<typeof GitService._getCurrentBranch>[0]
+  ): Promise<string> {
+    return retryPromise<string>(() => GitService._getCurrentBranch(params));
   }
 
   static async getBranches(
@@ -75,11 +86,13 @@ export default class GitService {
       abortController,
       groupLogsLabel: 'GIT -> get branches',
     });
+
     const value = (content ?? '')
       .split('\n')
-      .map(line => (isValidBranch(line) ? getLocalBranch(line) : ''))
-      .filter(value => value)
+      .map(line => (isValidBranch(line) ? getCleanBranchName(line) : ''))
+      .filter((value, index, array) => value && array.indexOf(value) === index)
       .toSorted();
+
     return value;
   }
 
