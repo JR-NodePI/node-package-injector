@@ -8,10 +8,12 @@ export default class PackageScript {
   }
   public scriptName = '';
   public scriptValue = '';
+  public disabled = false;
 
-  constructor(scriptName?: string, scriptValue?: string) {
+  constructor(scriptName?: string, scriptValue?: string, disabled?: boolean) {
     this.scriptName = scriptName ?? '';
     this.scriptValue = scriptValue ?? '';
+    this.disabled = Boolean(disabled);
   }
 
   public clone(): PackageScript {
@@ -19,6 +21,7 @@ export default class PackageScript {
     packageScript._id = this._id;
     packageScript.scriptName = this.scriptName;
     packageScript.scriptValue = this.scriptValue;
+    packageScript.disabled = this.disabled;
     return packageScript;
   }
 }

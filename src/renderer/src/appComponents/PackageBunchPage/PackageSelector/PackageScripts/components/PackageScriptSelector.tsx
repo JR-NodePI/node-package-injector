@@ -2,16 +2,17 @@ import { useMemo } from 'react';
 
 import type PackageScript from '@renderer/models/PackageScript';
 import { LeftLabeledField, Select } from 'fratch-ui/components';
-import { SelectOption } from 'fratch-ui/components/Form/Select/SelectProps';
 import { c } from 'fratch-ui/helpers';
+
+import { PackageScriptOption } from '../PackageScriptsProps';
 
 import styles from './PackageScriptSelector.module.css';
 
 type PackageScriptSelector = {
   additionalComponent?: JSX.Element;
   label: JSX.Element;
-  onChange: (script?: PackageScript) => void;
-  scriptOptions: SelectOption<PackageScript>[];
+  onChange: (scriptId?: PackageScript['id']) => void;
+  scriptOptions: PackageScriptOption[];
   selectedScript: PackageScript;
 };
 
@@ -22,14 +23,14 @@ export default function PackageScriptSelector({
   scriptOptions,
   selectedScript,
 }: PackageScriptSelector): JSX.Element {
-  const handleOnChange = (selectedScript?: PackageScript): void => {
-    onChange(selectedScript);
+  const handleOnChange = (scriptId?: PackageScript['id']): void => {
+    onChange(scriptId);
   };
 
   const options = useMemo(
     () =>
       scriptOptions.map(option => {
-        if (option.value.id === selectedScript?.id) {
+        if (option.value === selectedScript?.id) {
           return { ...option, visible: true };
         }
         return option;
@@ -38,18 +39,20 @@ export default function PackageScriptSelector({
   );
 
   const selectorPlaceholder = 'Select script...';
+
   return (
     <div className={c(styles.mode_scripts)}>
       <LeftLabeledField
         label={label}
         field={
-          <Select
-            value={selectedScript}
+          <Select<PackageScriptOption['value']>
+            value={selectedScript.id}
             options={options}
             placeholder={selectorPlaceholder}
             onChange={handleOnChange}
             cleanable
             searchable
+            disabled={selectedScript?.disabled}
           />
         }
       />
