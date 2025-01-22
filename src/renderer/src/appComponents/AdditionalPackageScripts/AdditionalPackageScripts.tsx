@@ -100,6 +100,7 @@ export default function AdditionalPackageScripts(): JSX.Element {
                 onRemove={handleRemove}
                 showAddButton={showAddButton}
                 showRemoveButton={showRemoveButton}
+                requireRemoveConfirmation
               />
             </div>
           );

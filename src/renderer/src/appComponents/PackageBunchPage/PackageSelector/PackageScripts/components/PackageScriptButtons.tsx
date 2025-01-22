@@ -13,6 +13,7 @@ export default function PackageScriptButtons({
   onRemove,
   showAddButton,
   showRemoveButton,
+  requireRemoveConfirmation,
 }: PackageScriptButtonsProps): JSX.Element {
   const { showModalConfirm } = useModal();
 
@@ -24,11 +25,17 @@ export default function PackageScriptButtons({
 
   const handleRemove = (event): void => {
     event.preventDefault();
-    showModalConfirm({
-      title: `Are you sure to remove?`,
-      content: `It will clear the script ${index + 1}.`,
-      onClose: handleConfirmRemove,
-    });
+
+    if (requireRemoveConfirmation) {
+      showModalConfirm({
+        title: `Are you sure to remove?`,
+        content: `It will clear the script ${index + 1}.`,
+        onClose: handleConfirmRemove,
+      });
+      return;
+    }
+
+    onRemove(index);
   };
 
   const handleAdd = (event): void => {

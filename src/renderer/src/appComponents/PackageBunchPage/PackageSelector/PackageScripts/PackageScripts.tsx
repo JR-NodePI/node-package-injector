@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import useGlobalData from '@renderer/appComponents/GlobalDataProvider/useGlobalData';
-import type { ScriptsType } from '@renderer/models/PackageScript';
 import PackageScript from '@renderer/models/PackageScript';
 import NodeService from '@renderer/services/NodeService/NodeService';
 import DragAndDropSorter from 'fratch-ui/components/DragAndDropSorter/DragAndDropSorter';
@@ -9,21 +8,13 @@ import {
   DraggableItem,
   SortedDraggableItem,
 } from 'fratch-ui/components/DragAndDropSorter/DragAndDropSorterProps';
-import { type SelectOption } from 'fratch-ui/components/Form/Select/SelectProps';
 import useDeepCompareEffect from 'use-deep-compare-effect';
 
 import { PackageScriptRenderer } from './components/PackageScriptRenderer';
-
-type PackageScriptOption = SelectOption<PackageScript>;
-
-type PackageScriptsProps = {
-  cwd?: string;
-  selectedScripts?: PackageScript[];
-  onChange: (scripts: PackageScript[]) => void;
-  enablePreInstallScripts?: boolean;
-  enablePostBuildScripts?: boolean;
-  scriptsType?: ScriptsType;
-};
+import type {
+  PackageScriptOption,
+  PackageScriptsProps,
+} from './PackageScriptsProps';
 
 const findScript = ({
   packageScripts,
@@ -95,11 +86,11 @@ export default function PackageScripts({
     const options: PackageScriptOption[] = [
       ...filteredAdditionalPackageScripts.map(script => ({
         label: `🤖 ${script.scriptName}`,
-        value: script,
+        value: script.id,
       })),
       ...packageScripts.map(script => ({
         label: script.scriptName,
-        value: script,
+        value: script.id,
       })),
     ];
 
@@ -269,14 +260,38 @@ export default function PackageScripts({
 
   const handleScriptChange = (
     modifiedScriptIndex: number,
-    modifiedScript?: PackageScript
+    modifiedScriptId?: PackageScript['id']
   ): void => {
+    const selectedScript = [
+      ...filteredAdditionalPackageScripts,
+      ...packageScripts,
+    ].find(script => script.id === modifiedScriptId);
+
     onChange(
       (selectedScripts ?? []).map((script, index) =>
         index === modifiedScriptIndex
-          ? modifiedScript ?? new PackageScript()
+          ? selectedScript
+            ? selectedScript.clone()
+            : new PackageScript()
           : script.clone()
       )
+    );
+  };
+
+  const handleDisabledChange = (
+    scriptId: PackageScript['id'],
+    disabled: boolean
+  ): void => {
+    onChange(
+      (selectedScripts ?? []).map(script => {
+        if (script.id === scriptId) {
+          const newScript = script.clone();
+          newScript.disabled = disabled;
+          return newScript;
+        }
+
+        return script;
+      })
     );
   };
 
@@ -288,13 +303,10 @@ export default function PackageScripts({
 
   const scriptOptionsHiddenUsed = useMemo(
     () =>
-      scriptOptions.map(option => {
-        const visible = !(selectedScripts ?? []).some(
-          ({ id, scriptName }) =>
-            id === option.value.id || scriptName === option.value.scriptName
-        );
-        return { ...option, visible };
-      }),
+      scriptOptions.map(option => ({
+        ...option,
+        visible: !(selectedScripts ?? []).some(({ id }) => id === option.value),
+      })),
     [scriptOptions, selectedScripts]
   );
 
@@ -320,6 +332,7 @@ export default function PackageScripts({
                 key={`${script.id}-${script.scriptName}`}
                 onAdd={handleAddScript}
                 onChange={handleScriptChange}
+                onDisabledChange={handleDisabledChange}
                 onRemove={handleRemoveScript}
                 script={script}
                 scriptOptions={scriptOptionsHiddenUsed}
