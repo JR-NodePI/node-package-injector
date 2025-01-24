@@ -4,6 +4,7 @@ import DependencyPackage from '@renderer/models/DependencyPackage';
 import NodePackage from '@renderer/models/NodePackage';
 import PackageBunch from '@renderer/models/PackageBunch';
 import PackageScript from '@renderer/models/PackageScript';
+import TerminalService from '@renderer/services/TerminalService';
 import { debounce } from 'lodash';
 
 import {
@@ -34,7 +35,7 @@ export default function GlobalDataProvider({
   );
 
   const [isWSLActive, setIsWSLActive, isWSLActiveLoading] =
-    usePersistedState<boolean>('isWSLActive', false);
+    usePersistedState<boolean>('isWSLActive', TerminalService.isWSLAvailable);
 
   const { homePath, isHomePathLoading } = useLoadHomePath({ isWSLActive });
 
