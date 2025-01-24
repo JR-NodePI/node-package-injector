@@ -15,6 +15,12 @@ export default function usePersistedState<T>(
   const [loading, setLoading] = useState<boolean>(true);
   const [data, setData] = useState<T>(defaultValue);
 
+  useEffect(() => {
+    if (data == null && defaultValue != null) {
+      setData(defaultValue);
+    }
+  }, [data, defaultValue]);
+
   const refSetDataAndPersist = useRef<SetDataAndPersistFn<T>>(
     async (newData: T): Promise<void> => {
       setData(newData);
