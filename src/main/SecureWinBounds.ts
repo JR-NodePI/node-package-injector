@@ -17,19 +17,19 @@ export default class SecureWinBounds {
 
     return {
       x:
-        winBounds.x < SecureWinBounds._defaultWinBounds.x
+        winBounds?.x ?? 0 < SecureWinBounds._defaultWinBounds.x
           ? SecureWinBounds._defaultWinBounds.x
           : winBounds.x,
       y:
-        winBounds.y < SecureWinBounds._defaultWinBounds.y
+        winBounds?.y ?? 0 < SecureWinBounds._defaultWinBounds.y
           ? SecureWinBounds._defaultWinBounds.y
           : winBounds.y,
       width:
-        winBounds.width < SecureWinBounds._defaultWinBounds.width
+        winBounds?.width ?? 0 < SecureWinBounds._defaultWinBounds.width
           ? SecureWinBounds._defaultWinBounds.width
           : winBounds.width,
       height:
-        winBounds.height < SecureWinBounds._defaultWinBounds.height
+        winBounds?.height ?? 0 < SecureWinBounds._defaultWinBounds.height
           ? SecureWinBounds._defaultWinBounds.height
           : winBounds.height,
     };
