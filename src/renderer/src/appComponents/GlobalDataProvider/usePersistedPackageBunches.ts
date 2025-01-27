@@ -7,9 +7,11 @@ import debounce from 'lodash/debounce';
 
 import { packageBunchesTemplate } from '../../models/GlobalDataConstants';
 import { GlobalDataProps } from './GlobalDataContext';
+import type { useLastSelectedScriptsReturns } from './useLastSelectedScripts';
+import useLastSelectedScripts from './useLastSelectedScripts';
 import usePersistedState from './usePersistedState';
 
-type PersistedPackageBunchesProps = Pick<
+type PersistedPackageBunchesReturns = Pick<
   GlobalDataProps,
   | 'activeDependencies'
   | 'activePackageBunch'
@@ -19,16 +21,21 @@ type PersistedPackageBunchesProps = Pick<
   | 'setActiveTargetPackage'
   | 'setPackageBunches'
 > & {
+  setLastSelectedScripts: useLastSelectedScriptsReturns['setLastSelectedScripts'];
+  getLastSelectedScripts: useLastSelectedScriptsReturns['getLastSelectedScripts'];
   packageBunchesLoading: boolean;
 };
 
-export default function usePersistedPackageBunches(): PersistedPackageBunchesProps {
-  const [packageBunches, setPackageBunches, packageBunchesLoading] =
-    usePersistedState<PackageBunch[]>(
-      'packageBunches',
-      [],
-      packageBunchesTemplate
-    );
+export default function usePersistedPackageBunches(): PersistedPackageBunchesReturns {
+  const [packageBunches, setPackageBunches, isLoading] = usePersistedState<
+    PackageBunch[]
+  >('packageBunches', [], packageBunchesTemplate);
+
+  const {
+    setLastSelectedScripts,
+    getLastSelectedScripts,
+    lastSelectedScriptsLoading,
+  } = useLastSelectedScripts();
 
   const setPackageBunchActive = useCallback(
     (key: keyof PackageBunch, data: unknown): void => {
@@ -62,30 +69,35 @@ export default function usePersistedPackageBunches(): PersistedPackageBunchesPro
   );
   const setActiveDependencies = debounce(_setActiveDependencies, 10);
 
-  return useMemo<PersistedPackageBunchesProps>(() => {
+  return useMemo<PersistedPackageBunchesReturns>((): PersistedPackageBunchesReturns => {
     const activePackageBunch =
       packageBunches?.find(bunch => bunch.active) ?? new PackageBunch();
-
     const activeDependencies = activePackageBunch?.dependencies ?? [];
-
     const activeTargetPackage =
       activePackageBunch?.targetPackage ?? new NodePackage();
 
+    const packageBunchesLoading = isLoading || lastSelectedScriptsLoading;
+
     return {
-      activeDependencies,
       activePackageBunch,
       activeTargetPackage,
+      activeDependencies,
       packageBunches,
       setActiveDependencies,
       setActiveTargetPackage,
       setPackageBunches,
       packageBunchesLoading,
+      setLastSelectedScripts,
+      getLastSelectedScripts,
     };
   }, [
+    getLastSelectedScripts,
+    isLoading,
+    lastSelectedScriptsLoading,
     packageBunches,
-    packageBunchesLoading,
     setActiveDependencies,
     setActiveTargetPackage,
+    setLastSelectedScripts,
     setPackageBunches,
   ]);
 }

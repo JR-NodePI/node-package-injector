@@ -6,7 +6,6 @@ import TerminalService from '@renderer/services/TerminalService';
 import { packageScriptsTemplate } from '../../models/GlobalDataConstants';
 import GlobalDataContext, { GlobalDataProps } from './GlobalDataContext';
 import useLoadTerminal from './useCheckInitials';
-import useLastSelectedScripts from './useLastSelectedScripts';
 import useLoadHomePath from './useLoadHomePath';
 import usePersistedPackageBunches from './usePersistedPackageBunches';
 import usePersistedState from './usePersistedState';
@@ -35,20 +34,16 @@ export default function GlobalDataProvider({
   const { homePath, isHomePathLoading } = useLoadHomePath({ isWSLActive });
 
   const {
-    setLastSelectedScripts,
-    getLastSelectedScripts,
-    lastSelectedPackagesScriptsLoading,
-  } = useLastSelectedScripts();
-
-  const {
     activeDependencies,
     activePackageBunch,
     activeTargetPackage,
     packageBunches,
+    packageBunchesLoading,
     setActiveDependencies,
     setActiveTargetPackage,
+    setLastSelectedScripts,
     setPackageBunches,
-    packageBunchesLoading,
+    getLastSelectedScripts,
   } = usePersistedPackageBunches();
 
   const providerValue = useMemo<GlobalDataProps>((): GlobalDataProps => {
@@ -57,7 +52,6 @@ export default function GlobalDataProvider({
       isGlobalLoading ||
       isHomePathLoading ||
       isWSLActiveLoading ||
-      lastSelectedPackagesScriptsLoading ||
       packageBunchesLoading;
 
     return {
@@ -65,7 +59,6 @@ export default function GlobalDataProvider({
       activePackageBunch,
       activeTargetPackage,
       additionalPackageScripts,
-      getLastSelectedScripts,
       homePath,
       isValidTerminal,
       isWSLActive,
@@ -79,6 +72,7 @@ export default function GlobalDataProvider({
       setIsWSLActive,
       setPackageBunches,
       setLastSelectedScripts,
+      getLastSelectedScripts,
     };
   }, [
     activeDependencies,
@@ -92,7 +86,6 @@ export default function GlobalDataProvider({
     isValidTerminal,
     isWSLActive,
     isWSLActiveLoading,
-    lastSelectedPackagesScriptsLoading,
     nodeData,
     packageBunches,
     packageBunchesLoading,
@@ -102,8 +95,8 @@ export default function GlobalDataProvider({
     setIsGlobalLoading,
     setIsWSLActive,
     setPackageBunches,
-    getLastSelectedScripts,
     setLastSelectedScripts,
+    getLastSelectedScripts,
   ]);
 
   return (
