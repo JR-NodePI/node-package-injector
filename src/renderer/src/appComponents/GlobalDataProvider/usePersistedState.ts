@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { parseModel } from '@renderer/helpers/parseHelpers';
 import PersistService from '@renderer/services/PersistService';
 
-type SetDataAndPersistFn<T> = (newData: T) => Promise<void>;
+export type SetDataAndPersistFn<T> = (newData: T) => Promise<void>;
 type usePersistedStateProps<T> = [T, SetDataAndPersistFn<T>, boolean];
 
 export default function usePersistedState<T>(

@@ -4,10 +4,10 @@ import { type SelectOption } from 'fratch-ui/components/Form/Select/SelectProps'
 export type PackageScriptOption = SelectOption<PackageScript['id']>;
 
 export type PackageScriptsProps = {
-  cwd?: string;
-  selectedScripts?: PackageScript[];
-  onChange: (scripts: PackageScript[]) => void;
-  enablePreInstallScripts?: boolean;
+  cwd: string;
   enablePostBuildScripts?: boolean;
-  scriptsType?: ScriptsType;
+  enablePreInstallScripts?: boolean;
+  onChange: (scripts: PackageScript[]) => void;
+  scriptsType: ScriptsType;
+  selectedScripts?: PackageScript[];
 };

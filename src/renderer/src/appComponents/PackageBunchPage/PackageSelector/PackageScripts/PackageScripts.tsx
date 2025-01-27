@@ -36,11 +36,11 @@ const findScript = ({
   );
 
 export default function PackageScripts({
-  cwd = '',
+  cwd,
   enablePostBuildScripts,
   enablePreInstallScripts,
   onChange,
-  scriptsType = 'scripts',
+  scriptsType,
   selectedScripts,
 }: PackageScriptsProps): JSX.Element {
   const { additionalPackageScripts } = useGlobalData();
