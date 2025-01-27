@@ -1,9 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import useExcludedDirectories from '@renderer/appComponents/GlobalDataProvider/useExcludedDirectories';
-import useGlobalData from '@renderer/appComponents/GlobalDataProvider/useGlobalData';
-import LastSelectedScripts from '@renderer/models/LastSelectedScripts';
-import PackageScript from '@renderer/models/PackageScript';
 import NodeService from '@renderer/services/NodeService/NodeService';
 import PathService from '@renderer/services/PathService';
 import { LeftLabeledField, Select } from 'fratch-ui/components';
@@ -12,141 +9,12 @@ import { c } from 'fratch-ui/helpers';
 import DirectoryPathLabel from '../DirectoryPathLabel/DirectoryPathLabel';
 import PackageGitActions from './PackageGitActions/PackageGitActions';
 import PackageOpenButtons from './PackageOpenButtons';
-import PackageScripts from './PackageScripts/PackageScripts';
+import PackageScriptsSelectors from './PackageScriptsSelectors';
 import { type PackageSelectorProps } from './PackageSelectorProps';
 import { useDirectorySelectOptions } from './useDirectorySelectOptions';
 import useEffectCWD from './useEffectCWD';
 
 import styles from './PackageSelector.module.css';
-
-type AllPackageScriptsProps = Pick<
-  PackageSelectorProps,
-  | 'nodePackage'
-  | 'onPostBuildScriptsChange'
-  | 'onPreInstallScriptsChange'
-  | 'onScriptsChange'
-  | 'packageType'
-  | 'scriptsLabel'
-  | 'scriptsLabelPostBuild'
-  | 'scriptsLabelPreInstall'
->;
-
-function AllPackageScripts({
-  nodePackage,
-  onPostBuildScriptsChange,
-  onPreInstallScriptsChange,
-  onScriptsChange,
-  scriptsLabel,
-  scriptsLabelPostBuild,
-  scriptsLabelPreInstall,
-  packageType,
-}: AllPackageScriptsProps): JSX.Element {
-  const { getLastSelectedScripts, setLastSelectedScripts } = useGlobalData();
-
-  const enablePreInstallScripts =
-    typeof onPreInstallScriptsChange === 'function';
-
-  const enablePostBuildScripts = typeof onPostBuildScriptsChange === 'function';
-
-  let preBuildScripts = nodePackage.preBuildScripts;
-  let scripts = nodePackage.scripts;
-  let postBuildScripts = nodePackage.postBuildScripts;
-
-  const lastSelectedScripts = getLastSelectedScripts?.(
-    nodePackage.packageName ?? ''
-  );
-
-  if (lastSelectedScripts && packageType == 'target') {
-    postBuildScripts =
-      postBuildScripts ?? lastSelectedScripts?.targetPostBuildScripts;
-    scripts = scripts ?? lastSelectedScripts?.targetScripts;
-  }
-
-  if (lastSelectedScripts && packageType == 'dependency') {
-    preBuildScripts =
-      preBuildScripts ?? lastSelectedScripts?.dependencyPreBuildScripts;
-    scripts = scripts ?? lastSelectedScripts?.dependencyScripts;
-  }
-
-  const handleSetLastSelectedScripts = (
-    scriptsKey:
-      | 'targetScripts'
-      | 'targetPostBuildScripts'
-      | 'dependencyPreBuildScripts'
-      | 'dependencyScripts',
-    scripts: PackageScript[]
-  ): void => {
-    const newLastSelectedScripts =
-      lastSelectedScripts ??
-      new LastSelectedScripts(nodePackage.packageName ?? '');
-    newLastSelectedScripts[scriptsKey] = scripts;
-    setLastSelectedScripts?.(newLastSelectedScripts);
-  };
-
-  const handleOnPreInstallScriptsChange = (scripts: PackageScript[]): void => {
-    onPreInstallScriptsChange?.(scripts);
-    if (packageType == 'dependency') {
-      handleSetLastSelectedScripts?.('dependencyPreBuildScripts', scripts);
-    }
-  };
-
-  const handleOnScriptsChange = (scripts: PackageScript[]): void => {
-    onScriptsChange?.(scripts);
-    if (packageType == 'target') {
-      handleSetLastSelectedScripts?.('targetScripts', scripts);
-    }
-    if (packageType == 'dependency') {
-      handleSetLastSelectedScripts?.('dependencyScripts', scripts);
-    }
-  };
-
-  const handleOnPostBuildScriptsChange = (scripts: PackageScript[]): void => {
-    onPostBuildScriptsChange?.(scripts);
-    if (packageType == 'target') {
-      handleSetLastSelectedScripts?.('targetPostBuildScripts', scripts);
-    }
-  };
-
-  return (
-    <>
-      {enablePreInstallScripts && nodePackage.cwd && (
-        <>
-          <p className={c(styles.scripts_title)}>{scriptsLabelPreInstall}</p>
-          <PackageScripts
-            cwd={nodePackage.cwd}
-            onChange={handleOnPreInstallScriptsChange}
-            scriptsType="preBuildScripts"
-            selectedScripts={preBuildScripts}
-          />
-        </>
-      )}
-      {nodePackage.cwd && (
-        <>
-          <p className={c(styles.scripts_title)}>{scriptsLabel}</p>
-          <PackageScripts
-            cwd={nodePackage.cwd}
-            enablePostBuildScripts={enablePostBuildScripts}
-            enablePreInstallScripts={enablePreInstallScripts}
-            onChange={handleOnScriptsChange}
-            scriptsType="scripts"
-            selectedScripts={scripts}
-          />
-        </>
-      )}
-      {enablePostBuildScripts && nodePackage.cwd && (
-        <>
-          <p className={c(styles.scripts_title)}>{scriptsLabelPostBuild}</p>
-          <PackageScripts
-            cwd={nodePackage.cwd}
-            onChange={handleOnPostBuildScriptsChange}
-            scriptsType="postBuildScripts"
-            selectedScripts={postBuildScripts}
-          />
-        </>
-      )}
-    </>
-  );
-}
 
 export default function PackageSelector({
   additionalActionComponents,
@@ -279,7 +147,7 @@ export default function PackageSelector({
           </div>
 
           {enablePackageScriptsSelectors && (
-            <AllPackageScripts
+            <PackageScriptsSelectors
               nodePackage={nodePackage}
               onPostBuildScriptsChange={onPostBuildScriptsChange}
               onPreInstallScriptsChange={onPreInstallScriptsChange}

@@ -5,13 +5,14 @@ import LastSelectedScripts from '@renderer/models/LastSelectedScripts';
 import { lastSelectedPackagesScriptsTemplate } from '../../models/GlobalDataConstants';
 import usePersistedState from './usePersistedState';
 
-export default function useLastSelectedScripts(): {
+export type useLastSelectedScriptsReturns = {
   getLastSelectedScripts: (
     packageName: string
   ) => LastSelectedScripts | undefined;
-  lastSelectedPackagesScriptsLoading: boolean;
+  lastSelectedScriptsLoading: boolean;
   setLastSelectedScripts: (lasSelectedScripts: LastSelectedScripts) => void;
-} {
+};
+export default function useLastSelectedScripts(): useLastSelectedScriptsReturns {
   const [
     lastSelectedPackagesScripts,
     setLastSelectedPackagesScripts,
@@ -72,7 +73,7 @@ export default function useLastSelectedScripts(): {
 
   return {
     getLastSelectedScripts,
-    lastSelectedPackagesScriptsLoading: isLoading,
+    lastSelectedScriptsLoading: isLoading,
     setLastSelectedScripts,
   };
 }
