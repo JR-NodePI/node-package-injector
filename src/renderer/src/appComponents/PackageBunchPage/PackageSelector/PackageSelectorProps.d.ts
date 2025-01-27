@@ -28,6 +28,7 @@ export type PackageSelectorProps = {
   onPostBuildScriptsChange?: (scripts: PackageScript[]) => void;
   onPreInstallScriptsChange?: (scripts: PackageScript[]) => void;
   onScriptsChange: (scripts: PackageScript[]) => void;
+  packageType: 'target' | 'dependency';
   scriptsLabel?: React.ReactNode;
   scriptsLabelPostBuild?: React.ReactNode;
   scriptsLabelPreInstall?: React.ReactNode;

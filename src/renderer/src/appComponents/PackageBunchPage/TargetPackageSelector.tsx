@@ -50,6 +50,7 @@ export default function TargetPackageSelector(): JSX.Element {
       onPathChange={handlePathChange}
       onPostBuildScriptsChange={onPostBuildScriptsChange}
       onScriptsChange={handleScriptsChange}
+      packageType="target"
       scriptsLabel="Scripts (pre build)"
       scriptsLabelPostBuild="Scripts (post build)"
     />
