@@ -4,7 +4,7 @@ A desktop dev tool for simulating npm dependencies, built with Node.js, Bash, El
 
 Use it to inject or synchronize npm packages into other packages when a monorepo isn't feasible.
 
-![Screenshot](./README_screenshot.png)
+![Screenshot](./README_screenshot.png?v=1)
 
 ## Recommended IDE Setup
 
