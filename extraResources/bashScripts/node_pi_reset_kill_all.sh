@@ -42,7 +42,20 @@ killAll() {
 
   local INITIAL_PIDS=$(read_initial_PIDs)
   local NODE_PI_PIDS_INC="NodePI|vite|craco|node|yarn|npm|pnpm|node-package-injector|$NODE_PI_FILE_PREFIX"
-  local NODE_PI_PIDS_EXC="grep|node_pi_reset_kill_all| ${CURRENT_PID} | ${INITIAL_PIDS} "
+  local NODE_PI_PIDS_EXC_PARTS=(
+    "grep"
+    "node_pi_reset_kill_all"
+    " ${CURRENT_PID} "
+    ".vscode-server"
+  )
+  if [[ -n "$INITIAL_PIDS" ]]; then
+    NODE_PI_PIDS_EXC_PARTS+=(" ${INITIAL_PIDS} ")
+  fi
+
+  local NODE_PI_PIDS_EXC=$(
+    IFS='|'
+    echo "${NODE_PI_PIDS_EXC_PARTS[*]}"
+  )
 
   if [[ "$(uname)" == "Darwin" ]]; then
     local NODE_PI_PIDS=$(ps -A | grep -E -i "$NODE_PI_PIDS_INC" | grep -E -i -v "$NODE_PI_PIDS_EXC" | awk "{ print \$1 }")

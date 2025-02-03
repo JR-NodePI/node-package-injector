@@ -4,7 +4,11 @@ import useGlobalData from '../GlobalDataProvider/useGlobalData';
 import PackageSelector from './PackageSelector/PackageSelector';
 
 export default function TargetPackageSelector(): JSX.Element {
-  const { activeTargetPackage, setActiveTargetPackage } = useGlobalData();
+  const {
+    activeTargetPackage,
+    setActiveTargetPackage,
+    getLastSelectedScripts,
+  } = useGlobalData();
 
   const handlePathChange = (
     cwd: string,
@@ -23,6 +27,13 @@ export default function TargetPackageSelector(): JSX.Element {
     clonedPackage.postBuildScripts = undefined;
     clonedPackage.isValidPackage = isValidPackage;
     clonedPackage.packageName = packageName;
+
+    const lastSelectedScripts = getLastSelectedScripts?.(packageName ?? '');
+    if (lastSelectedScripts) {
+      clonedPackage.scripts = lastSelectedScripts.targetScripts;
+      clonedPackage.postBuildScripts =
+        lastSelectedScripts.targetPostBuildScripts;
+    }
 
     setActiveTargetPackage?.(clonedPackage);
   };
@@ -50,6 +61,7 @@ export default function TargetPackageSelector(): JSX.Element {
       onPathChange={handlePathChange}
       onPostBuildScriptsChange={onPostBuildScriptsChange}
       onScriptsChange={handleScriptsChange}
+      packageType="target"
       scriptsLabel="Scripts (pre build)"
       scriptsLabelPostBuild="Scripts (post build)"
     />

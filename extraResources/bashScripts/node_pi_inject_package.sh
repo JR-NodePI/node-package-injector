@@ -1,7 +1,7 @@
 #!/bin/bash
 
 . "$(dirname "$0")/.nodepirc"
-. "$(dirname "$0")/helpers/package_json_bak.sh"
+. "$(dirname "$0")/helpers/package_json_back.sh"
 
 DEPENDENCY_NAME=$2
 DEPENDENCY_DIST_DIR=$3

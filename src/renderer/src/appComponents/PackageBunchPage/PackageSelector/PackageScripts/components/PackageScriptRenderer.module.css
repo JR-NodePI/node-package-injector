@@ -8,5 +8,8 @@
 }
 
 .mode_scripts_label {
+  display: flex;
   pointer-events: unset;
+  align-items: center;
+  gap: 8px;
 }

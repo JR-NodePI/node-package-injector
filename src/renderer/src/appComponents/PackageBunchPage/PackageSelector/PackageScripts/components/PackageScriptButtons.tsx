@@ -1,4 +1,6 @@
-import { Button, IconClose, IconPlus } from 'fratch-ui/components';
+import { Button, IconClose, IconPlus, useModal } from 'fratch-ui/components';
+import { ModalCloseTypes } from 'fratch-ui/components/Modal/ModalConstants';
+import type { ModalCloseType } from 'fratch-ui/components/Modal/ModalProps';
 import { c } from 'fratch-ui/helpers';
 
 import type { PackageScriptButtonsProps } from './PackageScriptRendererProps';
@@ -11,15 +13,41 @@ export default function PackageScriptButtons({
   onRemove,
   showAddButton,
   showRemoveButton,
+  requireRemoveConfirmation,
 }: PackageScriptButtonsProps): JSX.Element {
+  const { showModalConfirm } = useModal();
+
+  const handleConfirmRemove = (type: ModalCloseType): void => {
+    if (type === ModalCloseTypes.ACCEPT) {
+      onRemove(index);
+    }
+  };
+
+  const handleRemove = (event): void => {
+    event.preventDefault();
+
+    if (requireRemoveConfirmation) {
+      showModalConfirm({
+        title: `Are you sure to remove?`,
+        content: `It will clear the script ${index + 1}.`,
+        onClose: handleConfirmRemove,
+      });
+      return;
+    }
+
+    onRemove(index);
+  };
+
+  const handleAdd = (event): void => {
+    event.preventDefault();
+    onAdd();
+  };
+
   return (
     <div className={c(styles.add_script_buttons)}>
       {showRemoveButton && (
         <Button
-          onClick={(event): void => {
-            event.preventDefault();
-            onRemove(index);
-          }}
+          onClick={handleRemove}
           Icon={IconClose}
           size="smaller"
           isRound
@@ -29,10 +57,7 @@ export default function PackageScriptButtons({
       {showAddButton && (
         <Button
           type="tertiary"
-          onClick={(event): void => {
-            event.preventDefault();
-            onAdd();
-          }}
+          onClick={handleAdd}
           Icon={IconPlus}
           size="smaller"
           isRound

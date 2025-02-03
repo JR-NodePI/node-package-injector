@@ -31,15 +31,22 @@ export default function AdditionalPackageScripts(): JSX.Element {
     setAdditionalPackageScripts?.(newScripts);
   };
 
-  const handleChangeName = (
+  const setAdditionalPackageScript = (
     index: number,
-    event?: React.ChangeEvent<HTMLInputElement>
+    { scriptName, scriptValue }: { scriptName?: string; scriptValue?: string }
   ): void => {
-    const scriptName = event?.target.value ?? '';
     const newScripts = additionalPackageScripts.map((script, scriptIndex) => {
       if (index === scriptIndex) {
         const newScript = script.clone();
-        newScript.scriptName = scriptName;
+
+        if (scriptName) {
+          newScript.scriptName = scriptName;
+        }
+
+        if (scriptValue) {
+          newScript.scriptValue = scriptValue;
+        }
+
         return newScript;
       }
       return script;
@@ -47,20 +54,20 @@ export default function AdditionalPackageScripts(): JSX.Element {
     setAdditionalPackageScripts?.(newScripts);
   };
 
+  const handleChangeName = (
+    index: number,
+    event?: React.ChangeEvent<HTMLInputElement>
+  ): void => {
+    const scriptName = event?.target.value ?? '';
+    setAdditionalPackageScript(index, { scriptName });
+  };
+
   const handleChangeValue = (
     index: number,
     event?: React.ChangeEvent<HTMLInputElement>
   ): void => {
     const scriptValue = event?.target.value ?? '';
-    const newScripts = additionalPackageScripts.map((script, scriptIndex) => {
-      if (index === scriptIndex) {
-        const newScript = script.clone();
-        newScript.scriptValue = scriptValue;
-        return newScript;
-      }
-      return script;
-    });
-    setAdditionalPackageScripts?.(newScripts);
+    setAdditionalPackageScript(index, { scriptValue });
   };
 
   return (
@@ -75,7 +82,6 @@ export default function AdditionalPackageScripts(): JSX.Element {
             <div key={index} className={c(styles.script)}>
               <InputText
                 className={c(styles.script_name)}
-                cleanable
                 placeholder="Script name"
                 value={scriptName}
                 onChange={(event): void => handleChangeName(index, event)}
@@ -83,7 +89,6 @@ export default function AdditionalPackageScripts(): JSX.Element {
               />
               <InputText
                 className={c(styles.script_value)}
-                cleanable
                 placeholder="Script vale"
                 value={scriptValue}
                 onChange={(event): void => handleChangeValue(index, event)}
@@ -95,6 +100,7 @@ export default function AdditionalPackageScripts(): JSX.Element {
                 onRemove={handleRemove}
                 showAddButton={showAddButton}
                 showRemoveButton={showRemoveButton}
+                requireRemoveConfirmation
               />
             </div>
           );

@@ -1,6 +1,6 @@
 {
   "name": "node-package-injector",
-  "version": "1.10.1-alpha",
+  "version": "1.10.14-alpha",
   "description": "Dev tool to simulate npm dependencies",
   "repository": "https://github.com/JorgeRojo/node-package-injector",
   "main": "./out/main/index.js",
@@ -71,5 +71,6 @@
     "vite": "^4.4.2",
     "vite-plugin-dts": "^3.3.1",
     "vitest": "^1.2.2"
-  }
+  },
+  "packageManager": "yarn@1.22.22"
 }

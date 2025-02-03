@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { parseModel } from '@renderer/helpers/parseHelpers';
 import PersistService from '@renderer/services/PersistService';
 
-type SetDataAndPersistFn<T> = (newData: T) => Promise<void>;
+export type SetDataAndPersistFn<T> = (newData: T) => Promise<void>;
 type usePersistedStateProps<T> = [T, SetDataAndPersistFn<T>, boolean];
 
 export default function usePersistedState<T>(
@@ -14,6 +14,12 @@ export default function usePersistedState<T>(
   const [templateValueMemo] = useState<T | undefined>(templateValue);
   const [loading, setLoading] = useState<boolean>(true);
   const [data, setData] = useState<T>(defaultValue);
+
+  useEffect(() => {
+    if (data == null && defaultValue != null) {
+      setData(defaultValue);
+    }
+  }, [data, defaultValue]);
 
   const refSetDataAndPersist = useRef<SetDataAndPersistFn<T>>(
     async (newData: T): Promise<void> => {
