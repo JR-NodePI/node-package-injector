@@ -27,8 +27,12 @@ const getUpdatedDependencyLits = (
   });
 
 function Dependencies(): JSX.Element {
-  const { activeTargetPackage, activeDependencies, setActiveDependencies } =
-    useGlobalData();
+  const {
+    activeDependencies,
+    activeTargetPackage,
+    getLastSelectedScripts,
+    setActiveDependencies,
+  } = useGlobalData();
 
   const [isTargetSynchronizable, setIsTargetSynchronizable] =
     useState<boolean>(false);
@@ -79,6 +83,13 @@ function Dependencies(): JSX.Element {
         clonedDependency.postBuildScripts = undefined;
         clonedDependency.isValidPackage = isValidPackage;
         clonedDependency.packageName = packageName;
+
+        const lastSelectedScripts = getLastSelectedScripts?.(packageName ?? '');
+        if (lastSelectedScripts) {
+          clonedDependency.scripts = lastSelectedScripts.dependencyScripts;
+          clonedDependency.preBuildScripts =
+            lastSelectedScripts.dependencyPreBuildScripts;
+        }
 
         return clonedDependency;
       }

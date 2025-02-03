@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import useExcludedDirectories from '@renderer/appComponents/GlobalDataProvider/useExcludedDirectories';
-import GitService from '@renderer/services/GitService';
 import NodeService from '@renderer/services/NodeService/NodeService';
 import PathService from '@renderer/services/PathService';
 import { LeftLabeledField, Select } from 'fratch-ui/components';
@@ -10,77 +9,12 @@ import { c } from 'fratch-ui/helpers';
 import DirectoryPathLabel from '../DirectoryPathLabel/DirectoryPathLabel';
 import PackageGitActions from './PackageGitActions/PackageGitActions';
 import PackageOpenButtons from './PackageOpenButtons';
-import PackageScripts from './PackageScripts/PackageScripts';
+import PackageScriptsSelectors from './PackageScriptsSelectors';
 import { type PackageSelectorProps } from './PackageSelectorProps';
 import { useDirectorySelectOptions } from './useDirectorySelectOptions';
 import useEffectCWD from './useEffectCWD';
 
 import styles from './PackageSelector.module.css';
-
-type AllPackageScriptsProps = Pick<
-  PackageSelectorProps,
-  | 'nodePackage'
-  | 'onPostBuildScriptsChange'
-  | 'onPreInstallScriptsChange'
-  | 'onScriptsChange'
-  | 'scriptsLabel'
-  | 'scriptsLabelPostBuild'
-  | 'scriptsLabelPreInstall'
->;
-
-function AllPackageScripts({
-  nodePackage,
-  onPostBuildScriptsChange,
-  onPreInstallScriptsChange,
-  onScriptsChange,
-  scriptsLabel,
-  scriptsLabelPostBuild,
-  scriptsLabelPreInstall,
-}: AllPackageScriptsProps): JSX.Element {
-  const enablePreInstallScripts =
-    typeof onPreInstallScriptsChange === 'function';
-
-  const enablePostBuildScripts = typeof onPostBuildScriptsChange === 'function';
-
-  return (
-    <>
-      {enablePreInstallScripts && (
-        <>
-          <p className={c(styles.scripts_title)}>{scriptsLabelPreInstall}</p>
-          <PackageScripts
-            onChange={onPreInstallScriptsChange}
-            cwd={nodePackage.cwd}
-            selectedScripts={nodePackage.preBuildScripts}
-            scriptsType="preBuildScripts"
-          />
-        </>
-      )}
-
-      <>
-        <p className={c(styles.scripts_title)}>{scriptsLabel}</p>
-        <PackageScripts
-          onChange={onScriptsChange}
-          cwd={nodePackage.cwd}
-          selectedScripts={nodePackage.scripts}
-          enablePreInstallScripts={enablePreInstallScripts}
-          enablePostBuildScripts={enablePostBuildScripts}
-        />
-      </>
-
-      {enablePostBuildScripts && (
-        <>
-          <p className={c(styles.scripts_title)}>{scriptsLabelPostBuild}</p>
-          <PackageScripts
-            onChange={onPostBuildScriptsChange}
-            cwd={nodePackage.cwd}
-            selectedScripts={nodePackage.postBuildScripts}
-            scriptsType="postBuildScripts"
-          />
-        </>
-      )}
-    </>
-  );
-}
 
 export default function PackageSelector({
   additionalActionComponents,
@@ -92,6 +26,7 @@ export default function PackageSelector({
   onPostBuildScriptsChange,
   onPreInstallScriptsChange,
   onScriptsChange,
+  packageType,
   scriptsLabel,
   scriptsLabelPostBuild,
   scriptsLabelPreInstall,
@@ -116,12 +51,8 @@ export default function PackageSelector({
         const packageName = isValidPackage
           ? await NodeService.getPackageName(cwd)
           : undefined;
-        const branch = await GitService.getCurrentBranch({
-          cwd,
-          abortController,
-        });
-        const isValid =
-          isValidPackage && Boolean(packageName) && branch.length > 0;
+
+        const isValid = isValidPackage && Boolean(packageName);
         if (!abortController.signal.aborted) {
           onPathChange(cwd, isValid, packageName);
         }
@@ -216,11 +147,12 @@ export default function PackageSelector({
           </div>
 
           {enablePackageScriptsSelectors && (
-            <AllPackageScripts
+            <PackageScriptsSelectors
               nodePackage={nodePackage}
               onPostBuildScriptsChange={onPostBuildScriptsChange}
               onPreInstallScriptsChange={onPreInstallScriptsChange}
               onScriptsChange={onScriptsChange}
+              packageType={packageType}
               scriptsLabel={scriptsLabel}
               scriptsLabelPostBuild={scriptsLabelPostBuild}
               scriptsLabelPreInstall={scriptsLabelPreInstall}

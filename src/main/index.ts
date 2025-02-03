@@ -1,31 +1,20 @@
 import { electronApp, is, optimizer } from '@electron-toolkit/utils';
 import { fork } from 'child_process';
 import { app, BrowserWindow, ipcMain, Menu, shell } from 'electron';
-import Config from 'electron-config';
-import path from 'path';
-
-const config = new Config();
-
 import {
   installExtension,
   REACT_DEVELOPER_TOOLS,
 } from 'electron-devtools-installer';
+import path from 'path';
 
 import { extraResourcesPath } from '../preload/constants';
 import { createAppMenu, getMenuItemsTemplate } from './menu';
+import SecureWinBounds from './SecureWinBounds';
 
 function createWindow(): void {
-  const windowBounds: Record<string, number> = config.get('winBounds');
-
-  const isUnsecurePositioning = Object.values(windowBounds).some(
-    value => value < 0
-  );
-
-  const secureWindowBounds = isUnsecurePositioning ? {} : windowBounds;
-
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    ...secureWindowBounds,
+    ...SecureWinBounds.get(),
     titleBarStyle: process.platform === 'linux' ? 'default' : 'hidden',
     titleBarOverlay: {
       color: '#5858f0',
@@ -55,7 +44,7 @@ function createWindow(): void {
       mainWindow.webContents.send('before-close');
     }
 
-    config.set('winBounds', mainWindow.getBounds());
+    SecureWinBounds.set(mainWindow.getBounds());
   });
 
   ipcMain.on('reset-kill-all-quit', (_event, data) => {

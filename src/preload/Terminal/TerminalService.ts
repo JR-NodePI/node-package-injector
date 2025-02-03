@@ -15,7 +15,6 @@ export default class TerminalService {
 
   private static async checkWSL(
     cwd: string,
-    syncMode?: boolean,
     addIcons?: boolean
   ): Promise<boolean> {
     const isSWLCompatible = ['win32', 'cygwin'].includes(process.platform);
@@ -25,17 +24,39 @@ export default class TerminalService {
     }
 
     try {
-      const { content } = await TerminalService.executeCommand({
+      const outputs = await TerminalRepository.executeCommand({
         addIcons,
         args: ['-e', 'bash', '--version'],
         command: 'wsl',
         cwd,
         groupLogsLabel: 'WSL CHECK',
-        syncMode,
+        syncMode: true,
       });
 
-      return (content ?? '').includes('GNU bash');
+      const output = (outputs[0]?.data ?? '').toString().trim();
+
+      return output.includes('linux');
     } catch (error) {
+      return false;
+    }
+  }
+
+  private static async initInitials(cwd: string): Promise<boolean> {
+    const expectedOutput = 'TERMINAL_INIT';
+
+    try {
+      const outputs = await TerminalRepository.executeCommand({
+        args: [`${expectedOutput}`],
+        command: 'echo',
+        cwd,
+        groupLogsLabel: '> INIT',
+        syncMode: true,
+      });
+
+      const output = (outputs[0]?.data ?? '').toString().trim();
+
+      return output === expectedOutput;
+    } catch {
       return false;
     }
   }
@@ -60,17 +81,11 @@ export default class TerminalService {
   }: ExecuteCommandOptions & {
     skipWSL?: boolean;
   }): Promise<TerminalResponse> {
-    if (TerminalService.isTerminalInitialized === false) {
+    if (
+      TerminalService.isTerminalInitialized === false ||
+      TerminalService.isWSLAvailable == null
+    ) {
       throw new Error('Terminal is not enabled');
-    }
-
-    if (TerminalService.isWSLAvailable == null && !skipWSL) {
-      TerminalService.isWSLAvailable = false;
-      TerminalService.isWSLAvailable = await TerminalService.checkWSL(
-        cwd ?? '',
-        syncMode,
-        addIcons
-      );
     }
 
     const finalCommand =
@@ -129,23 +144,15 @@ export default class TerminalService {
       return true;
     }
 
-    const expectedOutput = 'TERMINAL_INIT';
-
-    try {
-      const outputs = await TerminalRepository.executeCommand({
-        args: [`${expectedOutput}`],
-        command: 'echo',
-        cwd,
-        groupLogsLabel: '> INIT',
-      });
-
-      const output = (outputs[0]?.data ?? '').toString().trim();
-
-      TerminalService.isTerminalInitialized = output === expectedOutput;
-
-      return TerminalService.isTerminalInitialized;
-    } catch {
-      return false;
+    if (TerminalService.isTerminalInitialized == null) {
+      TerminalService.isTerminalInitialized =
+        await TerminalService.initInitials(cwd);
     }
+
+    if (TerminalService.isWSLAvailable == null) {
+      TerminalService.isWSLAvailable = await TerminalService.checkWSL(cwd);
+    }
+
+    return TerminalService.isTerminalInitialized;
   }
 }

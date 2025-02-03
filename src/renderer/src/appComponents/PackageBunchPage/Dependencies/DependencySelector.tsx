@@ -40,6 +40,7 @@ export default function DependencySelector({
   return (
     <div className={c(styles.dependency)}>
       <PackageSelector
+        packageType="dependency"
         additionalActionComponents={
           <>
             {isTargetSynchronizable && (

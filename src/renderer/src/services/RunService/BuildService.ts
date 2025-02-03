@@ -138,10 +138,10 @@ export default class BuildService {
 
     const scripts = nodePackage[scriptsType];
 
-    const filledScripts = (scripts ?? []).filter(script =>
-      Boolean(script.scriptName.trim())
+    const availableScripts = (scripts ?? []).filter(
+      script => Boolean(script.scriptName.trim()) && Boolean(!script.disabled)
     );
-    const hasScripts = Boolean(filledScripts?.length);
+    const hasScripts = Boolean(availableScripts?.length);
 
     if (hasScripts) {
       const consoleGroup = new ConsoleGroup(
@@ -167,7 +167,7 @@ export default class BuildService {
       }
     }
 
-    const scriptsPromises = filledScripts.map(
+    const scriptsPromises = availableScripts.map(
       packageScript => () =>
         BuildService.runPackageSingleScript({
           additionalPackageScripts,

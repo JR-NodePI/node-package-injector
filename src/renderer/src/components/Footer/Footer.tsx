@@ -9,6 +9,7 @@ function Footer({ children }: { children: ReactNode }): JSX.Element {
     <>
       <footer className={c(styles.footer)}>
         <p className={c(styles.version)}>
+          {import.meta.env.DEV ? '<<<DEV>>> ' : ''}
           version: {import.meta.env.PACKAGE_VERSION}
         </p>
         {children}

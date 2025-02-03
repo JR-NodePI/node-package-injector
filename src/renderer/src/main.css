@@ -1,7 +1,7 @@
 @import url('fratch-ui/styles/styles.css');
 
 :root {
-  --ft-footer-height: 96px;
+  --ft-footer-height: 80px;
   --ft-packages-tabs-height: 46px;
   --ft-container-padding-left: 32px;
   --ft-container-padding-right: 48px;

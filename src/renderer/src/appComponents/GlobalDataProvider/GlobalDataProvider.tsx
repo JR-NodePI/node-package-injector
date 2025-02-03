@@ -1,18 +1,13 @@
-import { useCallback, useMemo } from 'react';
+import { useMemo } from 'react';
 
-import DependencyPackage from '@renderer/models/DependencyPackage';
-import NodePackage from '@renderer/models/NodePackage';
-import PackageBunch from '@renderer/models/PackageBunch';
 import PackageScript from '@renderer/models/PackageScript';
-import { debounce } from 'lodash';
+import TerminalService from '@renderer/services/TerminalService';
 
-import {
-  packageBunchesTemplate,
-  packageScriptsTemplate,
-} from '../../models/GlobalDataConstants';
+import { packageScriptsTemplate } from '../../models/GlobalDataConstants';
 import GlobalDataContext, { GlobalDataProps } from './GlobalDataContext';
 import useLoadTerminal from './useCheckInitials';
 import useLoadHomePath from './useLoadHomePath';
+import usePersistedPackageBunches from './usePersistedPackageBunches';
 import usePersistedState from './usePersistedState';
 
 export default function GlobalDataProvider({
@@ -34,63 +29,29 @@ export default function GlobalDataProvider({
   );
 
   const [isWSLActive, setIsWSLActive, isWSLActiveLoading] =
-    usePersistedState<boolean>('isWSLActive', false);
+    usePersistedState<boolean>('isWSLActive', TerminalService.isWSLAvailable);
 
   const { homePath, isHomePathLoading } = useLoadHomePath({ isWSLActive });
 
-  const [packageBunches, setPackageBunches, packageBunchesLoading] =
-    usePersistedState<PackageBunch[]>(
-      'packageBunches',
-      [],
-      packageBunchesTemplate
-    );
-
-  const setPackageBunchActive = useCallback(
-    (key: keyof PackageBunch, data: unknown): void => {
-      const bunchIndex = packageBunches.findIndex(bunch => bunch.active);
-      if (bunchIndex >= 0) {
-        const newBunches = packageBunches.map((bunch, index) => {
-          if (index === bunchIndex && key in bunch && key !== 'id') {
-            (bunch[key] as unknown) = data;
-          }
-          return bunch;
-        });
-        setPackageBunches(newBunches);
-      }
-    },
-    [packageBunches, setPackageBunches]
-  );
-
-  const _setActiveTargetPackage = useCallback(
-    (targetPackage: NodePackage) => {
-      setPackageBunchActive('targetPackage', targetPackage);
-    },
-    [setPackageBunchActive]
-  );
-  const setActiveTargetPackage = debounce(_setActiveTargetPackage, 10);
-
-  const _setActiveDependencies = useCallback(
-    (dependencies: DependencyPackage[]) => {
-      setPackageBunchActive('dependencies', dependencies);
-    },
-    [setPackageBunchActive]
-  );
-  const setActiveDependencies = debounce(_setActiveDependencies, 10);
+  const {
+    activeDependencies,
+    activePackageBunch,
+    activeTargetPackage,
+    packageBunches,
+    packageBunchesLoading,
+    setActiveDependencies,
+    setActiveTargetPackage,
+    setLastSelectedScripts,
+    setPackageBunches,
+    getLastSelectedScripts,
+  } = usePersistedPackageBunches();
 
   const providerValue = useMemo<GlobalDataProps>((): GlobalDataProps => {
-    const activePackageBunch =
-      packageBunches?.find(bunch => bunch.active) ?? new PackageBunch();
-
-    const activeDependencies = activePackageBunch?.dependencies ?? [];
-
-    const activeTargetPackage =
-      activePackageBunch?.targetPackage ?? new NodePackage();
-
     const loading =
       isAdditionalPackageScriptsLoading ||
       isGlobalLoading ||
-      isWSLActiveLoading ||
       isHomePathLoading ||
+      isWSLActiveLoading ||
       packageBunchesLoading;
 
     return {
@@ -110,8 +71,13 @@ export default function GlobalDataProvider({
       setIsGlobalLoading,
       setIsWSLActive,
       setPackageBunches,
+      setLastSelectedScripts,
+      getLastSelectedScripts,
     };
   }, [
+    activeDependencies,
+    activePackageBunch,
+    activeTargetPackage,
     additionalPackageScripts,
     homePath,
     isAdditionalPackageScriptsLoading,
@@ -129,6 +95,8 @@ export default function GlobalDataProvider({
     setIsGlobalLoading,
     setIsWSLActive,
     setPackageBunches,
+    setLastSelectedScripts,
+    getLastSelectedScripts,
   ]);
 
   return (
