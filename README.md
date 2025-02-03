@@ -1,6 +1,10 @@
-# node-package-injector
+# NodePI (node-package-injector)
 
-Dev tool to simulate npm dependencies
+A desktop dev tool for simulating npm dependencies, built with Node.js, Bash, Electron, React, and Vite.
+
+Use it to inject or synchronize npm packages into other packages when a monorepo isn't feasible.
+
+![Screenshot](./README_screenshot.png)
 
 ## Recommended IDE Setup
 
