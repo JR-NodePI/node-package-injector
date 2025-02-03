@@ -4,6 +4,8 @@ A desktop dev tool for simulating npm dependencies, built with Node.js, Bash, El
 
 Use it to inject or synchronize npm packages into other packages when a monorepo isn't feasible.
 
+![Screenshot](./README_screenshot.png)
+
 ## Recommended IDE Setup
 
 - [VSCode](https://code.visualstudio.com/) + [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) + [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
