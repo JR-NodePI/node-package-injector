@@ -1,21 +1,65 @@
 import { parseModel } from '@renderer/helpers/parseHelpers';
-import { packageBunchTemplate } from '@renderer/models/GlobalDataConstants';
+import {
+  packageBunchTemplate,
+  packageScriptsTemplate,
+} from '@renderer/models/GlobalDataConstants';
 import type PackageBunch from '@renderer/models/PackageBunch';
+import type PackageScript from '@renderer/models/PackageScript';
+import PathService from '@renderer/services/PathService';
 
-export function downloadTextFile(text, name): void {
+const HOME_WILDCARD = '<<HOME>>';
+
+const addHomeWildcard = async (
+  text: string,
+  isWSLActive?: boolean
+): Promise<string> => {
+  const home = await PathService.getHomePath(isWSLActive);
+  const homePattern = home.replace(/[\\$]+/g, '[^"]+');
+  const cleanText = text.replace(
+    new RegExp(`${homePattern}`, 'g'),
+    HOME_WILDCARD
+  );
+  return cleanText;
+};
+
+export async function downloadTextFile(
+  text: string,
+  name: string,
+  isWSLActive?: boolean
+): Promise<void> {
+  const cleanText = await addHomeWildcard(text, isWSLActive);
   const a = document.createElement('a');
   const type = name.split('.').pop();
   a.href = URL.createObjectURL(
-    new Blob([text], { type: `text/${type === 'txt' ? 'plain' : type}` })
+    new Blob([cleanText], { type: `text/${type === 'txt' ? 'plain' : type}` })
   );
   a.download = name;
   a.click();
 }
 
-export function getPackageBunchFromText(text: string): PackageBunch | null {
-  const fileData = JSON.parse(text);
+const replaceHomeWildcard = async (
+  text: string,
+  isWSLActive?: boolean
+): Promise<string> => {
+  const home = await PathService.getHomePath(isWSLActive);
+  const homePattern = JSON.stringify(home).replace(/"/g, '');
+  const cleanText = text.replace(
+    new RegExp(`${HOME_WILDCARD}`, 'g'),
+    homePattern
+  );
+  return cleanText;
+};
 
-  const parsedBunch = parseModel<PackageBunch>(fileData, packageBunchTemplate);
+export async function getPackageBunchFromText(
+  text: string,
+  isWSLActive?: boolean
+): Promise<PackageBunch | null> {
+  const jsonWithHome = await replaceHomeWildcard(text, isWSLActive);
+  const fileData = JSON.parse(jsonWithHome);
+  const parsedBunch = parseModel<PackageBunch>(
+    fileData.activePackageBunch ?? fileData,
+    packageBunchTemplate
+  );
 
   const isValidTargetPackage =
     parsedBunch.targetPackage.cwd != null &&
@@ -36,4 +80,24 @@ export function getPackageBunchFromText(text: string): PackageBunch | null {
   }
 
   return parsedBunch;
+}
+
+export async function getAdditionalScriptsFromText(
+  text: string
+): Promise<PackageScript[] | null> {
+  const fileData = JSON.parse(text);
+  const parsedAdditionalPackageScripts = parseModel<PackageScript[]>(
+    fileData.additionalPackageScripts,
+    packageScriptsTemplate
+  );
+
+  const isValidScriptsList =
+    parsedAdditionalPackageScripts?.[0]?.scriptName != null;
+  parsedAdditionalPackageScripts?.[0]?.scriptValue != null;
+
+  if (!isValidScriptsList) {
+    return null;
+  }
+
+  return parsedAdditionalPackageScripts;
 }
