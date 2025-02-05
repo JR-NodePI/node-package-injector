@@ -5,10 +5,22 @@ import { IconUpload } from 'fratch-ui/components';
 import { downloadTextFile } from './ExportImportBunchHelpers';
 
 export default function ExportConfig(): JSX.Element {
-  const { activePackageBunch } = useGlobalData();
+  const { activePackageBunch, isWSLActive, additionalPackageScripts } =
+    useGlobalData();
 
   const handleExport = (): void => {
-    downloadTextFile(JSON.stringify(activePackageBunch, null, 2), fileName);
+    downloadTextFile(
+      JSON.stringify(
+        {
+          activePackageBunch,
+          additionalPackageScripts,
+        },
+        null,
+        2
+      ),
+      fileName,
+      isWSLActive
+    );
   };
 
   const { name, id } = activePackageBunch;
