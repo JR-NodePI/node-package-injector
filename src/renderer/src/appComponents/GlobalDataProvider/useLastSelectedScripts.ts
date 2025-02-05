@@ -1,6 +1,7 @@
 import { useCallback, useRef } from 'react';
 
 import LastSelectedScripts from '@renderer/models/LastSelectedScripts';
+import useDeepCompareEffect from 'use-deep-compare-effect';
 
 import { lastSelectedPackagesScriptsTemplate } from '../../models/GlobalDataConstants';
 import usePersistedState from './usePersistedState';
@@ -24,6 +25,10 @@ export default function useLastSelectedScripts(): useLastSelectedScriptsReturns 
   );
 
   const lastSelectedPackagesScriptsRef = useRef(lastSelectedPackagesScripts);
+
+  useDeepCompareEffect(() => {
+    lastSelectedPackagesScriptsRef.current = lastSelectedPackagesScripts;
+  }, [lastSelectedPackagesScripts]);
 
   const getLastSelectedScripts = useCallback((packageName: string) => {
     return lastSelectedPackagesScriptsRef.current.find(
