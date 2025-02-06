@@ -9,6 +9,7 @@ import NodeService from '@renderer/services/NodeService/NodeService';
 import PathService from '@renderer/services/PathService';
 import { Button, IconPlus } from 'fratch-ui/components';
 import { c } from 'fratch-ui/helpers';
+import { getRandomColor } from 'fratch-ui/helpers';
 
 import DependencySelector from './DependencySelector';
 
@@ -53,6 +54,9 @@ function Dependencies(): JSX.Element {
       activeTargetPackage.isValidPackage
     ) {
       const dependency = new DependencyPackage();
+      dependency.color = getRandomColor(
+        activeDependencies?.map(({ color }) => color)
+      );
       dependency.cwd = PathService.getPreviousPath(activeTargetPackage.cwd);
       setActiveDependencies?.([...(activeDependencies ?? []), dependency]);
     }
@@ -102,6 +106,23 @@ function Dependencies(): JSX.Element {
     setActiveDependencies?.(
       (activeDependencies ?? []).filter(({ id }) => id !== dependency.id)
     );
+  };
+
+  const handleDisableOnChange = (
+    dependency: DependencyPackage,
+    isDisabled: boolean
+  ): void => {
+    const newDependencies = getUpdatedDependencyLits(
+      activeDependencies,
+      dependency,
+      () => {
+        const clonedDependency = dependency.clone();
+        clonedDependency.disabled = isDisabled;
+        return clonedDependency;
+      }
+    );
+
+    setActiveDependencies?.(newDependencies);
   };
 
   const changeDependencyProp = (
@@ -163,10 +184,11 @@ function Dependencies(): JSX.Element {
           dependency={dependency}
           isTargetSynchronizable={isTargetSynchronizable}
           onClickRemove={handleRemoveDependency}
+          onDisabledChange={handleDisableOnChange}
           onModeChange={handleModeChange}
           onPathChange={handlePathChange}
-          onScriptsChange={handleScriptsChange}
           onPreInstallScriptsChange={handlePreInstallScriptsChange}
+          onScriptsChange={handleScriptsChange}
           onSyncDirectoryChange={handleSyncDirectoryChange}
         />
       ))}

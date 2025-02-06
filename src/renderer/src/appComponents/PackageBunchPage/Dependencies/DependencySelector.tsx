@@ -1,5 +1,5 @@
 import { DependencyMode } from '@renderer/models/DependencyConstants';
-import { Button } from 'fratch-ui/components';
+import { Button, InputCheck } from 'fratch-ui/components';
 import { IconClose } from 'fratch-ui/components';
 import { c } from 'fratch-ui/helpers';
 
@@ -11,12 +11,13 @@ import SyncDirectories from './SrcSyncDirectories/SyncDirectories';
 import styles from './DependencySelector.module.css';
 
 export default function DependencySelector({
-  disabled,
   dependency,
+  disabled,
   isTargetSynchronizable,
   onClickRemove,
-  onPathChange,
+  onDisabledChange,
   onModeChange,
+  onPathChange,
   onPreInstallScriptsChange,
   onScriptsChange,
   onSyncDirectoryChange: onSrcSyncChange,
@@ -29,6 +30,10 @@ export default function DependencySelector({
     onPathChange(dependency, cwd, isValidPackage, packageName);
   };
 
+  const handleDisableOnChange = (checked: boolean): void => {
+    onDisabledChange(dependency, !checked);
+  };
+
   const handleScriptsChange = (scripts): void => {
     onScriptsChange(dependency, scripts);
   };
@@ -39,6 +44,19 @@ export default function DependencySelector({
 
   return (
     <div className={c(styles.dependency)}>
+      <div
+        className={c(styles.disabled)}
+        title={dependency.disabled ? `Disabled` : `Enabled`}
+        style={{ color: dependency.disabled ? '#666' : dependency.color }}
+      >
+        <InputCheck
+          checked={!dependency.disabled}
+          disabled={disabled}
+          label=""
+          onChange={handleDisableOnChange}
+          position="right"
+        />
+      </div>
       <PackageSelector
         packageType="dependency"
         additionalActionComponents={
@@ -53,7 +71,7 @@ export default function DependencySelector({
             )}
           </>
         }
-        disabled={disabled}
+        disabled={dependency.disabled || disabled}
         enablePackageScriptsSelectors={dependency.mode === DependencyMode.BUILD}
         nodePackage={dependency}
         onPathChange={handlePathChange}

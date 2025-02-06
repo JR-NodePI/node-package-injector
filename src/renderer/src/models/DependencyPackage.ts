@@ -1,3 +1,5 @@
+import type { CSSProperties } from 'react';
+
 import { DependencyMode } from '@renderer/models/DependencyConstants';
 
 import NodePackage from './NodePackage';
@@ -8,6 +10,8 @@ export default class DependencyPackage extends NodePackage {
     DependencyMode.BUILD;
 
   public syncDirectories?: SyncDirectory[];
+  public disabled = false;
+  public color: CSSProperties['color'] = '#ccc';
 
   public clone(): DependencyPackage {
     const dependencyPackage = Object.assign<DependencyPackage, NodePackage>(
@@ -17,6 +21,8 @@ export default class DependencyPackage extends NodePackage {
 
     dependencyPackage.mode = this.mode;
     dependencyPackage.syncDirectories = this.syncDirectories;
+    dependencyPackage.disabled = this.disabled;
+    dependencyPackage.color = this.color;
     return dependencyPackage;
   }
 }
