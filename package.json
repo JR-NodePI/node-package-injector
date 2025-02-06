@@ -1,6 +1,6 @@
 {
   "name": "node-package-injector",
-  "version": "1.10.16-alpha",
+  "version": "1.10.17-alpha",
   "description": "A desktop dev tool for simulating npm dependencies, built with Node.js, Bash, Electron, React, and Vite.",
   "repository": "https://github.com/JorgeRojo/node-package-injector",
   "main": "./out/main/index.js",
