@@ -79,7 +79,7 @@ export default class StartService {
     }
 
     const dependenciesToBuild = dependencies.filter(
-      ({ mode }) => mode === DependencyMode.BUILD
+      ({ mode, disabled }) => !disabled && mode === DependencyMode.BUILD
     );
     if (dependenciesToBuild.length) {
       onDependenciesBuildStart?.();

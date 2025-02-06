@@ -41,8 +41,9 @@ killAll() {
   echo ">>------------- KILL ALL START ------------<<"
 
   local INITIAL_PIDS=$(read_initial_PIDs)
-  local NODE_PI_PIDS_INC="NodePI|vite|craco|node|yarn|npm|pnpm|node-package-injector|$NODE_PI_FILE_PREFIX"
+  local NODE_PI_PIDS_INC="vite|craco|node|yarn|npm|pnpm|$NODE_PI_FILE_PREFIX"
   local NODE_PI_PIDS_EXC_PARTS=(
+    "NodePI/node-package-injector"
     "grep"
     "node_pi_reset_kill_all"
     " ${CURRENT_PID} "
