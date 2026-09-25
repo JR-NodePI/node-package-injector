@@ -21,7 +21,6 @@ require_command() {
 
   if [[ -z "${command}" ]]; then
 
-    local exitcode=$?
     local installation="sudo apt-get install -y ${commandName}"
 
     if [[ "$(uname)" == "Darwin" ]]; then
@@ -30,6 +29,6 @@ require_command() {
 
     echo "fatal: ${commandName} command not found -> ${installation}" 1>&2
 
-    exit $exitcode
+    exit 1
   fi
 }

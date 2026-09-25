@@ -20,7 +20,7 @@ if [[ -z "${nodeCommand}" && -d "$HOME/.nvm" ]]; then
 fi
 
 ## save current node pi PIDs -----------
-PIDS_FILE="/tmp/current_node_pi_PIDs.log"
+PIDS_FILE="/tmp/current_node_pi_PIDs_${UID:-$(id -u)}.log"
 
 save_initial_PIDs() {
   if [[ ! -f "${PIDS_FILE}" ]]; then

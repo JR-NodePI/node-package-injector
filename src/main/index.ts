@@ -86,7 +86,6 @@ function createWindow(): void {
 app.whenReady().then(async () => {
   if (is.dev && process.env['ENABLE_DEVTOOLS']) {
     await installExtension(REACT_DEVELOPER_TOOLS);
-    await installExtension(REACT_DEVELOPER_TOOLS);
   }
   // Set app user model id for windows
   electronApp.setAppUserModelId('github.com/JR-NodePI/node-package-injector');

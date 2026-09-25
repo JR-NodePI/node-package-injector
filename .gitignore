@@ -145,3 +145,5 @@ dist
 out
 *.log*
 .codegraph/
+electron.vite.config.*.mjs
+electron.vite.config.*.js

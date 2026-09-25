@@ -42,6 +42,17 @@ killAll() {
 
   local INITIAL_PIDS=$(read_initial_PIDs)
   local NODE_PI_PIDS_INC="vite|craco|node|yarn|npm|pnpm|$NODE_PI_FILE_PREFIX"
+
+  if [[ -z "$INITIAL_PIDS" ]]; then
+    if [[ -n "$NODE_PI_FILE_PREFIX" ]]; then
+      NODE_PI_PIDS_INC="$NODE_PI_FILE_PREFIX"
+    else
+      echo ">> No initial PIDs baseline or prefix found; skipping unsafe global kill."
+      echo ">>------------ KILL ALL FINISHED ----------<<"
+      return
+    fi
+  fi
+
   local NODE_PI_PIDS_EXC_PARTS=(
     "NodePI/node-package-injector"
     "grep"

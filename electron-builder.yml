@@ -1,4 +1,4 @@
-appId: github.com/JR-NodePI/node-package-injector
+appId: com.jrnodepi.nodepackageinjector
 productName: NodePI
 directories:
   buildResources: build
@@ -26,8 +26,6 @@ mac:
   icon: build/public/icons/mac/icon.icns
   entitlementsInherit: build/entitlements.mac.plist
   extendInfo:
-    - NSCameraUsageDescription: Application requests access to the device's camera.
-    - NSMicrophoneUsageDescription: Application requests access to the device's microphone.
     - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
     - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
 dmg:
@@ -44,5 +42,6 @@ appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: false
 publish:
-  provider: generic
-  url: https://github.com/JR-NodePI/node-package-injector
+  provider: github
+  owner: JR-NodePI
+  repo: node-package-injector

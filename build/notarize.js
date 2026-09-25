@@ -12,27 +12,27 @@ module.exports = async context => {
     return;
   }
 
-  if (!('APPLE_ID' in process.env && 'APPLE_ID_PASS' in process.env)) {
+  const appleId = process.env.APPLE_ID;
+  const appleIdPassword = process.env.APPLE_ID_PASS || process.env.APPLEIDPASS;
+
+  if (!appleId || !appleIdPassword) {
     // eslint-disable-next-line no-console
     console.warn(
-      // eslint-disable-next-line no-console
-      'skipping notarizing, APPLE_ID and APPLE_ID_PASS env variables must be set.'
+      'skipping notarizing, APPLE_ID and APPLE_ID_PASS (or APPLEIDPASS) env variables must be set.'
     );
     return;
   }
 
-  const appId = 'jorge.rojodiseno@gmail.com';
-
+  const appId = context.packager?.appInfo?.appId || 'com.jrnodepi.nodepackageinjector';
   const { appOutDir } = context;
-
   const appName = context.packager.appInfo.productFilename;
 
   try {
     await notarize({
       appBundleId: appId,
       appPath: `${appOutDir}/${appName}.app`,
-      appleId: process.env.APPLE_ID,
-      appleIdPassword: process.env.APPLEIDPASS,
+      appleId,
+      appleIdPassword,
     });
   } catch (error) {
     // eslint-disable-next-line no-console
