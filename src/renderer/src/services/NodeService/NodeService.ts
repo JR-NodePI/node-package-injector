@@ -195,7 +195,6 @@ export default class NodeService {
   }
 
   public static async checkBuildedDist(cwd: string): Promise<boolean> {
-    //example-package-v0.0.1.tgz
     return NodeService.hasFile(window.api.path.join(cwd, '/'), 'yarn.lock');
   }
 
